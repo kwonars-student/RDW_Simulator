@@ -182,6 +182,12 @@ public class Transform2D
         }
     }
 
+    public Vector2 TransformPoint(Vector2 point)
+    {
+        return this.transformMatrix * point;
+    }
+
+
     public override string ToString()
     {
         return string.Format("position: {0}, rotation: {1}, scale: {2}\n" +

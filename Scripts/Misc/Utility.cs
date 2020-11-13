@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Utility
 {
-    public static Vector3 Cast2Dto3D(Vector2 vec2) {
-        return new Vector3(vec2.x, 0, vec2.y);
+    public static Vector3 Cast2Dto3D(Vector2 vec2, float height = 0) {
+        return new Vector3(vec2.x, height, vec2.y);
     }
 
     public static Vector2 Cast3Dto2D(Vector3 vec3) {

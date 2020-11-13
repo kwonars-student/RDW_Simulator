@@ -79,6 +79,9 @@ public class RedirectedUnit
         resetter.ApplyUserReset(realUser, virtualUser);
     }
 
+    private int moveCount = 0;
+    private float moveTime = 0;
+
     public void Move()
     {
         isFirst = true;
@@ -89,7 +92,7 @@ public class RedirectedUnit
         controller.RealMove(realUser, type, degree); // 실제 유저를 이동
 
         resultData.setGains(type, redirector.GetApplidedGain(type));
-        resultData.AddElapsedTime(Time.deltaTime);
+        resultData.AddElapsedTime(Time.fixedDeltaTime);
     }
 
     //public void Simulation()
@@ -120,7 +123,6 @@ public class RedirectedUnit
     //        resultData.setGains(type, redirector.GetApplidedGain(type));
     //        resultData.AddElapsedTime(Time.deltaTime);
     //    }
-
     //}
 
     public int GetID()

@@ -11,4 +11,5 @@ public class PrefabSetting : ScriptableObject
     //public GameObject virtualSpacePrefab;
     public Material realMaterial;
     public Material virtualMaterial;
+    public Material obstacleMaterial;
 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 public class RDWSimulationManager : MonoBehaviour
 {
@@ -33,8 +32,8 @@ public class RDWSimulationManager : MonoBehaviour
         Vector2 virtualSize = new Vector2(simulationSetting.virtualSpaceSetting.spaceObject.size, simulationSetting.virtualSpaceSetting.spaceObject.size);
         Vector2 virtualOrigin = new Vector2(virtualSize.x, 0) + virtualSize / 2;
 
-        realSpace.Instantiate("Real Space", simulationSetting.prefabSetting.realMaterial, realSize, realOrigin);
-        virtualSpace.Instantiate("Virtual Space", simulationSetting.prefabSetting.virtualMaterial, virtualSize, virtualOrigin);
+        realSpace.Instantiate("Real Space", simulationSetting.prefabSetting.realMaterial, simulationSetting.prefabSetting.obstacleMaterial, realSize, realOrigin);
+        virtualSpace.Instantiate("Virtual Space", simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, virtualSize, virtualOrigin);
 
         for (int i = 0; i < simulationSetting.unitSettings.Length; i++)
         {
@@ -115,27 +114,24 @@ public class RDWSimulationManager : MonoBehaviour
             {
                 int j = -1;
 
-                if (redirectedUnit[i].NeedWallReset())
-                {
+                if (redirectedUnit[i].NeedWallReset()) {
                     redirectedUnit[i].ApplyWallReset();
                 }
-                else if (NeedUserReset(i, out j))
-                {
+                else if (NeedUserReset(i, out j)) { //TODO: user간 reset이 제대로 작동 안됨
                     redirectedUnit[i].ApplyUserReset();
                     redirectedUnit[j].ApplyUserReset();
                 }
-                else
-                {
+                else {
                     redirectedUnit[i].Move();
                 }
             }
         }
     }
 
-    public void FastSimulationRoutine()
-    {
-        while (!IsAllEpisodeEnd())
+    public void FastSimulationRoutine() {
+        while (!IsAllEpisodeEnd()) {
             Simulation();
+        }
 
         PrintResult();
     }
@@ -145,7 +141,7 @@ public class RDWSimulationManager : MonoBehaviour
         while (!IsAllEpisodeEnd())
         {
             Simulation();
-            yield return new FixedUpdate();
+            yield return new WaitForFixedUpdate();
         }
 
         PrintResult();
@@ -156,13 +152,11 @@ public class RDWSimulationManager : MonoBehaviour
         GenerateSpaces();
         GenerateUnits();
 
-        if (simulationSetting.useVisualization)
-        {
+        if (simulationSetting.useVisualization) {
             Visualize();
             StartCoroutine(SlowSimulationRoutine());
         }
-        else
-        {
+        else {
             FastSimulationRoutine();
         }
     }

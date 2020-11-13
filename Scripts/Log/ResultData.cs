@@ -49,6 +49,10 @@ public class ResultData
         elapsedTime += deltaTime;
     }
 
+    public float GetElapsedTime() {
+        return elapsedTime;
+    }
+
     public void AddWallReset()
     {
         wallReset += 1;

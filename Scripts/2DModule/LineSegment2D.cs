@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class LineSegment2D : Object2D
 {
-    private Vector2 p1, p2;
+    private Vector2 p1, p2; // local 좌표 기준
 
     public LineSegment2D() : base()
     {
@@ -18,7 +18,7 @@ public class LineSegment2D : Object2D
         this.p2 = lineSegment.p2;
     }
 
-    public LineSegment2D(Vector2 p1, Vector2 p2) : base()
+    public LineSegment2D(Vector2 p1, Vector2 p2, Transform2D parent = null) : base(Vector2.zero, parent)
     {
         this.p1 = p1;
         this.p2 = p2;
@@ -40,7 +40,11 @@ public class LineSegment2D : Object2D
         if(geometry is LineSegment2D)
         {
             LineSegment2D otherLine = (LineSegment2D)geometry;
-            Vector2 p3 = otherLine.p1, p4 = otherLine.p2;
+            
+            // 두 object2D가 서로 다른 좌표계를 가지므로 global 좌표계로 통일
+            Vector2 p1 = transform.TransformPoint(this.p1), p2 = transform.TransformPoint(this.p2);
+            Vector2 p3 = otherLine.transform.TransformPoint(otherLine.p1), p4 = otherLine.transform.TransformPoint(otherLine.p2);
+
             float under = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
 
             if (under == 0)

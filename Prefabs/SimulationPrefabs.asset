@@ -20,3 +20,4 @@ MonoBehaviour:
     type: 3}
   realMaterial: {fileID: 2100000, guid: 9f533429e2cd57040af3915b199c68a6, type: 2}
   virtualMaterial: {fileID: 2100000, guid: 84d6d68990aeb8c49bd72e0029846a7e, type: 2}
+  obstacleMaterial: {fileID: 2100000, guid: b6e691bf6f8fff54f95ff8e6b7548d7c, type: 2}

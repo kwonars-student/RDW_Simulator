@@ -75,9 +75,36 @@ public class Polygon2D : Object2D
         return vertices;
     }
 
+    public Vector2 GetVertex(int index)
+    {
+        return vertices[index];
+    }
+
     public override bool IsIntersect(Object2D geometry)
     {
-        throw new System.NotImplementedException();
+        if(geometry is LineSegment2D)
+        {
+            LineSegment2D line = (LineSegment2D)geometry;
+            int numOfIntersect = 0;
+
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                LineSegment2D boundary = new LineSegment2D(vertices[i], vertices[(i + 1) % 4], transform);
+
+                //Vector2 result;
+                if (boundary.IsIntersect(line))
+                    numOfIntersect += 1;
+            }
+
+            if (numOfIntersect == 0)
+                return false;
+            else
+                return true;
+        }
+        else
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public override bool IsInside(Vector2 point)

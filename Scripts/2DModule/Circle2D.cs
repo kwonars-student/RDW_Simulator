@@ -45,7 +45,6 @@ public class Circle2D : Object2D
                 return true;
             else
                 return false;
-
         }
         else if(geometry is Polygon2D)
         {
