@@ -28,25 +28,40 @@ public class Redirector
     protected float translationGain;
     protected float rotationGain;
     protected float curvatureGain;
-    protected RedirectedUnit redirectedUnit;
+    //protected RedirectedUnit redirectedUnit;
 
     public Redirector() {
-        this.redirectedUnit = null;
+        //this.redirectedUnit = null;
     }
 
-    public Redirector(RedirectedUnit redirectedUnit) {
-        this.redirectedUnit = redirectedUnit;
-    }
+    //public Redirector(RedirectedUnit redirectedUnit) {
+    //    this.redirectedUnit = redirectedUnit;
+    //}
 
-    public void SetReferences(RedirectedUnit redirectedUnit) {
-        this.redirectedUnit = redirectedUnit;
-    }
+    //public void SetReferences(RedirectedUnit redirectedUnit) {
+    //    this.redirectedUnit = redirectedUnit;
+    //}
 
-    public virtual (GainType, float) ApplyRedirection(Vector3 deltaPosition, float deltaRotation) {
+    public virtual (GainType, float) ApplyRedirection(Object2D realUser, Vector2 deltaPosition, float deltaRotation) {
         float degree = 0;
         GainType type = GainType.Undefined;
 
         return (type, degree);
+    }
+
+    public float GetApplidedGain(GainType type)
+    {
+        switch (type)
+        {
+            case Redirector.GainType.Translation:
+                return Mathf.Abs(GetTranslationGain());
+            case Redirector.GainType.Rotation:
+                return Mathf.Abs(GetRotationGain());
+            case Redirector.GainType.Curvature:
+                return Mathf.Abs(GetCurvatureGain());
+            default:
+                return 0;
+        }
     }
 
     public float GetTranslationGain()

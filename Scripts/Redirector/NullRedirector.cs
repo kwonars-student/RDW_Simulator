@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NullRedirector : Redirector
 {
-    public override (GainType, float) ApplyRedirection(Vector3 deltaPosition, float deltaRotation) {
+    public override (GainType, float) ApplyRedirection(Object2D realUser, Vector2 deltaPosition, float deltaRotation) {
         float degree = 0;
         GainType type = GainType.Undefined;
 

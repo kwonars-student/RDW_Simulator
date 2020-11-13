@@ -6,8 +6,8 @@ public class Episode
 {
     protected static int totalID = 0;
     protected int id;
-    protected SimulationController simulationController;
-    protected Space2D virtualSpace;
+    //protected SimulationController simulationController;
+    //protected Space2D virtualSpace;
     protected Vector2? currentTargetPosition;
     protected int currentEpisodeIndex;
     protected int episodeLength;
@@ -16,33 +16,56 @@ public class Episode
 
     public Episode() {
         id = totalID++;
-        this.episodeLength = 0;
         currentEpisodeIndex = 0;
         currentTargetPosition = null;
-        simulationController = null;
-        virtualSpace = null;
+        this.episodeLength = 0;
+        //simulationController = null;
+        //virtualSpace = null;
     }
 
-    public Episode(int episodeLength) {
+    public Episode(int episodeLength)
+    {
         id = totalID++;
-        this.episodeLength = episodeLength;
         currentEpisodeIndex = 0;
         currentTargetPosition = null;
-        simulationController = null;
+        this.episodeLength = episodeLength;
     }
+
+    //public Episode(Space2D virtualSpace, int episodeLength)
+    //{
+    //    id = totalID++;
+    //    this.episodeLength = episodeLength;
+    //    currentEpisodeIndex = 0;
+    //    currentTargetPosition = null;
+    //    simulationController = null;
+    //    this.virtualSpace = virtualSpace;
+    //}
+
+    //public void SetReferences(SimulationController simulationController)
+    //{
+    //    this.simulationController = simulationController;
+    //}
+
+    //public Episode(int episodeLength) {
+    //    id = totalID++;
+    //    this.episodeLength = episodeLength;
+    //    currentEpisodeIndex = 0;
+    //    currentTargetPosition = null;
+    //    simulationController = null;
+    //}
 
     public int getID()
     {
         return id;
     }
 
-    public void SetReferences(SimulationController simulationController, Space2D virtualSpace, GameObject targetPrefab) {
-        this.simulationController = simulationController;
-        this.virtualSpace = virtualSpace;
-        this.targetPrefab = targetPrefab;
-    }
+    //public void SetReferences(SimulationController simulationController, Space2D virtualSpace, GameObject targetPrefab) {
+    //    this.simulationController = simulationController;
+    //    this.virtualSpace = virtualSpace;
+    //    this.targetPrefab = targetPrefab;
+    //}
 
-    protected virtual void GenerateEpisode() {}
+    protected virtual void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace) {}
 
     protected void InstaniateTarget() {
         targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
@@ -56,13 +79,13 @@ public class Episode
             return false;
     }
 
-    public Vector3 GetTarget() {
+    public Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace) {
         if (!currentTargetPosition.HasValue) {
-            GenerateEpisode();
-            InstaniateTarget();
+            GenerateEpisode(virtualUserTransform, virtualSpace);
+            //InstaniateTarget();
         }
 
-        return Utility.Cast2Dto3D(currentTargetPosition.Value);
+        return currentTargetPosition.Value;
     }
 
     public void DeleteTarget() {

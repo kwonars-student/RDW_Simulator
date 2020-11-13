@@ -12,30 +12,35 @@ public class SteerToTargetRedirector : Redirector
 
     private float previousMagnitude = 0f;
 
-    protected Vector3 userPosition; // user localPosition
-    protected Vector3 userDirection; // user local direction (localforward)
-    protected Vector3 targetPosition; // steerting target localPosition
+    protected Vector2 userPosition; // user localPosition
+    protected Vector2 userDirection; // user local direction (localforward)
+    protected Vector2 targetPosition; // steerting target localPosition
 
     public virtual void PickSteeringTarget() {}
 
-    public override (GainType, float) ApplyRedirection(Vector3 deltaPosition, float deltaRotation) {
+    public override (GainType, float) ApplyRedirection(Object2D realUser, Vector2 deltaPosition, float deltaRotation) {
+        if (deltaPosition == Vector2.zero && deltaRotation == 0.0f)
+        {
+            return (GainType.Undefined, 0);
+        }
+
         // define some variables for redirection
-        Transform realUserTransform = redirectedUnit.GetRealTransform();
+        Transform2D realUserTransform = realUser.transform;
         userPosition = realUserTransform.localPosition;
         userDirection = realUserTransform.forward;
 
         // pick a target to where user steer
         PickSteeringTarget();
 
-        Vector3 userToTarget = targetPosition - userPosition;
-        float angleToTarget = Vector3.Angle(userDirection, userToTarget);
+        Vector2 userToTarget = targetPosition - userPosition;
+        float angleToTarget = Vector2.Angle(userDirection, userToTarget);
         float distanceToTarget = userToTarget.magnitude;
 
         // control applied gains according to user and target
-        float directionToTarget = Mathf.Sign(Vector3.SignedAngle(userDirection, userToTarget, Vector3.up)); // if target is to the right of the user, directionToTarget > 0
-        float directionRotation = Mathf.Sign(deltaRotation); // If user is rotating to the right, directionRotation > 0
+        float directionToTarget = Mathf.Sign(Vector2.SignedAngle(userDirection, userToTarget)); // if target is to the left of the user, directionToTarget > 0
+        float directionRotation = Mathf.Sign(deltaRotation); // If user is rotating to the left, directionRotation > 0
 
-        if (directionToTarget < 0)  // If the target is to the left of the user,
+        if (directionToTarget > 0)  // If the target is to the left of the user,
             curvatureGain = HODGSON_MIN_CURVATURE_GAIN;
         else
             curvatureGain = HODGSON_MAX_CURVATURE_GAIN;
@@ -69,12 +74,11 @@ public class SteerToTargetRedirector : Redirector
 
         // apply final redirection
         if (!isCurvatureSelected) {
-            float direction = directionRotation; //float direction = -directionRotation * Mathf.Sign(rotationGain);
-
+            float direction = directionRotation;
             return (GainType.Rotation, finalRotation * direction);
         }
         else {
-            float direction = Mathf.Sign(curvatureGain);
+            float direction = -Mathf.Sign(curvatureGain); // TODO: 이 방향이 맞나?
 
             return (GainType.Curvature, finalRotation * direction);
         }

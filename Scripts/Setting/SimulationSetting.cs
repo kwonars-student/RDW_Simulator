@@ -6,7 +6,7 @@ using UnityEngine;
 public class SimulationSetting {
 
     public bool useVisualization;
-    public ObjectSetting objectSetting;
+    public PrefabSetting prefabSetting;
     public SpaceSetting realSpaceSetting;
     public SpaceSetting virtualSpaceSetting;
     public UnitSetting[] unitSettings;

@@ -6,15 +6,17 @@ public class LongWalkEpisode : Episode
 {
     public LongWalkEpisode() : base() { }
 
-    public LongWalkEpisode(int episodelength) : base(episodelength) { }
+    public LongWalkEpisode(int episodeLength) : base(episodeLength) { }
 
-    protected override void GenerateEpisode() {
+    //public LongWalkEpisode(Space2D virtualSpace, int episodeLength) : base(virtualSpace, episodeLength) { }
+
+    protected override void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace) {
         float angle = 0;
         float distance = 5.0f;
 
-        Vector3 sampleForward = Quaternion.AngleAxis(angle, Vector3.up) * simulationController.GetUserVirtualTransform().forward;
-        Vector3 userPosition = simulationController.GetUserVirtualTransform().localPosition;
+        Vector2 sampleForward = Utility.rotateVector2(virtualUserTransform.forward, angle);
+        Vector2 userPosition = virtualUserTransform.localPosition;
 
-        currentTargetPosition = Utility.Cast3Dto2D(userPosition + sampleForward * distance);
+        currentTargetPosition = userPosition + sampleForward * distance;
     }
 }

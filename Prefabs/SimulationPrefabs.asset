@@ -9,16 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fab99ec700e1aee4db2a7f37b687ea34, type: 3}
-  m_Name: ObjectSetting01
+  m_Script: {fileID: 11500000, guid: df4674c5304bae64999e80a36497ec80, type: 3}
+  m_Name: SimulationPrefabs
   m_EditorClassIdentifier: 
-  realMaterial: {fileID: 2100000, guid: 9f533429e2cd57040af3915b199c68a6, type: 2}
-  virtualMaterial: {fileID: 2100000, guid: 84d6d68990aeb8c49bd72e0029846a7e, type: 2}
-  targetPrefab: {fileID: 903321712500741410, guid: ff9252a0e46d38f4596d4133611dc97c,
-    type: 3}
-  virtualSpacePrefab: {fileID: 919132149155446097, guid: b5bd031ae42175a4a9827b4ae997f3b0,
-    type: 3}
   userPrefabs:
   - {fileID: 4496293680542997275, guid: 2102de2d59f1bde4eacdab529b5b87d4, type: 3}
   - {fileID: 4496293680542997275, guid: d27335329183c3947b2f20fcec823e3b, type: 3}
   - {fileID: 4496293680542997275, guid: 21d0529e64d4f594094522bf49819829, type: 3}
+  targetPrefabs: {fileID: 903321712500741410, guid: ff9252a0e46d38f4596d4133611dc97c,
+    type: 3}
+  realMaterial: {fileID: 2100000, guid: 9f533429e2cd57040af3915b199c68a6, type: 2}
+  virtualMaterial: {fileID: 2100000, guid: 84d6d68990aeb8c49bd72e0029846a7e, type: 2}

@@ -9,9 +9,11 @@ public class PreDefinedEpisode : Episode
     private TextReader reader;
     private List<Vector2> targetPositionList;
 
-    public PreDefinedEpisode() : base() {
+    public PreDefinedEpisode() : base() { }
+
+    public PreDefinedEpisode(string fileName) : base() {
         targetPositionList = new List<Vector2>();
-        filePath = "Assets/Resources/episode_1.txt";
+        filePath = "Assets/Resources/" + fileName +".txt";
         reader = File.OpenText(filePath);
 
         string line = null;
@@ -27,7 +29,7 @@ public class PreDefinedEpisode : Episode
             this.episodeLength = targetPositionList.Count;
     }
 
-    protected override void GenerateEpisode() {
+    protected override void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace) { 
         currentTargetPosition = targetPositionList[currentEpisodeIndex];
     }
 }

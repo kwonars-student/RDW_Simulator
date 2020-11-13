@@ -1,31 +1,63 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TreeEditor;
 using UnityEngine;
 
-public class Circle2D : Shape2D
+public class Circle2D : Object2D
 {
-    float radius;
+    private float radius;
 
-    public Circle2D()
+    public Circle2D() : base()
     {
-        radius = 0;
+        this.radius = 0.0f;
     }
 
-    public Circle2D(float radius, Transform2D transform) 
-        : base(transform) {
+    public Circle2D(Circle2D circle) : base(circle)
+    {
+        this.radius = circle.radius;
+    }
+
+    public Circle2D(float radius) : base()
+    {
         this.radius = radius;
     }
 
-    public Circle2D(float radius, Vector2 localPosition, float localRotation = 0.0f, Vector2 localScale = new Vector2(), Transform2D parent = null) 
-        : base(localPosition, localRotation, localScale, parent) {
+    public Circle2D(float radius, Vector2 localPosition, Transform2D parent=null) : base(localPosition, parent)
+    {
         this.radius = radius;
     }
 
-    public override bool IsInside(Vector2 point) // point는 로컬 좌표계 기준
+    public float GetRadius()
     {
-        if (point.magnitude < radius)
-            return true;
+        return radius;
+    }
+
+    public override bool IsIntersect(Object2D geometry)
+    {
+        if(geometry is Circle2D)
+        {
+            Circle2D other = (Circle2D) geometry;
+            Vector2 otherPosition = other.transform.position;
+            Vector2 thisPosition = this.transform.position;
+            float otherRadius = other.GetRadius();
+
+            if (Vector2.Distance(thisPosition, otherPosition) <= otherRadius + this.radius)
+                return true;
+            else
+                return false;
+
+        }
+        else if(geometry is Polygon2D)
+        {
+            throw new System.NotImplementedException();
+        }
+        else if(geometry is LineSegment2D)
+        {
+            throw new System.NotImplementedException();
+        }
         else
-            return false;
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class NullResetter : Resetter
 {
-    public override void ApplyReset() {
-       // Do nothing
-    }
+    public NullResetter() : base() { }
+
+    //public NullResetter(Space2D space) : base(space) { }
+
 }

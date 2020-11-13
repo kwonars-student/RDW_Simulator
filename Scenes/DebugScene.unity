@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 591810196}
   - component: {fileID: 591810195}
   m_Layer: 0
-  m_Name: TestManager
+  m_Name: RDWSimulationManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -147,13 +147,61 @@ MonoBehaviour:
   m_GameObject: {fileID: 591810194}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e8d36c24228ef6439aa4c8571717692, type: 3}
+  m_Script: {fileID: 11500000, guid: 4f9c276cea797314ea8a4dea40294605, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabs:
-  - {fileID: 9010487800853120782, guid: 3e75b2899ffb7944c8ef9814319e4b51, type: 3}
-  - {fileID: 7287297250751112651, guid: 9991c997ab382904abbaee193f1c6c35, type: 3}
-  - {fileID: 1218547625997314365, guid: 0ee4880fc08fe124f8452c2bd876f69e, type: 3}
+  simulationSetting:
+    useVisualization: 1
+    prefabSetting: {fileID: 11400000, guid: 44d2741166066a84ca3987e75f90a062, type: 2}
+    realSpaceSetting:
+      spaceObject:
+        position: {x: 0, y: 0}
+        rotation: 0
+        useRegularPolygon: 1
+        count: 4
+        size: 10
+        vertices: []
+      obstacleObjects: []
+    virtualSpaceSetting:
+      spaceObject:
+        position: {x: 0, y: 0}
+        rotation: 0
+        useRegularPolygon: 1
+        count: 4
+        size: 20
+        vertices: []
+      obstacleObjects:
+      - position: {x: 0, y: 0}
+        rotation: 0
+        useRegularPolygon: 0
+        count: 0
+        size: 0
+        vertices: []
+    unitSettings:
+    - redirectType: 1
+      resetType: 1
+      episodeType: 1
+      episodeLength: 1000
+      episodeFileName: 
+      useRandomStart: 0
+      realStartPosition: {x: 0, y: 0}
+      virtualStartPosition: {x: 0, y: 0}
+    - redirectType: 1
+      resetType: 1
+      episodeType: 1
+      episodeLength: 1000
+      episodeFileName: 
+      useRandomStart: 0
+      realStartPosition: {x: -4, y: -4}
+      virtualStartPosition: {x: -4, y: -4}
+    - redirectType: 1
+      resetType: 1
+      episodeType: 1
+      episodeLength: 1000
+      episodeFileName: 
+      useRandomStart: 0
+      realStartPosition: {x: -2, y: 2}
+      virtualStartPosition: {x: -2, y: 2}
 --- !u!4 &591810196
 Transform:
   m_ObjectHideFlags: 0

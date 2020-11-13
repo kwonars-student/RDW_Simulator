@@ -1,56 +1,132 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class RedirectedUnit : MonoBehaviour
+public class RedirectedUnit
 {
     protected Redirector redirector;
     protected Resetter resetter;
-    protected Transform realTransform;
-    protected Transform virtualTransform;
+    protected SimulationController controller;
+    protected Object2D realUser, virtualUser;
+    protected Space2D realSpace, virtualSpace;
     public ResultData resultData;
+    static int totalID = 0;
     protected int id;
+    private bool isFirst = true, isUserResetFirst = true;
 
-    public virtual void Initialzing(SimulationSetting simulationSetting, int id)
+
+    public RedirectedUnit()
     {
-        UnitSetting unitSetting = simulationSetting.unitSettings[id];
-        this.redirector = unitSetting.GetRedirector();
-        this.resetter = unitSetting.GetRestter();
-        this.id = id;
+        redirector = new Redirector();
+        resetter = new Resetter();
+        controller = new SimulationController();
+        resultData = new ResultData();
+        id = -1;
+    }
 
-        this.redirector.SetReferences(this);
-        this.resetter.SetReferences(this, simulationSetting.realSpaceSetting.GetSpace2D());
+    public RedirectedUnit(Redirector redirector, Resetter resetter, SimulationController controller, Space2D realSpace, Space2D virtualSpace, Vector2 realStartPosition, Vector2 virtualStartPosition)
+    {
+        this.redirector = redirector;
+        this.resetter = resetter;
+        this.controller = controller;
+        this.realSpace = realSpace;
+        this.virtualSpace = virtualSpace;
 
-        GameObject realObject = Instantiate(simulationSetting.objectSetting.userPrefabs[id], GameObject.Find("Real Space").transform);
-        GameObject virtualObject = Instantiate(simulationSetting.objectSetting.userPrefabs[id], GameObject.Find("Virtual Space").transform);
+        resultData = new ResultData();
+        resultData.setUnitID(totalID++);
+        id = totalID;
+        resultData.setEpisodeID(controller.GetEpisodeID());
 
-        this.realTransform = realObject.transform;
-        this.virtualTransform = virtualObject.transform;
+        //realUser = new Object2D(realStartPosition, null);
+        //virtualUser = new Object2D(virtualStartPosition, null);
+        realUser = new Circle2D(0.3f, realStartPosition, null); // TODO: 알아서 형변환 되게끔 수정
+        virtualUser = new Circle2D(0.3f, virtualStartPosition, null);
 
-        realObject.name = string.Format("Real Unit {0}", id);
-        virtualObject.name = string.Format("Virtual Unit {0}", id);
-        this.gameObject.name = string.Format("RDWUnit {0}", id);
-
-        if (unitSetting.useRandomStart)
-        {
-            float boundX = simulationSetting.realSpaceSetting.size.x / 2 - 1.5f;
-            float boundY = simulationSetting.realSpaceSetting.size.y / 2 - 1.5f;
-            float x = Random.Range(-boundX, boundX);
-            float y = Random.Range(-boundY, boundY);
-            realTransform.localPosition = new Vector3(x, 0, y);
-        }
-        else
-        {
-            realTransform.localPosition = Utility.Cast2Dto3D(unitSetting.realStartPosition);
-        }
-
-        virtualTransform.localPosition = Utility.Cast2Dto3D(unitSetting.virtualStartPosition);
+        //this.redirector.SetReferences(this);
+        //this.resetter.SetReferences(this);
+        //this.controller.SetReferences(this);
     }
 
 
+    public bool NeedWallReset()
+    {
+        return resetter.NeedWallReset(realUser, realSpace);
+    }
 
+    public bool NeedUserReset(Object2D otherUser)
+    {
+        return resetter.NeedUserReset(realUser, otherUser);
+    }
 
-    public virtual IEnumerator SimulationCoroutine() { yield return new WaitForFixedUpdate(); }
+    public void ApplyWallReset()
+    {
+        if (isFirst)
+        {
+            resultData.AddWallReset();
+            isFirst = false;
+        }
 
+        resetter.ApplyReset(realUser, virtualUser);
+    }
+
+    public void ApplyUserReset()
+    {
+        if (isUserResetFirst)
+        {
+            resultData.AddWallReset();
+            isUserResetFirst = false;
+        }
+
+        resetter.ApplyUserReset(realUser, virtualUser);
+    }
+
+    public void Move()
+    {
+        isFirst = true;
+        isUserResetFirst = true;
+
+        (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)
+        (Redirector.GainType type, float degree) = redirector.ApplyRedirection(realUser, deltaPosition, deltaRotation); // 왜곡시킬 값을 계산
+        controller.RealMove(realUser, type, degree); // 실제 유저를 이동
+
+        resultData.setGains(type, redirector.GetApplidedGain(type));
+        resultData.AddElapsedTime(Time.deltaTime);
+    }
+
+    //public void Simulation()
+    //{
+    //    if (resetter.NeedWallReset(realUser, realSpace))
+    //    {
+    //        if (isFirst)
+    //        {
+    //            resultData.AddWallReset();
+    //            isFirst = false;
+    //        }
+
+    //        resetter.ApplyReset(realUser, virtualUser);
+    //    }
+    //    else if (resetter.NeedUserReset())
+    //    {
+
+    //    }
+    //    else
+    //    {
+    //        isFirst = true;
+
+    //        (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace);
+    //        (Redirector.GainType type, float degree) = redirector.ApplyRedirection(realUser, deltaPosition, deltaRotation);
+
+    //        controller.RealMove(realUser, type, degree);
+
+    //        resultData.setGains(type, redirector.GetApplidedGain(type));
+    //        resultData.AddElapsedTime(Time.deltaTime);
+    //    }
+
+    //}
+
+    public int GetID()
+    {
+        return id;
+    }
 
     public Redirector GetRedirector()
     {
@@ -62,13 +138,19 @@ public class RedirectedUnit : MonoBehaviour
         return resetter;
     }
 
-    public Transform GetRealTransform()
+    public Object2D GetRealUser()
     {
-        return realTransform;
+        return (Circle2D)realUser;
+
     }
 
-    public Transform GetVirtualTransform()
+    public Object2D GetVirtualUser()
     {
-        return virtualTransform;
+        return virtualUser;
+    }
+
+    public Episode GetEpisode()
+    {
+        return controller.GetEpisode();
     }
 }
