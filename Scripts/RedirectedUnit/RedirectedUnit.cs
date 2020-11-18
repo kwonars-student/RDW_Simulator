@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class RedirectedUnit
@@ -11,8 +11,11 @@ public class RedirectedUnit
     public ResultData resultData;
     static int totalID = 0;
     protected int id;
-    private bool isFirst = true, isUserResetFirst = true;
 
+    //private bool isFirst = true;
+    private string status;
+    //private bool resetThisUnit = false;
+    //private bool resetOtherUnit = false;
 
     public RedirectedUnit()
     {
@@ -21,6 +24,7 @@ public class RedirectedUnit
         controller = new SimulationController();
         resultData = new ResultData();
         id = -1;
+        status = "UNDEFINED"; // TODO: 이래도 되나?
     }
 
     public RedirectedUnit(Redirector redirector, Resetter resetter, SimulationController controller, Space2D realSpace, Space2D virtualSpace, Vector2 realStartPosition, Vector2 virtualStartPosition)
@@ -30,100 +34,132 @@ public class RedirectedUnit
         this.controller = controller;
         this.realSpace = realSpace;
         this.virtualSpace = virtualSpace;
+        this.status = "IDLE";
 
         resultData = new ResultData();
         resultData.setUnitID(totalID++);
         id = totalID;
         resultData.setEpisodeID(controller.GetEpisodeID());
 
-        //realUser = new Object2D(realStartPosition, null);
-        //virtualUser = new Object2D(virtualStartPosition, null);
-        realUser = new Circle2D(0.3f, realStartPosition, null); // TODO: 알아서 형변환 되게끔 수정
-        virtualUser = new Circle2D(0.3f, virtualStartPosition, null);
-
-        //this.redirector.SetReferences(this);
-        //this.resetter.SetReferences(this);
-        //this.controller.SetReferences(this);
+        realUser = new Circle2D(0.3f, realStartPosition, realSpace.space.transform); // TODO: 알아서 형변환 되게끔 수정
+        virtualUser = new Circle2D(0.3f, virtualStartPosition, virtualSpace.space.transform);
     }
 
-
-    public bool NeedWallReset()
+    public List<Object2D> GetUsers(RedirectedUnit[] otherUnits)
     {
-        return resetter.NeedWallReset(realUser, realSpace);
-    }
+        List<Object2D> otherUsers = new List<Object2D>();
 
-    public bool NeedUserReset(Object2D otherUser)
-    {
-        return resetter.NeedUserReset(realUser, otherUser);
-    }
-
-    public void ApplyWallReset()
-    {
-        if (isFirst)
+        for(int i=0; i< otherUnits.Length; i++)
         {
-            resultData.AddWallReset();
-            isFirst = false;
+            if (this.id == otherUnits[i].GetID())
+                continue;
+
+            otherUsers.Add(otherUnits[i].GetRealUser());
         }
 
-        resetter.ApplyReset(realUser, virtualUser);
+        return otherUsers;
+    }
+
+    public string CheckCurrentStatus(RedirectedUnit[] otherUnits)
+    {
+        List<Object2D> otherUsers = GetUsers(otherUnits);
+
+        if (status == "WALL_RESET")
+        {
+            if (!resetter.NeedWallReset(realUser, realSpace))
+                status = "IDLE";
+        }
+        else if (status == "USER_RESET")
+        {
+            if (!resetter.NeedUserReset(realUser, otherUsers))
+                status = "IDLE";
+        }
+        else if (status == "IDLE")
+        {
+            if (resetter.NeedWallReset(realUser, realSpace))
+            {
+                resultData.AddWallReset();
+                status = "WALL_RESET";
+            }
+            else if (resetter.NeedUserReset(realUser, otherUsers))
+            {
+                resultData.AddUserReset();
+                status = "USER_RESET";
+            }
+            else if (!GetEpisode().IsNotEnd())
+                status = "END";
+        }
+
+        return status;
+    }
+
+    public bool NeedUserReset(RedirectedUnit[] otherUnits)
+    {
+        bool flag = false;
+
+        for (int i = 0; i < otherUnits.Length; i++)
+        {
+            if (this.id == otherUnits[i].GetID())
+                continue;
+
+            Object2D otherUser = otherUnits[i].GetRealUser();
+
+            if (resetter.NeedUserReset(realUser, otherUser))
+            {
+                flag = true;
+            }
+        }
+
+        return flag;
+    }
+
+    public void Simulation(RedirectedUnit[] otherUnits)
+    {
+        string currentStatus = CheckCurrentStatus(otherUnits);
+
+        switch (currentStatus)
+        {
+            case "IDLE":
+                Move();
+                break;
+            case "WALL_RESET":
+                ApplyWallReset();
+                break;
+            case "USER_RESET":
+                ApplyUserReset();
+                break;
+            default:
+                break;
+        }
     }
 
     public void ApplyUserReset()
     {
-        if (isUserResetFirst)
-        {
-            resultData.AddWallReset();
-            isUserResetFirst = false;
-        }
-
-        resetter.ApplyUserReset(realUser, virtualUser);
+        resetter.ApplyReset(realUser, virtualUser, realSpace); // 필요하면 User Reset과 Wall Reset의 방법을 다르게 만들 수 있도록 이런 식으로 구현
     }
 
-    private int moveCount = 0;
-    private float moveTime = 0;
+    public void ApplyWallReset()
+    {
+        resetter.ApplyReset(realUser, virtualUser, realSpace);
+    }
 
     public void Move()
     {
-        isFirst = true;
-        isUserResetFirst = true;
-
-        (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)
+        (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(realUser, virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)
         (Redirector.GainType type, float degree) = redirector.ApplyRedirection(realUser, deltaPosition, deltaRotation); // 왜곡시킬 값을 계산
         controller.RealMove(realUser, type, degree); // 실제 유저를 이동
+
+        //Debug.Log("");
+        //Debug.Log(string.Format("deltaPosition: {0}", deltaPosition));
+        //Debug.Log(string.Format("deltaRotation: {0}", deltaRotation));
+        //Debug.Log(realUser.transform);
+        //Debug.Log(virtualUser.transform);
+        //Debug.Log(realUser.gameObject.transform.localEulerAngles);
+        //Debug.Log(virtualUser.gameObject.transform.localEulerAngles);
 
         resultData.setGains(type, redirector.GetApplidedGain(type));
         resultData.AddElapsedTime(Time.fixedDeltaTime);
     }
-
-    //public void Simulation()
-    //{
-    //    if (resetter.NeedWallReset(realUser, realSpace))
-    //    {
-    //        if (isFirst)
-    //        {
-    //            resultData.AddWallReset();
-    //            isFirst = false;
-    //        }
-
-    //        resetter.ApplyReset(realUser, virtualUser);
-    //    }
-    //    else if (resetter.NeedUserReset())
-    //    {
-
-    //    }
-    //    else
-    //    {
-    //        isFirst = true;
-
-    //        (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace);
-    //        (Redirector.GainType type, float degree) = redirector.ApplyRedirection(realUser, deltaPosition, deltaRotation);
-
-    //        controller.RealMove(realUser, type, degree);
-
-    //        resultData.setGains(type, redirector.GetApplidedGain(type));
-    //        resultData.AddElapsedTime(Time.deltaTime);
-    //    }
-    //}
 
     public int GetID()
     {

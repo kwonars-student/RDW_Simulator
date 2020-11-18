@@ -9,18 +9,20 @@ public class Transform2D
     private Vector2 LocalPosition;
     private float LocalRotation;
     private Vector2 LocalScale;
+    private Vector2 Forward;
     private Matrix3x3 transformMatrix; // local <-> global 좌표 변환을 위한 matrix
 
     public Vector2 forward
     {
-        get { return Matrix3x3.CreateRotation(this.rotation) * Vector2.up; }
+        get { return Matrix3x3.CreateRotation(rotation) * Vector2.up; }
         set
         {
-            if(value.magnitude > 1)
+            if (value.magnitude > 1)
                 value = value.normalized;
             float angle = Vector2.SignedAngle(this.forward, value);
             float newRotation = this.rotation + angle;
             this.rotation = newRotation;
+
         }
     }
 
@@ -148,7 +150,7 @@ public class Transform2D
         else
             this.transformMatrix = localTransformMatrix;
 
-        //this.forward = Matrix3x3.CreateRotation(rotation) * Vector2.up;
+        //this.Forward = Matrix3x3.CreateRotation(rotation) * this.Forward;
     }
 
 
@@ -191,7 +193,7 @@ public class Transform2D
     public override string ToString()
     {
         return string.Format("position: {0}, rotation: {1}, scale: {2}\n" +
-            "localPosition: {3}, localRotation: {4}, localScale: {5}\n" +
+            "localPosition: {3}, localRotation: {4}, localScale: {5}, " +
             "forward: {6}", position, rotation, scale, localPosition, localRotation, localScale, forward);
     }
 }

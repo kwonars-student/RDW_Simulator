@@ -32,7 +32,7 @@ public class Circle2D : Object2D
         return radius;
     }
 
-    public override bool IsIntersect(Object2D geometry)
+    public override bool IsIntersect(Object2D geometry, float epsilon = 0)
     {
         if(geometry is Circle2D)
         {
@@ -41,7 +41,7 @@ public class Circle2D : Object2D
             Vector2 thisPosition = this.transform.position;
             float otherRadius = other.GetRadius();
 
-            if (Vector2.Distance(thisPosition, otherPosition) <= otherRadius + this.radius)
+            if (Mathf.Abs(Vector2.Distance(thisPosition, otherPosition) - (otherRadius + this.radius)) < epsilon) // 차이가 epsilon 만큼이라면 intersect 했다고 판단
                 return true;
             else
                 return false;

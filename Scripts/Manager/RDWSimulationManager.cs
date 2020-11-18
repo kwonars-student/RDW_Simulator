@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RDWSimulationManager : MonoBehaviour
@@ -58,79 +58,22 @@ public class RDWSimulationManager : MonoBehaviour
 
     public void PrintResult()
     {
+        Debug.Log("---Result---");
+
         for (int i = 0; i < redirectedUnit.Length; i++)
+        {
+            Debug.Log(redirectedUnit[i].GetVirtualUser().transform);
+            Debug.Log(redirectedUnit[i].GetRealUser().transform);
             Debug.Log(redirectedUnit[i].resultData);
-    }
-
-    //public void FastSimulationRoutine()
-    //{
-    //    while (!IsAllEpisodeEnd())
-    //    {
-    //        for (int i = 0; i < redirectedUnit.Length; i++)
-    //            redirectedUnit[i].Simulation();
-    //    }
-
-    //    PrintResult();
-    //}
-
-    //public IEnumerator SlowSimulationRoutine()
-    //{
-    //    while (!IsAllEpisodeEnd())
-    //    {
-    //        for (int i = 0; i < redirectedUnit.Length; i++)
-    //            redirectedUnit[i].Simulation();
-
-    //        yield return new FixedUpdate();
-    //    }
-
-    //    PrintResult();
-    //}
-
-    public bool NeedUserReset(int i, out int otherIndex)
-    {
-        for (int j = 0; j < redirectedUnit.Length; j++)
-        {
-            if (j == i)
-                continue;
-
-            Object2D otherUser = redirectedUnit[j].GetRealUser();
-
-            if (redirectedUnit[i].NeedUserReset(otherUser))
-            {
-                otherIndex = j;
-                return true;
-            }
-        }
-
-        otherIndex = -1;
-        return false;
-    }
-
-    public void Simulation()
-    {
-        for (int i = 0; i < redirectedUnit.Length; i++)
-        {
-            if (redirectedUnit[i].GetEpisode().IsNotEnd())
-            {
-                int j = -1;
-
-                if (redirectedUnit[i].NeedWallReset()) {
-                    redirectedUnit[i].ApplyWallReset();
-                }
-                else if (NeedUserReset(i, out j)) { //TODO: user간 reset이 제대로 작동 안됨
-                    redirectedUnit[i].ApplyUserReset();
-                    redirectedUnit[j].ApplyUserReset();
-                }
-                else {
-                    redirectedUnit[i].Move();
-                }
-            }
         }
     }
 
-    public void FastSimulationRoutine() {
-        while (!IsAllEpisodeEnd()) {
-            Simulation();
+    public void FastSimulationRoutine()
+    {
+        while (!IsAllEpisodeEnd())
+        {
+            for (int i = 0; i < redirectedUnit.Length; i++)
+                redirectedUnit[i].Simulation(redirectedUnit);
         }
 
         PrintResult();
@@ -140,24 +83,34 @@ public class RDWSimulationManager : MonoBehaviour
     {
         while (!IsAllEpisodeEnd())
         {
-            Simulation();
+            for (int i = 0; i < redirectedUnit.Length; i++)
+                redirectedUnit[i].Simulation(redirectedUnit);
+
             yield return new WaitForFixedUpdate();
         }
 
         PrintResult();
     }
 
+    //public GameObject testPrefab;
+    //private Object2D testCube;
+    //private float testRotationSpeed = 60.0f;
+    //private float myRotation = 0.0f, previousRotation = 0.0f;
+
     public void Start()
     {
         GenerateSpaces();
         GenerateUnits();
 
-        if (simulationSetting.useVisualization) {
+        if (simulationSetting.useVisualization)
+        {
             Visualize();
             StartCoroutine(SlowSimulationRoutine());
         }
-        else {
+        else
+        {
             FastSimulationRoutine();
         }
     }
+
 }

@@ -80,7 +80,7 @@ public class Polygon2D : Object2D
         return vertices[index];
     }
 
-    public override bool IsIntersect(Object2D geometry)
+    public override bool IsIntersect(Object2D geometry, float epsilon = 0)
     {
         if(geometry is LineSegment2D)
         {
@@ -107,14 +107,25 @@ public class Polygon2D : Object2D
         }
     }
 
-    public override bool IsInside(Vector2 point)
+    public override bool IsInside(Vector2 point, float bound = 0)
     { // point는 로컬 좌표계 기준
+        float epsilon = bound;
+        Vector2[] signVector =
+        {
+            new Vector2(1, 1),
+            new Vector2(-1, 1),
+            new Vector2(-1, -1),
+            new Vector2(1, -1)
+        };
+
         Ray2D ray = new Ray2D(point, Vector2.right);
         int numOfIntersect = 0;
 
         for (int i = 0; i < vertices.Count; i++)
         {
-            LineSegment2D boundary = new LineSegment2D(vertices[i], vertices[(i + 1) % 4]);
+            Vector2 p1 = vertices[i] - signVector[i] * epsilon;
+            Vector2 p2 = vertices[(i + 1) % 4] - signVector[(i + 1) % 4] * epsilon;
+            LineSegment2D boundary = new LineSegment2D(p1, p2);
 
             Vector2 result;
             if (boundary.IsIntersect(ray, out result, "exclude"))

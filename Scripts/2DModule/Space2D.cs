@@ -22,6 +22,16 @@ public class Space2D
         this.obstacles = new List<Object2D>(otherSpace.obstacles);
     }
 
+    public Space2D(Object2D space)
+    {
+        if (space is Polygon2D) // TODO: 부모와 자식 클래스 형변환이 올바르게 되도록 정리
+            this.space = new Polygon2D((Polygon2D)space);
+        else
+            this.space = new Object2D(space);
+
+        this.obstacles = new List<Object2D>();
+    }
+
     public Space2D(Object2D space, List<Object2D> obstacles)
     {
         if(space is Polygon2D) // TODO: 부모와 자식 클래스 형변환이 올바르게 되도록 정리
@@ -137,9 +147,9 @@ public class Space2D
         }
     }
 
-    public bool IsInside(Vector2 samplingPosition)
+    public bool IsInside(Vector2 samplingPosition, float bound)
     {
-        return space.IsInside(samplingPosition);
+        return space.IsInside(samplingPosition, bound);
     }
 
     public  bool IsReallyInside(Vector2 userPosition, Vector2 samplingPosition)

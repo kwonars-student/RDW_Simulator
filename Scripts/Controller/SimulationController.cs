@@ -6,132 +6,187 @@ using UnityEngine;
 public class SimulationController
 {
     Episode episode;
-    float rotationSpeed = 60.0f;
-    float translationSpeed = 4.0f;
-    float maxRotTime, maxTransTime, remainRotTime, remainTransTime;
-    bool isFirst = true, initializing = false, isFirst2 = true;
-    float signAngle = 0.0f;
-    Vector2 directionToTarget = Vector2.zero;
+    float rotationSpeed;
+    float translationSpeed;
+    //float maxRotTime, maxTransTime, remainRotTime, remainTransTime;
+    bool isFirst = true, initializing = false, isFirst2 = true, isFirst3 = true;
+    float initialAngleDirection = 0.0f;
+    float epsilonRotation;
+    float epsilonTranslation;
+    Vector2 initialToTarget;
+    Vector2 targetPosition;
+    Vector2 virtualTargetDirection = Vector2.zero;
+    Vector2 realTargetDirection = Vector2.zero;
+    Vector2 virtualTargetPosition;
+    Vector2 realTargetPosition;
+    float InitialAngle, initialDistance;
 
     [HideInInspector]
     public float deltaRotation;
     [HideInInspector]
     public Vector2 deltaPosition;
 
-    private Vector2 previousPosition, previousForward;
+    private Vector2 previousPosition;
+
+
+    private float previousRotation;
 
     public SimulationController() {
         this.episode = new Episode();
     }
 
-    public SimulationController(Episode episode)
-    {
+    public SimulationController(Episode episode, float translationSpeed, float rotationSpeed) {
         this.episode = episode;
+        this.translationSpeed = translationSpeed;
+        this.rotationSpeed = rotationSpeed;
+        epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+        epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
     }
 
     public void UpdateCurrentState(Transform2D virtualUserTransform) {
-        deltaPosition = (virtualUserTransform.localPosition - previousPosition) / Time.deltaTime;
-        deltaRotation = Vector2.SignedAngle(previousForward, virtualUserTransform.forward) / Time.deltaTime;
+        deltaPosition = (virtualUserTransform.localPosition - previousPosition) / Time.fixedDeltaTime;
+        deltaRotation = (virtualUserTransform.localRotation - previousRotation) / Time.fixedDeltaTime;
         previousPosition = virtualUserTransform.localPosition;
-        previousForward = virtualUserTransform.forward;
-
+        previousRotation = virtualUserTransform.localRotation;
     }
 
     public void ResetCurrentState(Transform2D virtualUserTransform) {
         deltaPosition = Vector2.zero;
         deltaRotation = 0;
         previousPosition = virtualUserTransform.localPosition;
-        previousForward = virtualUserTransform.forward;
+        previousRotation = virtualUserTransform.localRotation;
     }
 
-    public (Vector2, float) GetDelta()
+    public (Vector2, float) GetDelta(Vector2 directionToTarget)
     {
         return (deltaPosition, deltaRotation);
+        //Vector2 retTrans = Vector2.zero;
+        //float retRot = 0;
+
+        //if (deltaPosition.magnitude > (translationSpeed - 0.1f))
+        //{
+        //    retTrans = directionToTarget * translationSpeed;
+        //}
+        //else
+        //{
+        //    retTrans = deltaPosition;
+        //}
+
+        //if (Mathf.Abs(deltaRotation) > (rotationSpeed - 0.1f))
+        //{
+        //    retRot = Mathf.Sign(deltaRotation) * rotationSpeed;
+        //}
+        //else
+        //{
+        //    retRot = deltaRotation;
+        //}
+
+        //return (retTrans, retRot);
     }
 
-    public (Vector2, float) VirtualMove(Object2D virtualUser, Space2D virtualSpace) {
+    public void SyncDirection(Object2D virtualUser, Vector2 virtualTargetDirection)
+    {
+        if (virtualTargetDirection.magnitude > 1)
+            virtualTargetDirection = virtualTargetDirection.normalized;
+
+        virtualUser.transform.forward = virtualTargetDirection;
+        if (virtualUser.gameObject != null) virtualUser.gameObject.transform.forward = Utility.Cast2Dto3D(virtualTargetDirection);
+    }
+
+    public void SyncPosition(Object2D virtualUser, Vector2 virtualTargetPosition)
+    {
+        virtualUser.transform.localPosition = virtualTargetPosition;
+        if (virtualUser.gameObject != null) virtualUser.gameObject.transform.localPosition = Utility.Cast2Dto3D(virtualTargetPosition);
+    }
+
+    public (Vector2, float) VirtualMove(Object2D realUser, Object2D virtualUser, Space2D virtualSpace)
+    {
         Transform2D virtualUserTransform = virtualUser.transform;
 
-        if(!initializing)
+        if (!initializing)
         {
             ResetCurrentState(virtualUserTransform);
             initializing = false;
         }
 
-        if (episode.IsNotEnd()) {
+        if (episode.IsNotEnd())
+        {
             if (isFirst)
             {
                 isFirst = false;
+                targetPosition = episode.GetTarget(virtualUserTransform, virtualSpace);
+                initialToTarget = targetPosition - virtualUserTransform.localPosition;
+                float InitialAngle = Vector2.SignedAngle(virtualUserTransform.forward, initialToTarget);
+                float initialDistance = Vector2.Distance(virtualUserTransform.localPosition, targetPosition);
 
-                Vector2 targetPosition = episode.GetTarget(virtualUserTransform, virtualSpace);
-                directionToTarget = targetPosition - virtualUserTransform.localPosition;
-                float distance = directionToTarget.magnitude;
-                float angle = Vector2.Angle(virtualUserTransform.forward, directionToTarget);
-                signAngle = Mathf.Sign(Vector2.SignedAngle(virtualUserTransform.forward, directionToTarget));
+                virtualTargetDirection = Matrix3x3.CreateRotation(InitialAngle) * virtualUser.transform.forward; // target을 향하는 direction(forward)를 구함
+                //realTargetDirection = Matrix3x3.CreateRotation(InitialAngle) * realUser.transform.forward;
 
-                //Debug.Log(string.Format("targetPosition: {0}", targetPosition));
-                //Debug.Log(string.Format("virtualUserTransform.localPosition: {0}", virtualUserTransform.localPosition));
+                virtualTargetPosition = virtualUser.transform.localPosition + virtualTargetDirection * initialDistance; // target에 도달하는 position을 구함
+                //realTargetPosition = realUser.transform.localPosition + realTargetDirection * initialDistance;
 
-                maxRotTime = angle / rotationSpeed;
-                maxTransTime = distance / translationSpeed;
-                remainRotTime = 0.0f;
-                remainTransTime = 0.0f;
+                initialAngleDirection = Mathf.Sign(InitialAngle);
             }
 
-            //Debug.Log("------ Start ------");
-            //Debug.Log(string.Format("virtualUserTransform.forward: {0}", virtualUserTransform.forward));
-            //Debug.Log(string.Format("directionToTarget: {0}", directionToTarget));
-            //Debug.Log(string.Format("signAngle: {0}", signAngle));
-            //Debug.Log("------ End ------");
+            float distance = (targetPosition - virtualUserTransform.localPosition).magnitude;
+            float angle = Vector2.SignedAngle(virtualUserTransform.forward, initialToTarget);
 
-            if (remainRotTime < maxRotTime)
+            if (Mathf.Abs(angle) >= epsilonRotation)
             {
-                virtualUser.Rotate(signAngle * rotationSpeed * Time.deltaTime);
-                remainRotTime += Time.deltaTime;
+                virtualUser.Rotate(initialAngleDirection * rotationSpeed * Time.fixedDeltaTime);
             }
-            else if (remainTransTime < maxTransTime)
+            else if (distance >= epsilonTranslation)
             {
-                if(isFirst2 && directionToTarget != Vector2.zero)
+                if (isFirst2) // 방향을 동기화
                 {
-                    virtualUserTransform.forward = directionToTarget;
                     isFirst2 = false;
+                    SyncDirection(virtualUser, virtualTargetDirection);
                 }
-
-                virtualUser.Translate(virtualUserTransform.forward * translationSpeed * Time.deltaTime, Space.World);
-                remainTransTime += Time.deltaTime;
+                else
+                {
+                    virtualUser.Translate(virtualUserTransform.forward * translationSpeed * Time.fixedDeltaTime, Space.World);
+                }
             }
             else
             {
-                episode.DeleteTarget();
-                isFirst = true;
-                isFirst2 = true;
+                if(isFirst3) // 위치를 동기화
+                {
+                    isFirst3 = false;
+                    SyncPosition(virtualUser, virtualTargetPosition);
+                }
+                else
+                {
+                    episode.DeleteTarget();
+
+                    //Debug.Log(string.Format("realUser: {0}", realUser.transform));
+                    //Debug.Log(string.Format("virtualUser: {0}", virtualUser.transform));
+
+                    isFirst = true;
+                    isFirst2 = true;
+                    isFirst3 = true;
+                }
             }
         }
 
         UpdateCurrentState(virtualUserTransform);
 
-        return GetDelta();
+        return GetDelta(virtualUserTransform.forward);
     }
 
     public (Redirector.GainType, float) RealMove(Object2D realUser, Redirector.GainType type, float degree) {
         Transform2D realUserTransform = realUser.transform;
-
-        //(Redirector.GainType type, float degree) = redirectedUnit.GetRedirector().ApplyRedirection(realUser, deltaPosition, deltaRotation);
         float appliedGain = 0;
 
         switch (type) {
             case Redirector.GainType.Translation:
-                //appliedGain = Math.Abs(redirectedUnit.GetRedirector().GetTranslationGain());
-                realUser.Translate(realUserTransform.forward * degree * Time.deltaTime, Space.World);
+                realUser.Translate(realUserTransform.forward * degree * Time.fixedDeltaTime, Space.World);
                 break;
             case Redirector.GainType.Rotation:
-                //appliedGain = Math.Abs(redirectedUnit.GetRedirector().GetRotationGain());
-                realUser.Rotate(degree * Time.deltaTime);
+                realUser.Rotate(degree * Time.fixedDeltaTime);
                 break;
             case Redirector.GainType.Curvature:
-                //appliedGain = Math.Abs(redirectedUnit.GetRedirector().GetCurvatureGain());
-                realUser.Translate(realUserTransform.forward * deltaPosition.magnitude * Time.deltaTime, Space.World);
-                realUser.Rotate(degree * Time.deltaTime);
+                realUser.Translate(realUserTransform.forward * deltaPosition.magnitude * Time.fixedDeltaTime, Space.World);
+                realUser.Rotate(degree * Time.fixedDeltaTime);
                 break;
             default:
                 break;

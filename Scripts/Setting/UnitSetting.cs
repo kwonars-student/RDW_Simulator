@@ -19,6 +19,8 @@ public class UnitSetting
     public bool useRandomStart;
     public Vector2 realStartPosition;
     public Vector2 virtualStartPosition;
+    public float translationSpeed;
+    public float rotationSpeed;
     private RedirectedUnit unitInstance;
 
 
@@ -43,7 +45,7 @@ public class UnitSetting
 
     public SimulationController GetController()
     {
-        return new SimulationController(GetEpisode());
+        return new SimulationController(GetEpisode(), translationSpeed, rotationSpeed);
     }
 
     public Redirector GetRedirector() {

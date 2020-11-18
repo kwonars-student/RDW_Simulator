@@ -35,7 +35,7 @@ public class LineSegment2D : Object2D
         return string.Format("p1: {0}, p2: {1}", p1, p2);
     }
 
-    public override bool IsIntersect(Object2D geometry)
+    public override bool IsIntersect(Object2D geometry, float epsilon = 0)
     {
         if(geometry is LineSegment2D)
         {

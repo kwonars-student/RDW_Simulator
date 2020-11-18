@@ -19,6 +19,45 @@ public class Utility
         return new Vector2(_x, _y);
     }
 
+    public static void SyncDirection(Object2D virtualUser, Object2D realUser, Vector2 virtualTargetDirection, Vector2 realTargetDirection) // 회전 오차로 인한 시뮬레이션 정확도 저하를 막기 위해 Direction을 동기화 시켜줌
+    {
+        if (virtualTargetDirection.magnitude > 1)
+            virtualTargetDirection = virtualTargetDirection.normalized;
+        if (realTargetDirection.magnitude > 1)
+            realTargetDirection = realTargetDirection.normalized;
+
+        //Debug.Log(string.Format("Before virtualUser.transform: {0}", virtualUser.transform));
+
+        virtualUser.transform.forward = virtualTargetDirection;
+        realUser.transform.forward = realTargetDirection;
+
+        //Debug.Log(string.Format("After virtualUser.transform.forward: {0}", virtualUser.transform));
+
+        if(virtualUser.gameObject != null) virtualUser.gameObject.transform.forward = Utility.Cast2Dto3D(virtualTargetDirection);
+        if(realUser.gameObject != null) realUser.gameObject.transform.forward = Utility.Cast2Dto3D(realTargetDirection);
+    }
+
+    //public static void SyncPosition(Object2D virtualUser, Object2D realUser, float virtualTargetDistance, float realTargetDistance)
+    //{
+    //    virtualUser.transform.localPosition = virtualTargetPosition;
+    //    realUser.transform.localPosition = realTargetPosition;
+
+    //    virtualTargetPosition = virtualUser.transform.localPosition + virtualTargetDirection * initialDistance;
+    //    realTargetPosition = realUser.transform.localPosition + realTargetDirection * initialDistance;
+
+    //    if (virtualUser.gameObject != null) virtualUser.gameObject.transform.localPosition = Utility.Cast2Dto3D(virtualTargetPosition);
+    //    if (realUser.gameObject != null) realUser.gameObject.transform.localPosition = Utility.Cast2Dto3D(realTargetPosition);
+    //}
+
+    public static void SyncPosition(Object2D virtualUser, Object2D realUser, Vector2 virtualTargetPosition, Vector2 realTargetPosition)
+    {
+        virtualUser.transform.localPosition = virtualTargetPosition;
+        realUser.transform.localPosition = realTargetPosition;
+
+        if (virtualUser.gameObject != null) virtualUser.gameObject.transform.localPosition = Utility.Cast2Dto3D(virtualTargetPosition);
+        if (realUser.gameObject != null) realUser.gameObject.transform.localPosition = Utility.Cast2Dto3D(realTargetPosition);
+    }
+
     public static float sampleUniform(float min, float max) {
         //return a + Random.value * (b - a);
         return Random.Range(min, max);

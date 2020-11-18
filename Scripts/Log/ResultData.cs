@@ -8,12 +8,14 @@ public class ResultData
     private int episodeID, unitID;
     private float sumOfAppliedTranslationGain, sumOfAppliedRotationGain, sumOfAppliedCurvatureGain;
     private float elapsedTime;
+    public int virtualReset;
 
     public ResultData() {
         totalReset = wallReset = userReset = 0;
         sumOfAppliedTranslationGain = sumOfAppliedRotationGain = sumOfAppliedCurvatureGain = 0.0f;
         episodeID = unitID = -1;
         elapsedTime = 0;
+        virtualReset = 0;
     }
 
     public void setEpisodeID(int episodeID)
@@ -59,6 +61,12 @@ public class ResultData
         totalReset += 1;
     }
 
+    public void AddUserReset()
+    {
+        userReset += 1;
+        totalReset += 1;
+    }
+
     public override string ToString()
     {
         string result = "";
@@ -66,7 +74,8 @@ public class ResultData
         result += string.Format("UnitID: {0}, EpisodeID: {1}\n", unitID, episodeID);
         result += string.Format("totalReset: {0}, wallReset: {1}, userReset: {2}\n", totalReset, wallReset, userReset);
         result += string.Format("totalTranslationGain: {0}, totalRotationGain: {1}, totalCurvatureGain: {2}\n", sumOfAppliedTranslationGain, sumOfAppliedRotationGain, sumOfAppliedCurvatureGain);
-        result += string.Format("elapsedTime: {0}", elapsedTime);
+        result += string.Format("elapsedTime: {0}\n", elapsedTime);
+        result += string.Format("virtualReset: {0}", virtualReset);
 
         return result;
     }

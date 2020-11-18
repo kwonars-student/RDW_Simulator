@@ -6,8 +6,6 @@ public class Episode
 {
     protected static int totalID = 0;
     protected int id;
-    //protected SimulationController simulationController;
-    //protected Space2D virtualSpace;
     protected Vector2? currentTargetPosition;
     protected int currentEpisodeIndex;
     protected int episodeLength;
@@ -19,8 +17,6 @@ public class Episode
         currentEpisodeIndex = 0;
         currentTargetPosition = null;
         this.episodeLength = 0;
-        //simulationController = null;
-        //virtualSpace = null;
     }
 
     public Episode(int episodeLength)
@@ -31,39 +27,10 @@ public class Episode
         this.episodeLength = episodeLength;
     }
 
-    //public Episode(Space2D virtualSpace, int episodeLength)
-    //{
-    //    id = totalID++;
-    //    this.episodeLength = episodeLength;
-    //    currentEpisodeIndex = 0;
-    //    currentTargetPosition = null;
-    //    simulationController = null;
-    //    this.virtualSpace = virtualSpace;
-    //}
-
-    //public void SetReferences(SimulationController simulationController)
-    //{
-    //    this.simulationController = simulationController;
-    //}
-
-    //public Episode(int episodeLength) {
-    //    id = totalID++;
-    //    this.episodeLength = episodeLength;
-    //    currentEpisodeIndex = 0;
-    //    currentTargetPosition = null;
-    //    simulationController = null;
-    //}
-
     public int getID()
     {
         return id;
     }
-
-    //public void SetReferences(SimulationController simulationController, Space2D virtualSpace, GameObject targetPrefab) {
-    //    this.simulationController = simulationController;
-    //    this.virtualSpace = virtualSpace;
-    //    this.targetPrefab = targetPrefab;
-    //}
 
     protected virtual void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace) {}
 
@@ -82,7 +49,6 @@ public class Episode
     public Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace) {
         if (!currentTargetPosition.HasValue) {
             GenerateEpisode(virtualUserTransform, virtualSpace);
-            //InstaniateTarget();
         }
 
         return currentTargetPosition.Value;

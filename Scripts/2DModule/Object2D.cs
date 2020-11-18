@@ -58,7 +58,11 @@ public class Object2D
         Quaternion rotation = Quaternion.Euler(0, -transform.localRotation, 0);
         gameObject = Object.Instantiate(prefab); // TODO: 잘 복사한건가?
         gameObject.name = name;
-        if(parentObject.gameObject != null)
+        if(parentObject == null)
+        {
+            gameObject.transform.parent = null;
+        }
+        else if (parentObject.gameObject != null)
         {
             gameObject.transform.parent = parentObject.gameObject.transform;
         }
@@ -66,12 +70,12 @@ public class Object2D
         gameObject.transform.localRotation = rotation;
     }
 
-    public virtual bool IsIntersect(Object2D geometry)
+    public virtual bool IsIntersect(Object2D geometry, float epsilon=0)
     {
         throw new System.NotImplementedException();
     }
 
-    public virtual bool IsInside(Vector2 point)
+    public virtual bool IsInside(Vector2 point, float bound=0)
     {
         return false;
     }

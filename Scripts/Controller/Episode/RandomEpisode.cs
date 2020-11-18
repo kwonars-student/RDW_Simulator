@@ -22,7 +22,7 @@ public class RandomEpisode : Episode
             //Vector3 sampleForward = Quaternion.AngleAxis(angle, Vector3.up) * simulationController.GetUserVirtualTransform().forward;
 
             samplingPosition = userPosition + sampleForward * distance; // local 좌표계에서 절대 위치 기준
-        } while (!virtualSpace.IsReallyInside(userPosition, samplingPosition)); // while (!virtualSpace.IsInside(samplingPosition));
+        } while (!virtualSpace.IsInside(samplingPosition, 0.1f));  // while (!virtualSpace.IsReallyInside(userPosition, samplingPosition));
 
         currentTargetPosition = samplingPosition;
     }

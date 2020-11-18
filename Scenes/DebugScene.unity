@@ -151,57 +151,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simulationSetting:
-    useVisualization: 1
+    useVisualization: 0
     prefabSetting: {fileID: 11400000, guid: 44d2741166066a84ca3987e75f90a062, type: 2}
     realSpaceSetting:
       spaceObject:
-        position: {x: 0, y: 0}
-        rotation: 0
-        useRegularPolygon: 1
-        count: 4
-        size: 10
-        vertices: []
-      obstacleObjects: []
-    virtualSpaceSetting:
-      spaceObject:
-        position: {x: 0, y: 0}
+        position: {x: 10, y: 10}
         rotation: 0
         useRegularPolygon: 1
         count: 4
         size: 20
         vertices: []
-      obstacleObjects:
-      - position: {x: 0, y: 0}
+      obstacleObjects: []
+    virtualSpaceSetting:
+      spaceObject:
+        position: {x: 30, y: 10}
         rotation: 0
-        useRegularPolygon: 0
-        count: 0
-        size: 0
+        useRegularPolygon: 1
+        count: 4
+        size: 20
         vertices: []
+      obstacleObjects: []
     unitSettings:
-    - redirectType: 1
+    - redirectType: 0
       resetType: 1
-      episodeType: 1
-      episodeLength: 1000
-      episodeFileName: 
+      episodeType: 0
+      episodeLength: 10000
+      episodeFileName: episode_1
       useRandomStart: 0
       realStartPosition: {x: 0, y: 0}
       virtualStartPosition: {x: 0, y: 0}
-    - redirectType: 1
-      resetType: 1
-      episodeType: 1
-      episodeLength: 1000
-      episodeFileName: 
-      useRandomStart: 0
-      realStartPosition: {x: -4, y: -4}
-      virtualStartPosition: {x: -4, y: -4}
-    - redirectType: 1
-      resetType: 1
-      episodeType: 1
-      episodeLength: 1000
-      episodeFileName: 
-      useRandomStart: 0
-      realStartPosition: {x: -2, y: 2}
-      virtualStartPosition: {x: -2, y: 2}
+      translationSpeed: 4
+      rotationSpeed: 60
 --- !u!4 &591810196
 Transform:
   m_ObjectHideFlags: 0
@@ -334,7 +314,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 0
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1

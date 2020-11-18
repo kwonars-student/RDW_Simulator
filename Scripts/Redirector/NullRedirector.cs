@@ -8,11 +8,11 @@ public class NullRedirector : Redirector
         float degree = 0;
         GainType type = GainType.Undefined;
 
-        if (deltaPosition.magnitude > 0.1f) {
+        if (deltaPosition.magnitude > 0.01f) {
             degree = deltaPosition.magnitude;
             type = GainType.Translation;
         }
-        else if (Mathf.Abs(deltaRotation) > 0.1f) {
+        else if (Mathf.Abs(deltaRotation) > 0.01f) {
             degree = deltaRotation;
             type = GainType.Rotation;
         }
