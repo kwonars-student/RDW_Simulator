@@ -9,7 +9,7 @@ public class Episode
     protected Vector2? currentTargetPosition;
     protected int currentEpisodeIndex;
     protected int episodeLength;
-    protected GameObject targetPrefab = null;
+    public GameObject targetPrefab = null;
     protected GameObject targetObject = null;
 
     public Episode() {
@@ -25,6 +25,16 @@ public class Episode
         currentEpisodeIndex = 0;
         currentTargetPosition = null;
         this.episodeLength = episodeLength;
+    }
+
+    public int GetCurrentEpisodeIndex()
+    {
+        return currentEpisodeIndex;
+    }
+
+    public int GetEpisodeLength()
+    {
+        return episodeLength;
     }
 
     public int getID()
@@ -49,6 +59,7 @@ public class Episode
     public Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace) {
         if (!currentTargetPosition.HasValue) {
             GenerateEpisode(virtualUserTransform, virtualSpace);
+            //InstaniateTarget();
         }
 
         return currentTargetPosition.Value;
@@ -58,5 +69,9 @@ public class Episode
         GameObject.Destroy(targetObject);
         currentEpisodeIndex += 1;
         currentTargetPosition = null;
+        //RedirectedUnit.debugTargetPositionList.Clear();
+        //RedirectedUnit.debugVirtualPositionList.Clear();
+        //RedirectedUnit.debugRealPositionList.Clear();
+        //RDWSimulationManager.remainTime = 0;
     }
 }

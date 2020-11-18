@@ -8,7 +8,7 @@ public class SimulationController
     Episode episode;
     float rotationSpeed;
     float translationSpeed;
-    //float maxRotTime, maxTransTime, remainRotTime, remainTransTime;
+    float maxRotTime, maxTransTime, remainRotTime, remainTransTime;
     bool isFirst = true, initializing = false, isFirst2 = true, isFirst3 = true;
     float initialAngleDirection = 0.0f;
     float epsilonRotation;
@@ -39,8 +39,10 @@ public class SimulationController
         this.episode = episode;
         this.translationSpeed = translationSpeed;
         this.rotationSpeed = rotationSpeed;
-        epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
-        epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+        //epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+        epsilonRotation = 0.5f;
+        //epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+        epsilonTranslation = 0.5f;
     }
 
     public void UpdateCurrentState(Transform2D virtualUserTransform) {
@@ -125,17 +127,23 @@ public class SimulationController
                 virtualTargetPosition = virtualUser.transform.localPosition + virtualTargetDirection * initialDistance; // target에 도달하는 position을 구함
                 //realTargetPosition = realUser.transform.localPosition + realTargetDirection * initialDistance;
 
+                maxRotTime = Mathf.Abs(InitialAngle) / rotationSpeed;
+                maxTransTime = initialDistance / translationSpeed;
+                remainRotTime = 0;
+                remainTransTime = 0;
+
                 initialAngleDirection = Mathf.Sign(InitialAngle);
             }
 
             float distance = (targetPosition - virtualUserTransform.localPosition).magnitude;
             float angle = Vector2.SignedAngle(virtualUserTransform.forward, initialToTarget);
 
-            if (Mathf.Abs(angle) >= epsilonRotation)
+            if (remainRotTime < maxRotTime)
             {
                 virtualUser.Rotate(initialAngleDirection * rotationSpeed * Time.fixedDeltaTime);
+                remainRotTime += Time.fixedDeltaTime;
             }
-            else if (distance >= epsilonTranslation)
+            else if (remainTransTime < maxTransTime)
             {
                 if (isFirst2) // 방향을 동기화
                 {
@@ -145,6 +153,7 @@ public class SimulationController
                 else
                 {
                     virtualUser.Translate(virtualUserTransform.forward * translationSpeed * Time.fixedDeltaTime, Space.World);
+                    remainTransTime += Time.fixedDeltaTime;
                 }
             }
             else

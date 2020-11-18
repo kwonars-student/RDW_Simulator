@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Resetter
 {
+    protected static float translationSpeed;
+    protected static float rotationSpeed;
     //protected RedirectedUnit redirectedUnit;
     //protected Space2D realSpace;
     //public bool isComplete;
@@ -16,10 +18,16 @@ public class Resetter
         //realSpace = null;
         //isComplete = false;
         isFirst = true;
-        float translationSpeed = 4.0f;
-        float rotationSpeed = 60.0f;
+        
         epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
         epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+
+    }
+
+
+    public static void SetTransRotSpeed(float translationSpeed, float rotationSpeed){
+        Resetter.translationSpeed = translationSpeed;
+        Resetter.rotationSpeed = rotationSpeed;
     }
 
     //public Resetter(Space2D space) {
@@ -75,7 +83,6 @@ public class Resetter
     public bool NeedUserReset(Object2D realUser, List<Object2D> otherUsers)
     {
         bool flag = false;
-        float translationSpeed = 4;
         float epsilon = translationSpeed * Time.fixedDeltaTime;
 
         for (int i = 0; i < otherUsers.Count; i++)
@@ -132,7 +139,6 @@ public class Resetter
 
     public bool NeedUserReset(Object2D realUser, Object2D otherUser)
     {
-        float translationSpeed = 4;
         return realUser.IsIntersect(otherUser, translationSpeed * Time.fixedDeltaTime);
     }
 }

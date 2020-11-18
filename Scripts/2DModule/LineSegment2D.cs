@@ -93,7 +93,7 @@ public class LineSegment2D : Object2D
     //    return true;
     //}
 
-    public bool IsIntersect(Ray2D ray, out Vector2 result, string option = "default")
+    public bool IsIntersect(Ray2D ray, out Vector2 result, string option = "default", float epsilon = 0)
     {
         Vector2 p3 = ray.origin, p4 = ray.origin + ray.direction;
         float under = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
@@ -107,16 +107,33 @@ public class LineSegment2D : Object2D
         float t = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / under; // this line
         float s = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / under; // other ray
 
-        if (option == "exclude" && (t < 0.0 || t >= 1.0 || s <= 0.0)) // exclude last point of this line(p2)
+        if (option == "exclude")
         {
-            result = Vector2.positiveInfinity;
-            return false;
+            if((t < 0.0 || t >= 1.0 || s <= 0.0))
+            {
+                result = Vector2.positiveInfinity;
+                return false;
+            }
         }
-        else if (t < 0.0 || t > 1.0 || s < 0.0)
+        else
         {
-            result = Vector2.positiveInfinity;
-            return false;
+            if (t < 0.0 || t > 1.0 || s < 0.0)
+            {
+                result = Vector2.positiveInfinity;
+                return false;
+            }
         }
+
+        //if (option == "exclude" && (t < 0.0 || t >= 1.0 || s <= 0.0)) // exclude last point of this line(p2)
+        //{
+        //    result = Vector2.positiveInfinity;
+        //    return false;
+        //}
+        //else if (t < 0.0 || t > 1.0 || s < 0.0)
+        //{
+        //    result = Vector2.positiveInfinity;
+        //    return false;
+        //}
 
         result = new Vector2(p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y));
         return true;

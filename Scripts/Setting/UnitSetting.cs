@@ -73,6 +73,8 @@ public class UnitSetting
     }
 
     public Resetter GetRestter() {
+
+        Resetter.SetTransRotSpeed(translationSpeed, rotationSpeed);
         Resetter resetter;
 
         switch (resetType) {

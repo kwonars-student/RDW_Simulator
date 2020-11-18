@@ -103,10 +103,10 @@ public class Transform2D
         this.localRotation = transform.localRotation;
         this.localScale = transform.localScale;
         this.parent = (transform.parent != null) ? new Transform2D(transform.parent) : null;
-        this.position = transform.position;
-        this.rotation = transform.rotation;
-        this.scale = transform.scale;
-        this.forward = transform.forward;
+        //this.position = transform.position;
+        //this.rotation = transform.rotation;
+        //this.scale = transform.scale;
+        //this.forward = transform.forward;
         this.transformMatrix = transform.transformMatrix;
     }
 

@@ -1,11 +1,15 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class RedirectedUnit
 {
+    public static List<Vector2> debugRealPositionList;
+    public static List<Vector2> debugTargetPositionList;
+    public static List<Vector2> debugVirtualPositionList;
     protected Redirector redirector;
     protected Resetter resetter;
-    protected SimulationController controller;
+    public SimulationController controller;
     protected Object2D realUser, virtualUser;
     protected Space2D realSpace, virtualSpace;
     public ResultData resultData;
@@ -43,6 +47,10 @@ public class RedirectedUnit
 
         realUser = new Circle2D(0.3f, realStartPosition, realSpace.space.transform); // TODO: 알아서 형변환 되게끔 수정
         virtualUser = new Circle2D(0.3f, virtualStartPosition, virtualSpace.space.transform);
+
+        if (debugRealPositionList == null) debugRealPositionList = new List<Vector2>();
+        if (debugTargetPositionList == null) debugTargetPositionList = new List<Vector2>();
+        if (debugVirtualPositionList == null) debugVirtualPositionList = new List<Vector2>();
     }
 
     public List<Object2D> GetUsers(RedirectedUnit[] otherUnits)
@@ -67,7 +75,10 @@ public class RedirectedUnit
         if (status == "WALL_RESET")
         {
             if (!resetter.NeedWallReset(realUser, realSpace))
+            {
                 status = "IDLE";
+                resetter.NeedWallReset(realUser, realSpace);
+            }
         }
         else if (status == "USER_RESET")
         {
@@ -93,29 +104,53 @@ public class RedirectedUnit
         return status;
     }
 
-    public bool NeedUserReset(RedirectedUnit[] otherUnits)
-    {
-        bool flag = false;
+    //public bool NeedUserReset(RedirectedUnit[] otherUnits)
+    //{
+    //    bool flag = false;
 
-        for (int i = 0; i < otherUnits.Length; i++)
-        {
-            if (this.id == otherUnits[i].GetID())
-                continue;
+    //    for (int i = 0; i < otherUnits.Length; i++)
+    //    {
+    //        if (this.id == otherUnits[i].GetID())
+    //            continue;
 
-            Object2D otherUser = otherUnits[i].GetRealUser();
+    //        Object2D otherUser = otherUnits[i].GetRealUser();
 
-            if (resetter.NeedUserReset(realUser, otherUser))
-            {
-                flag = true;
-            }
-        }
+    //        if (resetter.NeedUserReset(realUser, otherUser))
+    //        {
+    //            flag = true;
+    //        }
+    //    }
 
-        return flag;
-    }
+    //    return flag;
+    //}
 
     public void Simulation(RedirectedUnit[] otherUnits)
     {
         string currentStatus = CheckCurrentStatus(otherUnits);
+
+        //if(RDWSimulationManager.remainTime >= RDWSimulationManager.limitTime)
+        //{
+        //    foreach(Vector2 p in debugRealPositionList) {
+        //        Debug.Log(p);
+        //    }
+
+        //    throw new Exception();
+
+        //    //Debug.Log("[Space]");
+        //    //Debug.Log("RealSpace: " + realSpace.space.transform);
+        //    //Debug.Log("VirtualSpace: " + virtualSpace.space.transform);
+        //    //Debug.Log("[User]");
+        //    //Debug.Log("RealUser: " + realUser.transform);
+        //    //Debug.Log("VirtualUser: " + virtualUser.transform);
+        //    //Debug.Log("[Target Position]");
+        //    //Debug.Log(GetEpisode().GetTargetPosition());
+        //    //Debug.Log("[Current Epsiode]");
+        //    //Debug.Log(GetEpisode().GetCurrentEpisodeIndex());
+        //    //Debug.Log("[Epsiode Length]");
+        //    //Debug.Log(GetEpisode().GetEpisodeLength());
+        //    //Debug.Log(resultData);
+        //}
+
 
         switch (currentStatus)
         {
@@ -131,6 +166,11 @@ public class RedirectedUnit
             default:
                 break;
         }
+
+        //debugTargetPositionList.Add(GetEpisode().GetTargetPosition());
+        //debugVirtualPositionList.Add(virtualUser.transform.localPosition);
+        //debugRealPositionList.Add(realUser.transform.localPosition);
+        //RDWSimulationManager.remainTime += Time.fixedDeltaTime;
     }
 
     public void ApplyUserReset()
@@ -149,14 +189,6 @@ public class RedirectedUnit
         (Redirector.GainType type, float degree) = redirector.ApplyRedirection(realUser, deltaPosition, deltaRotation); // 왜곡시킬 값을 계산
         controller.RealMove(realUser, type, degree); // 실제 유저를 이동
 
-        //Debug.Log("");
-        //Debug.Log(string.Format("deltaPosition: {0}", deltaPosition));
-        //Debug.Log(string.Format("deltaRotation: {0}", deltaRotation));
-        //Debug.Log(realUser.transform);
-        //Debug.Log(virtualUser.transform);
-        //Debug.Log(realUser.gameObject.transform.localEulerAngles);
-        //Debug.Log(virtualUser.gameObject.transform.localEulerAngles);
-
         resultData.setGains(type, redirector.GetApplidedGain(type));
         resultData.AddElapsedTime(Time.fixedDeltaTime);
     }
@@ -174,6 +206,16 @@ public class RedirectedUnit
     public Resetter GetResetter()
     {
         return resetter;
+    }
+
+    public Space2D GetRealSpace()
+    {
+        return realSpace;
+    }
+
+    public Space2D GetVirtualSpace()
+    {
+        return virtualSpace;
     }
 
     public Object2D GetRealUser()
