@@ -330,39 +330,33 @@ MonoBehaviour:
     prefabSetting: {fileID: 11400000, guid: 44d2741166066a84ca3987e75f90a062, type: 2}
     realSpaceSetting:
       spaceObject:
-        position: {x: 0, y: 0}
+        position: {x: 5, y: 5}
         rotation: 0
-        useRegularPolygon: 0
+        useRegularPolygon: 1
         count: 0
-        size: 0
+        size: 10
         vertices: []
       obstacleObjects: []
     virtualSpaceSetting:
       spaceObject:
-        position: {x: 0, y: 0}
+        position: {x: 10, y: 10}
         rotation: 0
-        useRegularPolygon: 0
+        useRegularPolygon: 1
         count: 0
-        size: 0
+        size: 20
         vertices: []
       obstacleObjects: []
     unitSettings:
     - redirectType: 1
       resetType: 1
       episodeType: 1
-      episodeLength: 5
+      episodeLength: 10
       episodeFileName: 
       useRandomStart: 1
       realStartPosition: {x: 1, y: 1}
       virtualStartPosition: {x: -5, y: -5}
-    - redirectType: 1
-      resetType: 1
-      episodeType: 1
-      episodeLength: 10
-      episodeFileName: 
-      useRandomStart: 1
-      realStartPosition: {x: -1, y: -1}
-      virtualStartPosition: {x: 5, y: -5}
+      translationSpeed: 1.4
+      rotationSpeed: 100
 --- !u!4 &1807211603
 Transform:
   m_ObjectHideFlags: 0
