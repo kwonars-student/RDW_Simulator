@@ -326,7 +326,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simulationSetting:
-    useVisualization: 1
+    useVisualization: 0
     prefabSetting: {fileID: 11400000, guid: 44d2741166066a84ca3987e75f90a062, type: 2}
     realSpaceSetting:
       spaceObject:
@@ -350,7 +350,7 @@ MonoBehaviour:
     - redirectType: 1
       resetType: 1
       episodeType: 1
-      episodeLength: 10
+      episodeLength: 100
       episodeFileName: 
       useRandomStart: 1
       realStartPosition: {x: 1, y: 1}

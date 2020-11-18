@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class RDWSimulationManager : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class RDWSimulationManager : MonoBehaviour
 
     private RedirectedUnit[] redirectedUnit; //  각 unit들을 통제하는 변수
     Space2D realSpace, virtualSpace; // 실제 공간과 가상 공간에 대한 정보를 담은 변수
+
+    private StreamWriter writer;
 
     public void GenerateSpaces() 
     {
@@ -73,9 +76,12 @@ public class RDWSimulationManager : MonoBehaviour
         while (!IsAllEpisodeEnd())
         {
             for (int i = 0; i < redirectedUnit.Length; i++)
+            {
                 redirectedUnit[i].Simulation(redirectedUnit);
+                writer.WriteLine(redirectedUnit[i].GetRealUser().transform.localPosition.x.ToString() + ", " + redirectedUnit[i].GetRealUser().transform.localPosition.y.ToString());
+            }
+                
         }
-
         PrintResult();
     }
 
@@ -101,7 +107,9 @@ public class RDWSimulationManager : MonoBehaviour
     {
         GenerateSpaces();
         GenerateUnits();
-
+        string path = "Assets/tmp.txt";
+        writer = new StreamWriter(path);
+        
         if (simulationSetting.useVisualization)
         {
             Visualize();

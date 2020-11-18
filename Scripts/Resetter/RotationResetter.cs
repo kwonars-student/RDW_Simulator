@@ -32,12 +32,27 @@ public abstract class RotationResetter : Resetter
 
             Utility.SyncDirection(virtualUser, realUser, virtualTargetRotation, realTargetRotation);
 
-            realUser.transform.position = realUser.transform.position + realUser.transform.forward * 1;
-            if(realUser.gameObject != null) realUser.gameObject.transform.position = Utility.Cast2Dto3D(realUser.transform.position);
+            //realUser.transform.position = realUser.transform.position + realUser.transform.forward * 0.0285f;
+            if (realUser.transform.localPosition.x <= -5.0f)
+            {
+                realUser.transform.localPosition = new Vector2(-4.98f, realUser.transform.localPosition.y);
+            }
+            if (realUser.transform.localPosition.y <= -5.0f)
+            {
+                realUser.transform.localPosition = new Vector2(realUser.transform.localPosition.x, -4.98f);
+            }
+            if (realUser.transform.localPosition.x >= 5.0f)
+            {
+                realUser.transform.localPosition = new Vector2(4.98f, realUser.transform.localPosition.y);
+            }
+            if (realUser.transform.localPosition.y >= 5.0f)
+            {
+                realUser.transform.localPosition = new Vector2(realUser.transform.localPosition.x, 4.98f);
+            }
+            if (realUser.gameObject != null) realUser.gameObject.transform.position = Utility.Cast2Dto3D(realUser.transform.position);
 
             //Utility.SyncPosition(virtualUser, realUser, virtualUser.transform.localPosition, newRealPosition);
             bool isNeedReset = NeedWallReset(realUser, realSpace);
-
             //Debug.Log(virtualUser.transform);
             //Debug.Log(realUser.transform);
             ////Debug.Log(virtualUser.gameObject.transform.localPosition);
