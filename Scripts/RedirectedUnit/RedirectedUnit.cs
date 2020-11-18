@@ -175,12 +175,12 @@ public class RedirectedUnit
 
     public void ApplyUserReset()
     {
-        resetter.ApplyReset(realUser, virtualUser, realSpace); // 필요하면 User Reset과 Wall Reset의 방법을 다르게 만들 수 있도록 이런 식으로 구현
+        resetter.ApplyReset(realUser, virtualUser, realSpace,"User"); // 필요하면 User Reset과 Wall Reset의 방법을 다르게 만들 수 있도록 이런 식으로 구현
     }
 
     public void ApplyWallReset()
     {
-        resetter.ApplyReset(realUser, virtualUser, realSpace);
+        resetter.ApplyReset(realUser, virtualUser, realSpace,"Wall");
     }
 
     public void Move()

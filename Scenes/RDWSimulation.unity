@@ -326,7 +326,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simulationSetting:
-    useVisualization: 0
+    useVisualization: 1
     prefabSetting: {fileID: 11400000, guid: 44d2741166066a84ca3987e75f90a062, type: 2}
     realSpaceSetting:
       spaceObject:
@@ -339,7 +339,7 @@ MonoBehaviour:
       obstacleObjects: []
     virtualSpaceSetting:
       spaceObject:
-        position: {x: 10, y: 10}
+        position: {x: 30, y: 10}
         rotation: 0
         useRegularPolygon: 1
         count: 0
@@ -350,13 +350,14 @@ MonoBehaviour:
     - redirectType: 1
       resetType: 1
       episodeType: 1
-      episodeLength: 100
+      episodeLength: 20
       episodeFileName: 
       useRandomStart: 1
       realStartPosition: {x: 1, y: 1}
       virtualStartPosition: {x: -5, y: -5}
-      translationSpeed: 1.4
+      translationSpeed: 2
       rotationSpeed: 100
+  targetPrefab: {fileID: 0}
 --- !u!4 &1807211603
 Transform:
   m_ObjectHideFlags: 0

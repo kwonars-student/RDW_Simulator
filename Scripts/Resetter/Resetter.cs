@@ -13,23 +13,21 @@ public class Resetter
     protected float epsilonRotation, epsilonTranslation;
     private Vector2 realTargetRotation, virtualTargetRotation;
 
+    private float adjusmentEpsilon = 0.01f;
+
     public Resetter() {
         //redirectedUnit = null;
         //realSpace = null;
         //isComplete = false;
         isFirst = true;
-        
         epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
         epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
-
     }
-
 
     public static void SetTransRotSpeed(float translationSpeed, float rotationSpeed){
         Resetter.translationSpeed = translationSpeed;
         Resetter.rotationSpeed = rotationSpeed;
     }
-
     //public Resetter(Space2D space) {
     //    //realSpace = space;
     //    //isComplete = false;
@@ -41,7 +39,7 @@ public class Resetter
     //    this.redirectedUnit = redirectedUnit;
     //}
 
-    public virtual bool ApplyReset(Object2D realUser, Object2D virtualUser, Space2D realSpace) { return true; }
+    public virtual bool ApplyReset(Object2D realUser, Object2D virtualUser, Space2D realSpace, string resetType) { return true; }
 
     // TODO: UserReset도 모듈화?
     //public bool ApplyUserReset(Object2D realUser, Object2D virtualUser)
@@ -141,4 +139,96 @@ public class Resetter
     {
         return realUser.IsIntersect(otherUser, translationSpeed * Time.fixedDeltaTime);
     }
+
+    public void CalculationErrorAdjustment(Transform2D transform, string type, Polygon2D polygon)
+    {
+        List<Vector2> vertices = polygon.GetVertices();
+        float minDis = 1000.0f;
+        float dis = 0.0f;
+        Vector2 minVer1 = Vector2.zero;
+        Vector2 minVer2 = Vector2.zero;
+
+        switch (type)
+        {
+            case "Wall":
+                for (int i = 0; i < vertices.Count; i++)
+                {
+                    if (i + 1 == vertices.Count)
+                    {
+                        dis = GetMinimumDistanceToVertexLine(vertices[i], vertices[0], transform.localPosition);
+                    }
+                    else
+                    {
+                        dis = GetMinimumDistanceToVertexLine(vertices[i], vertices[i + 1], transform.localPosition);
+                    }
+
+                    if (dis < minDis)
+                    {
+                        minDis = dis;
+                        minVer1 = vertices[i];
+                        if (i + 1 == vertices.Count)
+                        {
+                            minVer2 = vertices[0];
+                        }
+                        else
+                        {
+                            minVer2 = vertices[i + 1];
+                        }
+                    }
+                }
+                Vector2 vertexLine = minVer2 - minVer1;
+                Vector2 pointLine = transform.localPosition - minVer1;
+                Vector3 dir = new Vector3(pointLine.x, 0.0f, pointLine.y);
+                Vector3 val = Vector3.Cross(dir.normalized, new Vector3(vertexLine.x, 0.0f, vertexLine.y));
+
+                if (val.y >= 0)
+                {
+                    Vector2 forwardVec = new Vector2(vertexLine.y, -vertexLine.x);
+                    transform.localPosition = transform.localPosition + forwardVec.normalized * (minDis + adjusmentEpsilon);
+                }
+                else
+                {
+                    Vector2 forwardVec = new Vector2(-vertexLine.y, vertexLine.x);
+                    transform.localPosition = transform.localPosition + forwardVec.normalized * (minDis + adjusmentEpsilon);
+                }
+                break;
+            case "User":
+                break;
+        }
+    }
+
+    private float GetMinimumDistanceToVertexLine(Vector2 S, Vector2 E, Vector2 P)
+    {
+        Vector2 SE = E - S;
+        Vector2 EP = P - E;
+        Vector2 SP = P - S;
+
+        float SEdotEP = (SE.x * EP.x + SE.y * EP.y);
+        float SEdotSP = (SE.x * SP.x + SE.y * SP.y);
+
+        float res = 0.0f;
+
+        if(SEdotEP > 0)
+        {
+            float y = P.y - E.y;
+            float x = P.x - E.x;
+            res = Mathf.Sqrt(x * x + y * y);
+        }else if(SEdotSP < 0)
+        {
+            float y = P.y - S.y;
+            float x = P.x - S.x;
+            res = Mathf.Sqrt(x * x + y * y);
+        }
+        else
+        {
+            float x1 = SE.x;
+            float y1 = SE.y;
+            float x2 = SP.x;
+            float y2 = SP.y;
+            float mod = Mathf.Sqrt(x1 * x1 + y1 * y1);
+            res = Mathf.Abs(x1 * y2 - y1 * x2) / mod;
+        }
+        return res;
+    }
+    
 }

@@ -34,7 +34,6 @@ public class CommunicatorTester : MonoBehaviour
     bool ReceiveData()
     {
         float[] result = socket.ReceiveData(1);
-        Debug.Log(result[0]);
         return true;
     }
 }

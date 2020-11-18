@@ -159,7 +159,7 @@ MonoBehaviour:
         rotation: 0
         useRegularPolygon: 1
         count: 4
-        size: 20
+        size: 10
         vertices: []
       obstacleObjects: []
     virtualSpaceSetting:
@@ -174,14 +174,16 @@ MonoBehaviour:
     unitSettings:
     - redirectType: 0
       resetType: 1
-      episodeType: 0
-      episodeLength: 10000
+      episodeType: 1
+      episodeLength: 100000
       episodeFileName: episode_1
       useRandomStart: 0
       realStartPosition: {x: 0, y: 0}
       virtualStartPosition: {x: 0, y: 0}
       translationSpeed: 4
       rotationSpeed: 60
+  targetPrefab: {fileID: 903321712500741410, guid: fbf2fac2e68e6f64c9bf6101bed0550f,
+    type: 3}
 --- !u!4 &591810196
 Transform:
   m_ObjectHideFlags: 0

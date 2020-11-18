@@ -6,7 +6,7 @@ using UnityEngine;
 public class Circle2D : Object2D
 {
     private float radius;
-
+    
     public Circle2D() : base()
     {
         this.radius = 0.0f;
