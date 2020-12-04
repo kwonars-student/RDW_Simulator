@@ -15,11 +15,11 @@ public abstract class RotationResetter : Resetter
 
     public override bool ApplyReset(Object2D realUser, Object2D virtualUser, Space2D realSpace, string resetType)
     {
-        if (isFirst)
+        if (isFirst) // 처음 reset
         {
-            RedirectedUnit.debugRealPositionList.Add(testInt * new Vector2(1000, 1000));
-            RedirectedUnit.debugVirtualPositionList.Add(testInt * new Vector2(1000, 1000));
-            RedirectedUnit.debugTargetPositionList.Add(testInt * new Vector2(1000, 1000));
+            // RedirectedUnit.debugRealPositionList.Add(testInt * new Vector2(1000, 1000)); // debug용
+            // RedirectedUnit.debugVirtualPositionList.Add(testInt * new Vector2(1000, 1000));
+            // RedirectedUnit.debugTargetPositionList.Add(testInt * new Vector2(1000, 1000));
 
             realTargetRotation = Matrix3x3.CreateRotation(targetAngle) * realUser.transform.forward;
             virtualTargetRotation = Matrix3x3.CreateRotation(ratio * targetAngle) * virtualUser.transform.forward;
@@ -35,9 +35,9 @@ public abstract class RotationResetter : Resetter
         }
         else
         {
-            RedirectedUnit.debugRealPositionList.Add(testInt * new Vector2(-1000, -1000));
-            RedirectedUnit.debugVirtualPositionList.Add(testInt * new Vector2(-1000, -1000));
-            RedirectedUnit.debugTargetPositionList.Add(testInt * new Vector2(-1000, -1000));
+            // RedirectedUnit.debugRealPositionList.Add(testInt * new Vector2(-1000, -1000));
+            // RedirectedUnit.debugVirtualPositionList.Add(testInt * new Vector2(-1000, -1000));
+            // RedirectedUnit.debugTargetPositionList.Add(testInt * new Vector2(-1000, -1000));
             testInt += 1;
 
             Utility.SyncDirection(virtualUser, realUser, virtualTargetRotation, realTargetRotation);

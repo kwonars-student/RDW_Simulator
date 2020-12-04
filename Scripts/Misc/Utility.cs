@@ -60,7 +60,7 @@ public class Utility
 
     public static float sampleUniform(float min, float max) {
         //return a + Random.value * (b - a);
-        Random.InitState(System.Convert.ToInt32(System.DateTime.Now.ToString("MMddHHmmss")));
+        //Random.InitState(System.Convert.ToInt32(System.DateTime.Now.ToString("MMddHHmmss")));
         return Random.Range(min, max);
     }
 

@@ -354,6 +354,26 @@ MonoBehaviour:
       episodeFileName: 
       useRandomStart: 1
       realStartPosition: {x: 1, y: 1}
+      virtualStartPosition: {x: 5, y: -5}
+      translationSpeed: 2
+      rotationSpeed: 100
+    - redirectType: 1
+      resetType: 1
+      episodeType: 1
+      episodeLength: 20
+      episodeFileName: 
+      useRandomStart: 1
+      realStartPosition: {x: -1, y: 1}
+      virtualStartPosition: {x: 0, y: -5}
+      translationSpeed: 2
+      rotationSpeed: 100
+    - redirectType: 1
+      resetType: 1
+      episodeType: 1
+      episodeLength: 20
+      episodeFileName: 
+      useRandomStart: 1
+      realStartPosition: {x: 2, y: 1}
       virtualStartPosition: {x: -5, y: -5}
       translationSpeed: 2
       rotationSpeed: 100

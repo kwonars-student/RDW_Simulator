@@ -77,11 +77,11 @@ public class RedirectedUnit
             if (!resetter.NeedWallReset(realUser, realSpace))
             {
                 status = "IDLE";
-                resetter.NeedWallReset(realUser, realSpace);
             }
         }
         else if (status == "USER_RESET")
         {
+            Debug.Log(string.Format("USER_RESET 진입"));
             if (!resetter.NeedUserReset(realUser, otherUsers))
                 status = "IDLE";
         }
@@ -94,6 +94,7 @@ public class RedirectedUnit
             }
             else if (resetter.NeedUserReset(realUser, otherUsers))
             {
+                Debug.Log(string.Format("USER_RESET 할당"));
                 resultData.AddUserReset();
                 status = "USER_RESET";
             }

@@ -102,12 +102,12 @@ public class Resetter
 
                     if (Vector2.Dot(b.forward, dir) >= 0) // b의 바라보는 방향 기준으로 a가 b보다 앞쪽에 있는 경우 b를 reset 시킨다
                     {
-                        Debug.Log(string.Format("{0}의 바라보는 방향 기준으로 {1}가 {0}보다 앞쪽에 있는 경우", "b", "a"));
+                        //Debug.Log(string.Format("{0}의 바라보는 방향 기준으로 {1}가 {0}보다 앞쪽에 있는 경우", "b", "a"));
                         flag = true;
                     }
                     else // b의 바라보는 방향 기준으로 a가 b보다 뒤쪽에 있는 경우 a를 reset 시킨다
                     {
-                        Debug.Log(string.Format("{0}의 바라보는 방향 기준으로 {1}가 {0}보다 뒤쪽에 있는 경우", "b", "a"));
+                        //Debug.Log(string.Format("{0}의 바라보는 방향 기준으로 {1}가 {0}보다 뒤쪽에 있는 경우", "b", "a"));
                         flag = false;
 
                         //if (targetUnit.status == "IDLE")// TODO: 다른 경우가 있는가? 즉, intersectedUnit이 IDLE이 아닐 가능성은?
@@ -119,7 +119,7 @@ public class Resetter
                 }
                 else // 둘다 reset 해야 되는 경우
                 {
-                    Debug.Log(string.Format("둘다 reset 해야 되는 경우"));
+                    //Debug.Log(string.Format("둘다 reset 해야 되는 경우"));
                     flag = true;
                     //resetThisUnit = true;
 
