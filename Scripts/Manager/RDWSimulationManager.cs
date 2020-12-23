@@ -64,10 +64,6 @@ public class RDWSimulationManager : MonoBehaviour
 
     public void PrintResult()
     {
-        //foreach (Vector2 p in RedirectedUnit.debugRealPositionList)
-        //{
-        //    Debug.Log(p);
-        //}
         for (int i = 0; i < redirectedUnit.Length; i++)
         {
             Debug.Log("[Space]");

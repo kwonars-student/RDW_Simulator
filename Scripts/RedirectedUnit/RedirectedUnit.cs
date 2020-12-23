@@ -4,9 +4,6 @@ using System;
 
 public class RedirectedUnit
 {
-    public static List<Vector2> debugRealPositionList;
-    public static List<Vector2> debugTargetPositionList;
-    public static List<Vector2> debugVirtualPositionList;
     protected Redirector redirector;
     protected Resetter resetter;
     public SimulationController controller;
@@ -16,10 +13,8 @@ public class RedirectedUnit
     static int totalID = 0;
     protected int id;
 
-    //private bool isFirst = true;
-    private string status;
-    //private bool resetThisUnit = false;
-    //private bool resetOtherUnit = false;
+    private string status, previousStatus;
+    private Object2D intersectedUser;
 
     public RedirectedUnit()
     {
@@ -47,10 +42,6 @@ public class RedirectedUnit
 
         realUser = new Circle2D(0.3f, realStartPosition, realSpace.space.transform); // TODO: 알아서 형변환 되게끔 수정
         virtualUser = new Circle2D(0.3f, virtualStartPosition, virtualSpace.space.transform);
-
-        if (debugRealPositionList == null) debugRealPositionList = new List<Vector2>();
-        if (debugTargetPositionList == null) debugTargetPositionList = new List<Vector2>();
-        if (debugVirtualPositionList == null) debugVirtualPositionList = new List<Vector2>();
     }
 
     public List<Object2D> GetUsers(RedirectedUnit[] otherUnits)
@@ -68,21 +59,18 @@ public class RedirectedUnit
         return otherUsers;
     }
 
-    public string CheckCurrentStatus(RedirectedUnit[] otherUnits)
+    public string CheckCurrentStatus(RedirectedUnit[] otherUnits, string previousStatus)
     {
         List<Object2D> otherUsers = GetUsers(otherUnits);
 
         if (status == "WALL_RESET")
         {
-            if (!resetter.NeedWallReset(realUser, realSpace))
-            {
+            if (previousStatus == "DONE")
                 status = "IDLE";
-            }
         }
         else if (status == "USER_RESET")
         {
-            Debug.Log(string.Format("USER_RESET 진입"));
-            if (!resetter.NeedUserReset(realUser, otherUsers))
+            if (previousStatus == "DONE")
                 status = "IDLE";
         }
         else if (status == "IDLE")
@@ -92,9 +80,8 @@ public class RedirectedUnit
                 resultData.AddWallReset();
                 status = "WALL_RESET";
             }
-            else if (resetter.NeedUserReset(realUser, otherUsers))
+            else if (resetter.NeedUserReset(realUser, otherUsers, out intersectedUser))
             {
-                Debug.Log(string.Format("USER_RESET 할당"));
                 resultData.AddUserReset();
                 status = "USER_RESET";
             }
@@ -105,53 +92,9 @@ public class RedirectedUnit
         return status;
     }
 
-    //public bool NeedUserReset(RedirectedUnit[] otherUnits)
-    //{
-    //    bool flag = false;
-
-    //    for (int i = 0; i < otherUnits.Length; i++)
-    //    {
-    //        if (this.id == otherUnits[i].GetID())
-    //            continue;
-
-    //        Object2D otherUser = otherUnits[i].GetRealUser();
-
-    //        if (resetter.NeedUserReset(realUser, otherUser))
-    //        {
-    //            flag = true;
-    //        }
-    //    }
-
-    //    return flag;
-    //}
-
     public void Simulation(RedirectedUnit[] otherUnits)
     {
-        string currentStatus = CheckCurrentStatus(otherUnits);
-
-        //if(RDWSimulationManager.remainTime >= RDWSimulationManager.limitTime)
-        //{
-        //    foreach(Vector2 p in debugRealPositionList) {
-        //        Debug.Log(p);
-        //    }
-
-        //    throw new Exception();
-
-        //    //Debug.Log("[Space]");
-        //    //Debug.Log("RealSpace: " + realSpace.space.transform);
-        //    //Debug.Log("VirtualSpace: " + virtualSpace.space.transform);
-        //    //Debug.Log("[User]");
-        //    //Debug.Log("RealUser: " + realUser.transform);
-        //    //Debug.Log("VirtualUser: " + virtualUser.transform);
-        //    //Debug.Log("[Target Position]");
-        //    //Debug.Log(GetEpisode().GetTargetPosition());
-        //    //Debug.Log("[Current Epsiode]");
-        //    //Debug.Log(GetEpisode().GetCurrentEpisodeIndex());
-        //    //Debug.Log("[Epsiode Length]");
-        //    //Debug.Log(GetEpisode().GetEpisodeLength());
-        //    //Debug.Log(resultData);
-        //}
-
+        string currentStatus = CheckCurrentStatus(otherUnits, previousStatus);
 
         switch (currentStatus)
         {
@@ -159,30 +102,92 @@ public class RedirectedUnit
                 Move();
                 break;
             case "WALL_RESET":
-                ApplyWallReset();
+                previousStatus = ApplyWallReset();
                 break;
             case "USER_RESET":
-                ApplyUserReset();
+                previousStatus = ApplyUserReset(intersectedUser);
                 break;
             default:
                 break;
         }
-
-        //debugTargetPositionList.Add(GetEpisode().GetTargetPosition());
-        //debugVirtualPositionList.Add(virtualUser.transform.localPosition);
-        //debugRealPositionList.Add(realUser.transform.localPosition);
-        //RDWSimulationManager.remainTime += Time.fixedDeltaTime;
     }
 
-    public void ApplyUserReset()
+    public string ApplyUserReset(Object2D otherUser)
     {
-        resetter.ApplyReset(realUser, virtualUser, realSpace,"User"); // 필요하면 User Reset과 Wall Reset의 방법을 다르게 만들 수 있도록 이런 식으로 구현
+        Vector2 resetDirection = (realUser.transform.localPosition - otherUser.transform.localPosition).normalized;
+        return resetter.ApplyUserReset(realUser, virtualUser, resetDirection); // 필요하면 User Reset과 Wall Reset의 방법을 다르게 만들 수 있도록 이런 식으로 구현
     }
 
-    public void ApplyWallReset()
+    public string ApplyWallReset()
     {
-        resetter.ApplyReset(realUser, virtualUser, realSpace,"Wall");
+        return resetter.ApplyReset(realUser, virtualUser, realSpace, "Wall");
     }
+
+    //public string CheckCurrentStatus(RedirectedUnit[] otherUnits)
+    //{
+    //    List<Object2D> otherUsers = GetUsers(otherUnits);
+
+    //    if (status == "WALL_RESET")
+    //    {
+    //        if (!resetter.NeedWallReset(realUser, realSpace))
+    //        {
+    //            status = "IDLE";
+    //            resetter.NeedWallReset(realUser, realSpace);
+    //        }
+    //    }
+    //    else if (status == "USER_RESET")
+    //    {
+    //        if (!resetter.NeedUserReset(realUser, otherUsers))
+    //            status = "IDLE";
+    //    }
+    //    else if (status == "IDLE")
+    //    {
+    //        if (resetter.NeedWallReset(realUser, realSpace))
+    //        {
+    //            resultData.AddWallReset();
+    //            status = "WALL_RESET";
+    //        }
+    //        else if (resetter.NeedUserReset(realUser, otherUsers))
+    //        {
+    //            resultData.AddUserReset();
+    //            status = "USER_RESET";
+    //        }
+    //        else if (!GetEpisode().IsNotEnd())
+    //            status = "END";
+    //    }
+
+    //    return status;
+    //}
+
+    //public void Simulation(RedirectedUnit[] otherUnits)
+    //{
+    //    string currentStatus = CheckCurrentStatus(otherUnits);
+
+    //    switch (currentStatus)
+    //    {
+    //        case "IDLE":
+    //            Move();
+    //            break;
+    //        case "WALL_RESET":
+    //            ApplyWallReset();
+    //            break;
+    //        case "USER_RESET":
+    //            ApplyUserReset();
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //}
+
+    //public void ApplyUserReset()
+    //{
+    //    resetter.ApplyReset(realUser, virtualUser, realSpace,"User"); // 필요하면 User Reset과 Wall Reset의 방법을 다르게 만들 수 있도록 이런 식으로 구현
+    //}
+
+    //public void ApplyWallReset()
+    //{
+    //    resetter.ApplyReset(realUser, virtualUser, realSpace,"Wall");
+    //}
 
     public void Move()
     {
