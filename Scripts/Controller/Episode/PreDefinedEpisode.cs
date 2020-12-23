@@ -29,7 +29,8 @@ public class PreDefinedEpisode : Episode
             this.episodeLength = targetPositionList.Count;
     }
 
-    protected override void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace) { 
+    protected override void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace)
+    {
         currentTargetPosition = targetPositionList[currentEpisodeIndex];
     }
 }

@@ -5,52 +5,44 @@ using UnityEngine;
 public abstract class RotationResetter : Resetter
 {
     public static int testInt = 1;
-    //protected float rotationSpeed = 60.0f;
     protected float targetAngle;
     protected float ratio;
-    private Vector2 realTargetRotation, virtualTargetRotation;
+    protected float maxRotTime, remainRotTime;
+    protected Vector2 realTargetRotation, virtualTargetRotation;
 
     public RotationResetter() : base() {
     }
 
-    public override string ApplyReset(Object2D realUser, Object2D virtualUser, Space2D realSpace, string resetType)
+    public RotationResetter(float translationSpeed, float rotationSpeed) : base(translationSpeed, rotationSpeed)
     {
+    }
+
+    public override string ApplyWallReset(Object2D realUser, Object2D virtualUser, Space2D realSpace) {
         if (isFirst)
         {
-            realTargetRotation = Matrix3x3.CreateRotation(targetAngle) * realUser.transform.forward;
-            virtualTargetRotation = Matrix3x3.CreateRotation(ratio * targetAngle) * virtualUser.transform.forward;
+            realTargetRotation = Matrix3x3.CreateRotation(targetAngle) * realUser.transform2D.forward;
+            virtualTargetRotation = Matrix3x3.CreateRotation(ratio * targetAngle) * virtualUser.transform2D.forward;
             isFirst = false;
+
+            maxRotTime = Mathf.Abs(targetAngle) / rotationSpeed;
+            remainRotTime = 0;
         }
 
-        float realAngle = Vector2.SignedAngle(realUser.transform.forward, realTargetRotation);
-
-        if (Mathf.Abs(realAngle) >= epsilonRotation)
+        if (remainRotTime < maxRotTime)
         {
-            realUser.Rotate(rotationSpeed * Time.deltaTime);
-            virtualUser.Rotate(ratio * rotationSpeed * Time.deltaTime);
+            realUser.transform2D.Rotate(rotationSpeed * Time.deltaTime);
+            virtualUser.transform2D.Rotate(ratio * rotationSpeed * Time.deltaTime);
+            remainRotTime += Time.fixedDeltaTime;
         }
         else
         {
             Utility.SyncDirection(virtualUser, realUser, virtualTargetRotation, realTargetRotation);
-
-            switch (resetType)
-            {
-                case "Wall":
-                    while (NeedWallReset(realUser, realSpace))
-                    {
-                        CalculationErrorAdjustment(realUser.transform, resetType, (Polygon2D)realSpace.space);
-                    }
-                    break;
-                case "User":
-                    break;
-            }
-            
-            if (realUser.gameObject != null) realUser.gameObject.transform.position = Utility.Cast2Dto3D(realUser.transform.position);
+            while(!realSpace.IsInside(realUser.transform2D.localPosition, Space.Self, 0.2f)) realUser.transform2D.localPosition = realUser.transform2D.localPosition + realUser.transform2D.forward * translationSpeed * Time.fixedDeltaTime;
 
             isFirst = true;
-            return "DONE";
+            return "WALL_RESET_DONE";
         }
 
-        return "NOT_YET";
+        return "IDLE";
     }
 }

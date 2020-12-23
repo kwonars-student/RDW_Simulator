@@ -6,6 +6,6 @@ public class NullResetter : Resetter
 {
     public NullResetter() : base() { }
 
-    //public NullResetter(Space2D space) : base(space) { }
+    public NullResetter(float translationSpeed, float rotationSpeed) : base(translationSpeed, rotationSpeed) { }
 
 }

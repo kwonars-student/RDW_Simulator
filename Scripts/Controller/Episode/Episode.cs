@@ -12,19 +12,26 @@ public class Episode
     public GameObject targetPrefab = null;
     protected GameObject targetObject = null;
 
-    public Episode() {
+    public Episode() { // 기본 생성자
         id = totalID++;
         currentEpisodeIndex = 0;
         currentTargetPosition = null;
         this.episodeLength = 0;
     }
 
-    public Episode(int episodeLength)
+    public Episode(int episodeLength) // 생성자
     {
         id = totalID++;
         currentEpisodeIndex = 0;
         currentTargetPosition = null;
         this.episodeLength = episodeLength;
+    }
+
+    public void ResetEpisode()
+    {
+        id = totalID++;
+        currentEpisodeIndex = 0;
+        currentTargetPosition = null;
     }
 
     public int GetCurrentEpisodeIndex()
@@ -42,36 +49,43 @@ public class Episode
         return id;
     }
 
-    protected virtual void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace) {}
-
-    protected void InstaniateTarget() {
+    protected void InstaniateTarget()
+    {
         targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
-        targetObject.transform.localPosition = Utility.Cast2Dto3D(currentTargetPosition.Value) + new Vector3(0, 1, 0);
+        targetObject.transform.localPosition = Utility.CastVector2Dto3D(currentTargetPosition.Value) + new Vector3(0, 1, 0);
     }
 
-    public bool IsNotEnd() {
+    public bool IsNotEnd()
+    {
         if (currentEpisodeIndex < episodeLength)
             return true;
         else
             return false;
     }
 
-    public Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace) {
-        if (!currentTargetPosition.HasValue) {
+    public void DeleteTarget()
+    {
+        GameObject.Destroy(targetObject);
+        currentEpisodeIndex += 1;
+        currentTargetPosition = null;
+    }
+
+    public void ReLocateTarget()
+    {
+        GameObject.Destroy(targetObject);
+        currentTargetPosition = null;
+    }
+
+    public Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace)
+    {
+        if (!currentTargetPosition.HasValue)
+        {
             GenerateEpisode(virtualUserTransform, virtualSpace);
-            //InstaniateTarget();
+            if(targetPrefab != null) InstaniateTarget();
         }
 
         return currentTargetPosition.Value;
     }
 
-    public void DeleteTarget() {
-        GameObject.Destroy(targetObject);
-        currentEpisodeIndex += 1;
-        currentTargetPosition = null;
-        //RedirectedUnit.debugTargetPositionList.Clear();
-        //RedirectedUnit.debugVirtualPositionList.Clear();
-        //RedirectedUnit.debugRealPositionList.Clear();
-        //RDWSimulationManager.remainTime = 0;
-    }
+    protected virtual void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace) { }
 }

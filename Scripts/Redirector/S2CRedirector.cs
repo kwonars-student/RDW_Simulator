@@ -16,7 +16,7 @@ public class S2CRedirector : SteerToTargetRedirector
         float directionToCenter = Mathf.Sign(Vector2.SignedAngle(userDirection, userToCenter)); // if target is to the left of the user, directionToTarget > 0
 
         if (bearingToCenter >= S2C_BEARING_ANGLE_THRESHOLD_IN_DEGREE) { 
-            targetPosition = userPosition + S2C_TEMP_TARGET_DISTANCE * Utility.rotateVector2(userDirection, directionToCenter * 90);
+            targetPosition = userPosition + S2C_TEMP_TARGET_DISTANCE * Utility.RotateVector2(userDirection, directionToCenter * 90);
         }
         else {
             targetPosition = trackingAreaPosition;

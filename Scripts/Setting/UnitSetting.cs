@@ -1,46 +1,66 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
+
+public enum RedirectType { Null, Default, S2C, Space };
+public enum ResetType { Default, TwoOneTurn , FreezeTurn, CenterTurn };
+public enum EpisodeType { LongWalk, Random, PreDefined };
 
 [System.Serializable]
 public class UnitSetting
 {
-    public enum RedirectType { Null = 0, S2C = 1, SRL = 2, Debug = 3 };
-    public enum ResetType { Null = 0, TwoOneTurn = 1, FreezeTurn = 2 };
-    public enum UnitType { User = 0, Object = 1 };
-    public enum EpisodeType { LongWalk = 0, Random = 1, PreDefined = 2 };
-
-    //public UnitType unitType;
     public RedirectType redirectType;
     public ResetType resetType;
     public EpisodeType episodeType;
     public int episodeLength;
     public string episodeFileName;
+
     public bool useRandomStart;
+    public GameObject userPrefab;
+    public float userStartRotation;
     public Vector2 realStartPosition;
     public Vector2 virtualStartPosition;
     public float translationSpeed;
     public float rotationSpeed;
-    private RedirectedUnit unitInstance;
-
 
     public RedirectedUnit GetUnit(Space2D realSpace, Space2D virtualSpace)
     {
-        if(unitInstance == null)
-        {
-            if (useRandomStart)
-            {
-                //float boundX = simulationSetting.realSpaceSetting.size.x / 2 - 1.5f;
-                //float boundY = simulationSetting.realSpaceSetting.size.y / 2 - 1.5f;
-                //float x = Random.Range(-boundX, boundX);
-                //float y = Random.Range(-boundY, boundY);
-                //realStartPosition = new Vector2(x, y);
-            }
+        Object2D realUser, virtualUser;
 
-            unitInstance = new RedirectedUnit(GetRedirector(), GetRestter(), GetController(), realSpace, virtualSpace, realStartPosition, virtualStartPosition);
+        if (useRandomStart)
+        {
+            realStartPosition = realSpace.GetRandomPoint(0.2f);
+            virtualStartPosition = virtualSpace.GetRandomPoint(0.2f);
         }
 
-        return unitInstance;
+        if (userPrefab != null)
+        {
+            switch (userPrefab.tag) // 좀더 깔끔한 코드 있을 꺼 같은데 (추상화 가능성)
+            {
+                default:
+                    realUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetParent(realSpace.spaceObject).Build();
+                    virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetParent(virtualSpace.spaceObject).Build();
+                    break;
+                case "Circle":
+                    realUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetParent(realSpace.spaceObject).Build();
+                    virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetParent(virtualSpace.spaceObject).Build();
+                    break;
+            }
+        }
+        else
+        {
+            realUser = new Circle2DBuilder().SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetRadius(0.5f).SetParent(realSpace.spaceObject).Build();
+            virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetRadius(0.5f).SetParent(virtualSpace.spaceObject).Build();
+        }
+
+        return new RedirectedUnitBuilder()
+            .SetController(GetController())
+            .SetRedirector(GetRedirector())
+            .SetResetter(GetRestter())
+            .SetRealSpace(realSpace)
+            .SetVirtualSpace(virtualSpace)
+            .SetRealUser(realUser)
+            .SetVirtualUser(virtualUser)
+            .Build();
     }
 
     public SimulationController GetController()
@@ -48,57 +68,58 @@ public class UnitSetting
         return new SimulationController(GetEpisode(), translationSpeed, rotationSpeed);
     }
 
-    public Redirector GetRedirector() {
+    public Redirector GetRedirector()
+    {
         Redirector redirector;
 
-        switch (redirectType) {
-            case RedirectType.Debug:
-                redirector = new Redirector();
+        switch (redirectType)
+        {
+            case RedirectType.S2C:
+                redirector = new S2CRedirector();
+                break;
+            case RedirectType.Space:
+                redirector = new SpaceRedirector();
                 break;
             case RedirectType.Null:
                 redirector = new NullRedirector();
                 break;
-            case RedirectType.S2C:
-                redirector = new S2CRedirector();
-                break;
-            case RedirectType.SRL:
-                redirector = new Redirector();
-                break;
             default:
-                redirector = new NullRedirector();
+                redirector = new Redirector();
                 break;
         }
 
         return redirector;
     }
 
-    public Resetter GetRestter() {
-
-        Resetter.SetTransRotSpeed(translationSpeed, rotationSpeed);
+    public Resetter GetRestter()
+    {
         Resetter resetter;
 
-        switch (resetType) {
-            case ResetType.Null:
-                resetter = new NullResetter();
-                break;
+        switch (resetType)
+        {
             case ResetType.TwoOneTurn:
-                resetter = new TwoOneTurnResetter();
+                resetter = new TwoOneTurnResetter(translationSpeed, rotationSpeed);
                 break;
             case ResetType.FreezeTurn:
-                resetter = new FreezeTurnResetter();
+                resetter = new FreezeTurnResetter(translationSpeed, rotationSpeed);
+                break;
+            case ResetType.CenterTurn:
+                resetter = new CenterTurnResetter(translationSpeed, rotationSpeed);
                 break;
             default:
-                resetter = new NullResetter();
+                resetter = new Resetter(translationSpeed, rotationSpeed);
                 break;
         }
 
         return resetter;
     }
 
-    public Episode GetEpisode() {
+    public Episode GetEpisode()
+    {
         Episode episode;
 
-        switch (episodeType) {
+        switch (episodeType)
+        {
             case EpisodeType.LongWalk:
                 episode = new LongWalkEpisode(episodeLength);
                 break;
