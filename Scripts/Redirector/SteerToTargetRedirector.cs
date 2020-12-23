@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SteerToTargetRedirector : Redirector
+public class SteerToTargetRedirector : GainRedirector
 {
     private const float DISTANCE_THRESHOLD_FOR_DAMPENING = 1.25f; // Distance threshold to apply dampening (meters)
     private const float ANGLE_THRESHOLD_FOR_DAMPENING = 45f; // Angle threshold to apply dampening (degrees)
@@ -18,14 +18,15 @@ public class SteerToTargetRedirector : Redirector
 
     public virtual void PickSteeringTarget() {}
 
-    public override (GainType, float) ApplyRedirection(Object2D realUser, Vector2 deltaPosition, float deltaRotation) {
+    public override (GainType, float) ApplyRedirection(RedirectedUnit unit, Vector2 deltaPosition, float deltaRotation)
+    {
         if (deltaPosition == Vector2.zero && deltaRotation == 0.0f)
         {
             return (GainType.Undefined, 0);
         }
 
         // define some variables for redirection
-        Transform2D realUserTransform = realUser.transform;
+        Transform2D realUserTransform = unit.GetRealUser().transform2D;
         userPosition = realUserTransform.localPosition;
         userDirection = realUserTransform.forward;
 
@@ -51,36 +52,39 @@ public class SteerToTargetRedirector : Redirector
             rotationGain = MAX_ROTATION_GAIN;
 
         // select the largest magnitude
-        float rotationMagnitude = 0, curvatureMagnitude = 0; // actually, not ABS(절대값)
+        float rotationMagnitude = 0, curvatureMagnitude = 0;
 
         if (Mathf.Abs(deltaRotation) >= ROTATION_THRESHOLD)
             rotationMagnitude = rotationGain * deltaRotation;
         if (deltaPosition.magnitude > MOVEMENT_THRESHOLD)
-            curvatureMagnitude = Mathf.Rad2Deg * curvatureGain * deltaPosition.magnitude; 
+            curvatureMagnitude = Mathf.Rad2Deg * curvatureGain * deltaPosition.magnitude;
 
         float selectedMagnitude = Mathf.Max(Mathf.Abs(rotationMagnitude), Mathf.Abs(curvatureMagnitude)); // selectedMagnitude is ABS(절대값)
         bool isCurvatureSelected = Mathf.Abs(curvatureMagnitude) > Mathf.Abs(rotationMagnitude);
 
         // dampening 
-        if (angleToTarget <= ANGLE_THRESHOLD_FOR_DAMPENING)
-            selectedMagnitude *= Mathf.Sin(Mathf.Deg2Rad * 90 * angleToTarget / ANGLE_THRESHOLD_FOR_DAMPENING);
-        if (distanceToTarget <= DISTANCE_THRESHOLD_FOR_DAMPENING) {
+        //if (angleToTarget <= ANGLE_THRESHOLD_FOR_DAMPENING)
+        //    selectedMagnitude *= Mathf.Sin(Mathf.Deg2Rad * 90 * angleToTarget / ANGLE_THRESHOLD_FOR_DAMPENING);
+        if (distanceToTarget <= DISTANCE_THRESHOLD_FOR_DAMPENING)
+        {
             selectedMagnitude *= distanceToTarget / DISTANCE_THRESHOLD_FOR_DAMPENING;
         }
 
-        // smoothing
+        //smoothing
         float finalRotation = (1.0f - SMOOTHING_FACTOR) * previousMagnitude + SMOOTHING_FACTOR * selectedMagnitude;
         previousMagnitude = finalRotation;
 
         // apply final redirection
-        if (!isCurvatureSelected) {
+        if (!isCurvatureSelected)
+        {
             float direction = directionRotation;
             return (GainType.Rotation, finalRotation * direction);
         }
-        else {
-            float direction = -Mathf.Sign(curvatureGain); // TODO: 이 방향이 맞나?
-
+        else
+        {
+            float direction = -Mathf.Sign(curvatureGain);
             return (GainType.Curvature, finalRotation * direction);
         }
     }
+
 }

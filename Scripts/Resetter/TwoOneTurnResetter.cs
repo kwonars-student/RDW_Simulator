@@ -9,8 +9,9 @@ public class TwoOneTurnResetter : RotationResetter
         ratio = 2;
     }
 
-    //public TwoOneTurnResetter(Space2D space) : base(space) {
-    //    targetAngle = 180;
-    //    ratio = 2;
-    //}
+    public TwoOneTurnResetter(float translationSpeed, float rotationSpeed) : base(translationSpeed, rotationSpeed)
+    {
+        targetAngle = 180;
+        ratio = 2;
+    }
 }

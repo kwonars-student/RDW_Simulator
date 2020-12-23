@@ -345,7 +345,13 @@ MonoBehaviour:
         count: 0
         size: 20
         vertices: []
-      obstacleObjects: []
+      obstacleObjects:
+      - position: {x: 5, y: 5}
+        rotation: 0
+        useRegularPolygon: 1
+        count: 4
+        size: 2
+        vertices: []
     unitSettings:
     - redirectType: 1
       resetType: 1
@@ -353,11 +359,10 @@ MonoBehaviour:
       episodeLength: 20
       episodeFileName: 
       useRandomStart: 1
-      realStartPosition: {x: 1, y: 1}
-      virtualStartPosition: {x: 5, y: -5}
-      translationSpeed: 2
-      rotationSpeed: 100
-  targetPrefab: {fileID: 0}
+      realStartPosition: {x: 0, y: 0}
+      virtualStartPosition: {x: 0, y: 0}
+      translationSpeed: 4
+      rotationSpeed: 60
 --- !u!4 &1807211603
 Transform:
   m_ObjectHideFlags: 0

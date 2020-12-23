@@ -4,30 +4,60 @@ using UnityEngine;
 
 public class LineSegment2D : Object2D
 {
-    private Vector2 p1, p2; // local 좌표 기준
+    public Vector2 p1, p2; // local 좌표 기준
 
-    public LineSegment2D() : base()
+    public LineSegment2D() : base() // 기본 생성자
     {
         this.p1 = Vector2.zero;
         this.p2 = Vector2.zero;
     }
 
-    public LineSegment2D(LineSegment2D lineSegment) : base(lineSegment)
+    public LineSegment2D(LineSegment2D otherLineSegment, string name = null) : base(otherLineSegment, name) // 복사 생성자
     {
-        this.p1 = lineSegment.p1;
-        this.p2 = lineSegment.p2;
+        this.p1 = otherLineSegment.p1;
+        this.p2 = otherLineSegment.p2;
     }
 
-    public LineSegment2D(Vector2 p1, Vector2 p2, Transform2D parent = null) : base(Vector2.zero, parent)
+    public LineSegment2D(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, Object2D parentObject = null, Vector2? p1 = null, Vector2? p2 = null) : base(prefab, name, localPosition, localRotation, localScale, parentObject) // 생성자
     {
-        this.p1 = p1;
-        this.p2 = p2;
+        if(p1.HasValue)
+            this.p1 = p1.Value;
+        if(p2.HasValue)
+            this.p2 = p2.Value;
     }
 
-    public LineSegment2D(Vector2 p1, Vector2 p2, Vector2 localPosition, Transform2D parent = null) : base(localPosition, parent)
+    public LineSegment2D(GameObject prefab) : base(prefab) // 참조 생성자
     {
-        this.p1 = p1;
-        this.p2 = p2;
+        // TODO: p1, p2를 어떻게 갱신할 것인가?
+    }
+
+    public override void Initialize(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, Transform parent)
+    {
+        base.Initialize(prefab, name, localPosition, localRotation, localScale, parent);
+
+        // TODO: prefab이 있을 때 p1, p2를 어떻게 갱신할 것인가?
+    }
+
+    public override Object2D Clone(string name = null)
+    {
+        LineSegment2D copied = new LineSegment2D(this, name);
+        return copied;
+    }
+
+    public Edge2D ChangeToEdge(Space relativeTo)
+    {
+        if (relativeTo == Space.World)
+            return new Edge2D(this.transform2D.TransformPointToGlobal(p1), this.transform2D.TransformPointToGlobal(p2));
+        else
+            return new Edge2D(p1, p2);
+    }
+
+    public Vector2 GetDirection(bool isStartP1)
+    {
+        if (isStartP1)
+            return (p2 - p1).normalized;
+        else
+            return (p1 - p2).normalized;
     }
 
     public override string ToString()
@@ -35,107 +65,60 @@ public class LineSegment2D : Object2D
         return string.Format("p1: {0}, p2: {1}", p1, p2);
     }
 
-    public override bool IsIntersect(Object2D geometry, float epsilon = 0)
+    //public override Mesh GenerateMesh(bool useOutNormal)
+    //{
+    //    Vector3[] vertices = null;
+    //    int[] triangles = null;
+    //    Vector3[] normals = null;
+
+    //    float thetaScale = 0.01f;
+    //    float theta1 = 0f, theta2 = 0f;
+    //    int size = (int)((1f / thetaScale));
+
+    //    // TODO: Mesh Generate
+
+    //    Mesh mesh = new Mesh();
+    //    mesh.vertices = vertices;
+    //    mesh.triangles = triangles;
+    //    mesh.normals = normals;
+
+    //    return mesh;
+
+    //}
+
+
+    public override bool IsIntersect(Object2D targetObject) // global 좌표계로 변환시킨 후 비교
     {
-        if(geometry is LineSegment2D)
+        if (targetObject is LineSegment2D)
         {
-            LineSegment2D otherLine = (LineSegment2D)geometry;
-            
-            // 두 object2D가 서로 다른 좌표계를 가지므로 global 좌표계로 통일
-            Vector2 p1 = transform.TransformPoint(this.p1), p2 = transform.TransformPoint(this.p2);
-            Vector2 p3 = otherLine.transform.TransformPoint(otherLine.p1), p4 = otherLine.transform.TransformPoint(otherLine.p2);
+            LineSegment2D line = (LineSegment2D)targetObject;
+            Edge2D targetLine = line.ChangeToEdge(Space.World);
 
-            float under = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
-
-            if (under == 0)
-            {
-                return false;
-            }
-
-            float t = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / under; // this line
-            float s = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / under; // other line
-
-            if (t < 0.0 || t > 1.0 || s < 0.0 || s > 1.0)
-            {
-                return false;
-            }
-
-            return true;
+            return this.IsIntersect(targetLine, Space.World);
         }
         else
         {
-            throw new System.NotImplementedException();
+            return targetObject.IsIntersect(this);
         }
     }
 
-    //public bool IsIntersect(LineSegment2D line, out Vector2 result)
-    //{
-    //    Vector2 p3 = line.p1, p4 = line.p2;
-    //    float under = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
-
-    //    if (under == 0)
-    //    {
-    //        result = Vector2.positiveInfinity;
-    //        return false;
-    //    }
-
-    //    float t = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / under; // this line
-    //    float s = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / under; // other line
-
-    //    if (t < 0.0 || t > 1.0 || s < 0.0 || s > 1.0)
-    //    {
-    //        result = Vector2.positiveInfinity;
-    //        return false;
-    //    }
-
-
-    //    result = new Vector2(p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y));
-    //    return true;
-    //}
-
-    public bool IsIntersect(Ray2D ray, out Vector2 result, string option = "default", float epsilon = 0)
+    public override bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default") // targetLine 은 relativeTo 좌표계에 있다고 가정
     {
-        Vector2 p3 = ray.origin, p4 = ray.origin + ray.direction;
-        float under = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
+        Edge2D thisLine = this.ChangeToEdge(relativeTo);
 
-        if (under == 0)
-        {
-            result = Vector2.positiveInfinity;
+        Intersect intersect = thisLine.CheckIntersect(targetLine, 0.01f);
+
+        if (intersect == Intersect.NONE)
             return false;
-        }
-
-        float t = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / under; // this line
-        float s = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / under; // other ray
-
-        if (option == "exclude")
-        {
-            if((t < 0.0 || t >= 1.0 || s <= 0.0))
-            {
-                result = Vector2.positiveInfinity;
-                return false;
-            }
-        }
         else
-        {
-            if (t < 0.0 || t > 1.0 || s < 0.0)
-            {
-                result = Vector2.positiveInfinity;
-                return false;
-            }
-        }
+            return true;
+    }
 
-        //if (option == "exclude" && (t < 0.0 || t >= 1.0 || s <= 0.0)) // exclude last point of this line(p2)
-        //{
-        //    result = Vector2.positiveInfinity;
-        //    return false;
-        //}
-        //else if (t < 0.0 || t > 1.0 || s < 0.0)
-        //{
-        //    result = Vector2.positiveInfinity;
-        //    return false;
-        //}
+    public override void DebugDraw(Color color)
+    {
+        Vector3 vec1 = Utility.CastVector2Dto3D(this.transform2D.TransformPointToGlobal(p1));
+        Vector3 vec2 = Utility.CastVector2Dto3D(this.transform2D.TransformPointToGlobal(p2));
 
-        result = new Vector2(p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y));
-        return true;
+        Debug.DrawLine(vec1, vec2, color);
     }
 }

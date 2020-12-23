@@ -1,45 +1,75 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class ResultData
 {
-    private int totalReset, wallReset, userReset;
-    private int episodeID, unitID;
-    private float sumOfAppliedTranslationGain, sumOfAppliedRotationGain, sumOfAppliedCurvatureGain;
-    private float elapsedTime;
-    public int virtualReset;
+    //private int totalReset, wallReset, userReset;
+    //private int episodeID, unitID;
+    //private float elapsedTime;
+    //private float sumOfAppliedTranslationGain, sumOfAppliedRotationGain, sumOfAppliedCurvatureGain;
+
+    private Dictionary<string, float> data;
 
     public ResultData() {
-        totalReset = wallReset = userReset = 0;
-        sumOfAppliedTranslationGain = sumOfAppliedRotationGain = sumOfAppliedCurvatureGain = 0.0f;
-        episodeID = unitID = -1;
-        elapsedTime = 0;
-        virtualReset = 0;
+        data = new Dictionary<string, float>
+        {
+            {"unitID", 0},
+            {"setEpisodeID", 0},
+            {"totalTime", 0},
+            {"totalReset", 0},
+            {"wallReset", 0},
+            {"userReset", 0},
+        };
+    }
+
+    public void setData(Dictionary<string, float> dict)
+    {
+        foreach(KeyValuePair<string, float> pair in dict)
+        {
+            data.Add(pair.Key, pair.Value);
+        }
+    }
+
+    public void setData(string key, float value)
+    {
+        if (!data.ContainsKey(key))
+            data.Add(key, value);
+        else
+            data[key] = value;
+    }
+
+    public void AddData(string key, float value)
+    {
+        if (!data.ContainsKey(key))
+            data.Add(key, 0);
+
+        data[key] += value;
     }
 
     public void setEpisodeID(int episodeID)
     {
-        this.episodeID = episodeID;
+        data["episodeID"] = episodeID;
     }
 
     public void setUnitID(int unitID)
     {
-        this.unitID = unitID;
+        data["unitID"] = unitID;
     }
 
-    public void setGains(Redirector.GainType gaintype, float appliedGain)
+    public void setGains(GainType gaintype, float appliedGain)
     {
         switch (gaintype)
         {
-            case Redirector.GainType.Translation:
-                sumOfAppliedTranslationGain += appliedGain;
+            case GainType.Translation:
+                AddData("sumOfAppliedTranslationGain", appliedGain);
                 break;
-            case Redirector.GainType.Rotation:
-                sumOfAppliedRotationGain += appliedGain;
+            case GainType.Rotation:
+                AddData("sumOfAppliedRotationGain", appliedGain);
                 break;
-            case Redirector.GainType.Curvature:
-                sumOfAppliedCurvatureGain += appliedGain;
+            case GainType.Curvature:
+                AddData("sumOfAppliedCurvatureGain", appliedGain);
                 break;
             default:
                 break;
@@ -48,34 +78,35 @@ public class ResultData
 
     public void AddElapsedTime(float deltaTime)
     {
-        elapsedTime += deltaTime;
-    }
-
-    public float GetElapsedTime() {
-        return elapsedTime;
+        data["totalTime"] += deltaTime;
     }
 
     public void AddWallReset()
     {
-        wallReset += 1;
-        totalReset += 1;
+        data["wallReset"] += 1;
+        data["totalReset"] += 1;
     }
 
     public void AddUserReset()
     {
-        userReset += 1;
-        totalReset += 1;
+        data["wallReset"] += 1;
+        data["totalReset"] += 1;
     }
 
     public override string ToString()
     {
         string result = "";
-        result += "----- Result ----\n";
-        result += string.Format("UnitID: {0}, EpisodeID: {1}\n", unitID, episodeID);
-        result += string.Format("totalReset: {0}, wallReset: {1}, userReset: {2}\n", totalReset, wallReset, userReset);
-        result += string.Format("totalTranslationGain: {0}, totalRotationGain: {1}, totalCurvatureGain: {2}\n", sumOfAppliedTranslationGain, sumOfAppliedRotationGain, sumOfAppliedCurvatureGain);
-        result += string.Format("elapsedTime: {0}\n", elapsedTime);
-        result += string.Format("virtualReset: {0}", virtualReset);
+
+        foreach(KeyValuePair<string, float> element in data)
+        {
+            result += element.Key + ": " + element.Value + "\n";
+        }
+
+        //result += "----- Result ----\n";
+        //result += string.Format("UnitID: {0}, EpisodeID: {1}\n", unitID, episodeID);
+        //result += string.Format("totalReset: {0}, wallReset: {1}, userReset: {2}\n", totalReset, wallReset, userReset);
+        //result += string.Format("totalTranslationGain: {0}, totalRotationGain: {1}, totalCurvatureGain: {2}\n", sumOfAppliedTranslationGain, sumOfAppliedRotationGain, sumOfAppliedCurvatureGain);
+        //result += string.Format("elapsedTime: {0}\n", elapsedTime);
 
         return result;
     }

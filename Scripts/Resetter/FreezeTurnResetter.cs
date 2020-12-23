@@ -9,8 +9,9 @@ public class FreezeTurnResetter : RotationResetter
         ratio = 0;
     }
 
-    //public FreezeTurnResetter(Space2D space) : base(space) {
-    //    targetAngle = 180;
-    //    ratio = 0;
-    //}
+    public FreezeTurnResetter(float translationSpeed, float rotationSpeed) : base(translationSpeed, rotationSpeed)
+    {
+        targetAngle = 180;
+        ratio = 0;
+    }
 }

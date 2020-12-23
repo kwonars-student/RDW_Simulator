@@ -4,21 +4,10 @@ using UnityEngine;
 
 public class NullRedirector : Redirector
 {
-    public override (GainType, float) ApplyRedirection(Object2D realUser, Vector2 deltaPosition, float deltaRotation) {
+    public override (GainType, float) ApplyRedirection(RedirectedUnit unit, Vector2 deltaPosition, float deltaRotation) // 안움직이는 Redirector
+    {
         float degree = 0;
         GainType type = GainType.Undefined;
-
-        if (deltaPosition.magnitude > 0.01f) {
-            degree = deltaPosition.magnitude;
-            type = GainType.Translation;
-        }
-        else if (Mathf.Abs(deltaRotation) > 0.01f) {
-            degree = deltaRotation;
-            type = GainType.Rotation;
-        }
-        else {
-            type = GainType.Undefined;
-        }
 
         return (type, degree);
     }

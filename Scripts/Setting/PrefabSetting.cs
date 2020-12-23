@@ -5,10 +5,8 @@ using UnityEngine;
 [CreateAssetMenu]
 public class PrefabSetting : ScriptableObject
 {
-    public List<GameObject> userPrefabs;
-    public GameObject targetPrefabs;
-    //public GameObject realSpacePrefab;
-    //public GameObject virtualSpacePrefab;
+    public GameObject targetPrefab;
+    public GameObject RLPrefab;
     public Material realMaterial;
     public Material virtualMaterial;
     public Material obstacleMaterial;
