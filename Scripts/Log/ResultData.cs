@@ -110,4 +110,9 @@ public class ResultData
 
         return result;
     }
+
+    public float getTotalReset()
+    {
+        return data["totalReset"];
+    }
 }
