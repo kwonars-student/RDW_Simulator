@@ -8,6 +8,7 @@ public class SpaceAgent : Agent
 {
     RedirectedUnit unit;
 
+
     public override void OnEpisodeBegin()
     {
         unit = GetComponent<RedirectedUnitObject>().unit;
@@ -31,12 +32,16 @@ public class SpaceAgent : Agent
     {
         SpaceRedirector spaceRedirector = (SpaceRedirector) unit.GetRedirector();
         int eachActionSpace = 5; // for each obstacle, they have 5 action space
-        float maxTranslation = 4;
-        float maxScale = 2;
+        float maxTranslation = 0 ;
+        float maxScale = 0;
+        float rotationParameter = 0;
+
+        //Debug.Log("Number of resets:" + unit.resultData.getTotalReset());
+
         for(int i =0; i<vectorAction.Length; i += eachActionSpace)
         {
             Vector2 selectedTranslation = new Vector2(vectorAction[i] * maxTranslation, vectorAction[i + 1] * maxTranslation);
-            float selectedRotation = vectorAction[i + 2] * 180;
+            float selectedRotation = vectorAction[i + 2] * rotationParameter;
             Vector2 selectedScale = new Vector2(vectorAction[i + 3] * maxScale, vectorAction[i + 4] * maxScale);
 
             int j = i / eachActionSpace;
