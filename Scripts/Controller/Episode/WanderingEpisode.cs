@@ -21,8 +21,8 @@ public class WanderingEpisode : Episode
         {
             count++;
            
-            float angle = Utility.sampleNormal(0f, 45f, -180f, 180f);
-            float distance = 0.5f;
+            float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
+            float distance = 0.2f;
             //float distance = Utility.sampleNormal(0.4f, 2f, 0.25f, 5f); Distance도 랜덤. 깊숙히 안들어가는 문제 약간 보임.
 
             if(count >= 100)
