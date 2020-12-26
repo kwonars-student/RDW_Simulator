@@ -12,4 +12,6 @@ public class SimulationSetting
     public SpaceSetting realSpaceSetting;
     public SpaceSetting virtualSpaceSetting;
     public UnitSetting[] unitSettings;
+    public bool showTarget;
+    
 }

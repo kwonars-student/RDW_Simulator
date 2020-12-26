@@ -11,6 +11,12 @@ public class Episode
     protected int episodeLength;
     public GameObject targetPrefab = null;
     protected GameObject targetObject = null;
+    public bool showTarget = false;
+
+    public void setShowTarget(bool showTarget)
+    {
+        this.showTarget = showTarget;
+    }
 
     public Episode() { // 기본 생성자
         id = totalID++;
@@ -81,7 +87,7 @@ public class Episode
         if (!currentTargetPosition.HasValue)
         {
             GenerateEpisode(virtualUserTransform, virtualSpace);
-            if(targetPrefab != null) InstaniateTarget();
+            if(targetPrefab != null && showTarget) InstaniateTarget();
         }
 
         return currentTargetPosition.Value;
