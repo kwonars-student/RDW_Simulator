@@ -667,7 +667,7 @@ MonoBehaviour:
         rotation: 0
         useRegularPolygon: 1
         count: 4
-        size: 10
+        size: 5
         vertices: []
         radius: 0
         p1: {x: 0, y: 0}
@@ -676,7 +676,7 @@ MonoBehaviour:
     virtualSpaceSetting:
       usePredefinedSpace: 1
       name: Virtual Space
-      predefinedSpace: {fileID: 6461408160479495530, guid: 153ff2b09eb4f824abdedcd9932983bb,
+      predefinedSpace: {fileID: 6461408160479495530, guid: 2b2b3f828d04caf4e9bb5b326d1430b3,
         type: 3}
       position: {x: 20, y: 0}
       rotation: 0
@@ -695,10 +695,10 @@ MonoBehaviour:
         p2: {x: 0, y: 0}
       obstacleObjectSettings: []
     unitSettings:
-    - redirectType: 3
+    - redirectType: 4
       resetType: 3
-      episodeType: 1
-      episodeLength: 10000
+      episodeType: 3
+      episodeLength: 1000
       episodeFileName: 
       useRandomStart: 0
       userPrefab: {fileID: 3594628791589679955, guid: f133cf5eff70dbe418039e6141fe27e3,
@@ -706,8 +706,9 @@ MonoBehaviour:
       userStartRotation: 0
       realStartPosition: {x: 0, y: 0}
       virtualStartPosition: {x: 0, y: 0}
-      translationSpeed: 4
+      translationSpeed: 0.5
       rotationSpeed: 60
+    showTarget: 0
 --- !u!1 &1862952063
 GameObject:
   m_ObjectHideFlags: 0
