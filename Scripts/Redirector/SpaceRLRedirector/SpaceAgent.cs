@@ -8,14 +8,16 @@ public class SpaceAgent : Agent
 {
     RedirectedUnit unit;
 
-
+    // 에피소드가 시작할때마다 호출
     public override void OnEpisodeBegin()
     {
         unit = GetComponent<RedirectedUnitObject>().unit;
         unit.SetRLAgent(this);
         unit.GetEpisode().ResetEpisode();
+        
     }
 
+    //환경 정보를 관측 및 수집해 정책 결정을 위해 브레인에 전달하는 메소드
     public override void CollectObservations(VectorSensor sensor) // sensor should be normalized in [-1, 1] or [0, 1], state space : 3
     {
         Bounds2D realSpaceBound = unit.GetRealSpace().spaceObject.bound;
@@ -28,20 +30,20 @@ public class SpaceAgent : Agent
         sensor.AddObservation(normalizedLocalRotation);
     }
 
+     //브레인(정책)으로 부터 전달 받은 행동을 실행하는 메소드
     public override void OnActionReceived(float[] vectorAction) // vectorAction is normalized in [-1, 1], action space : 20
     {
         SpaceRedirector spaceRedirector = (SpaceRedirector) unit.GetRedirector();
         int eachActionSpace = 5; // for each obstacle, they have 5 action space
         float maxTranslation = 0 ;
         float maxScale = 0;
-        float rotationParameter = 0;
 
         //Debug.Log("Number of resets:" + unit.resultData.getTotalReset());
 
         for(int i =0; i<vectorAction.Length; i += eachActionSpace)
         {
             Vector2 selectedTranslation = new Vector2(vectorAction[i] * maxTranslation, vectorAction[i + 1] * maxTranslation);
-            float selectedRotation = vectorAction[i + 2] * rotationParameter;
+            float selectedRotation = vectorAction[i + 2] * 180;
             Vector2 selectedScale = new Vector2(vectorAction[i + 3] * maxScale, vectorAction[i + 4] * maxScale);
 
             int j = i / eachActionSpace;
@@ -49,6 +51,7 @@ public class SpaceAgent : Agent
         }
     }
 
+    //개발자(사용자)가 직접 명령을 내릴때 호출하는 메소드(주로 테스트용도 또는 모방학습에 사용)
     public override void Heuristic(float[] actionsOut)
     {
         for(int i=0; i< actionsOut.Length; i++)
