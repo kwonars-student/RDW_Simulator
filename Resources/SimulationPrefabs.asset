@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetPrefab: {fileID: 903321712500741410, guid: ff9252a0e46d38f4596d4133611dc97c,
     type: 3}
+  resetLocPrefab: {fileID: 903321712500741410, guid: 36b22ffff8955a3458ee25ff437c58f2,
+    type: 3}
   RLPrefab: {fileID: 3377572014488977381, guid: eeec58679fea5f4409bdb77b9578377f,
     type: 3}
   realMaterial: {fileID: 2100000, guid: 9f533429e2cd57040af3915b199c68a6, type: 2}

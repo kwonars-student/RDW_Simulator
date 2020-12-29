@@ -15,6 +15,10 @@ public class RedirectedUnit
     private SpaceAgent spaceAgent;
     private ArrangementAgent arrangementAgent;
 
+    private bool showResetLocator = false;
+    private GameObject resetLocPrefab = null;
+    private GameObject resetLocObject = null;
+
     private string status, previousStatus;
     private Object2D intersectedUser;
     //private string flag;
@@ -26,7 +30,9 @@ public class RedirectedUnit
         controller = new SimulationController();
         resultData = new ResultData();
         id = -1;
-        status = "UNDEFINED"; // TODO: 이래도 되나?
+
+        status = "UNDEFINED"; // TODO: 이래도 되나?     
+
     }
 
     public RedirectedUnit(Redirector redirector, Resetter resetter, SimulationController controller, Space2D realSpace, Space2D virtualSpace, Object2D realUser, Object2D virtualUser) // 생성자
@@ -64,6 +70,16 @@ public class RedirectedUnit
     public string CheckCurrentStatus(RedirectedUnit[] otherUnits, string previousStatus)
     {
         List<Object2D> otherUsers = GetUsers(otherUnits);
+
+        if( 
+                ( (status == "WALL_RESET" && previousStatus == "WALL_RESET_DONE") ||
+                  (status == "USER_RESET" && previousStatus == "USER_RESET_DONE")    )
+                && showResetLocator
+          )
+        {
+            resetLocObject = GameObject.Instantiate(resetLocPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
+            resetLocObject.transform.localPosition = virtualUser.gameObject.transform.localPosition + new Vector3(0, 1, 0);
+        }
 
         if (status == "WALL_RESET")
         {
@@ -224,5 +240,15 @@ public class RedirectedUnit
     public Episode GetEpisode()
     {
         return controller.GetEpisode();
+    }
+
+    public void SetShowResetLocator(bool showResetLocator)
+    {
+        this.showResetLocator = showResetLocator;
+    }
+
+    public void SetResetLocPrefab(GameObject resetLocPrefab)
+    {
+        this.resetLocPrefab = resetLocPrefab;
     }
 }

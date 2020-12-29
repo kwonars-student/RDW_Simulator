@@ -53,6 +53,8 @@ public class RDWSimulationManager : MonoBehaviour
             GenerateUnitObject(redirectedUnits[i], i);
             redirectedUnits[i].GetEpisode().targetPrefab = simulationSetting.prefabSetting.targetPrefab;
             redirectedUnits[i].GetEpisode().setShowTarget(simulationSetting.showTarget);
+            redirectedUnits[i].SetShowResetLocator(simulationSetting.showResetLocator);
+            redirectedUnits[i].SetResetLocPrefab(simulationSetting.prefabSetting.resetLocPrefab);
         }
     }
 

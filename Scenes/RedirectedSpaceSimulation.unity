@@ -709,6 +709,7 @@ MonoBehaviour:
       translationSpeed: 0.5
       rotationSpeed: 60
     showTarget: 0
+    showResetLocator: 1
 --- !u!1 &1862952063
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,5 +13,6 @@ public class SimulationSetting
     public SpaceSetting virtualSpaceSetting;
     public UnitSetting[] unitSettings;
     public bool showTarget;
+    public bool showResetLocator;
     
 }
