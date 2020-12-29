@@ -13,6 +13,7 @@ public class RedirectedUnit
     static int totalID = 0;
     protected int id;
     private SpaceAgent spaceAgent;
+    private ArrangementAgent arrangementAgent;
 
     private string status, previousStatus;
     private Object2D intersectedUser;
@@ -172,6 +173,11 @@ public class RedirectedUnit
     public void SetRLAgent(SpaceAgent spaceAgent)
     {
         this.spaceAgent = spaceAgent;
+    }
+
+    public void SetRLArrangementAgent(ArrangementAgent arrangementAgent)
+    {
+        this.arrangementAgent = arrangementAgent;
     }
     
     public int GetID()

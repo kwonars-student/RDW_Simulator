@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public enum RedirectType { Null, Default, S2C, Space };
+public enum RedirectType { Null, Default, S2C, Space, Arrangement };
 public enum ResetType { Default, TwoOneTurn , FreezeTurn, CenterTurn };
 public enum EpisodeType { LongWalk, Random, PreDefined, Wandering };
 
@@ -79,6 +79,9 @@ public class UnitSetting
                 break;
             case RedirectType.Space:
                 redirector = new SpaceRedirector();
+                break;
+            case RedirectType.Arrangement:
+                redirector = new ArrangementRedirector();
                 break;
             case RedirectType.Null:
                 redirector = new NullRedirector();
