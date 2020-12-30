@@ -1,32 +1,63 @@
 ﻿using System.Collections;
 using UnityEngine;
-using System.Diagnostics;
 using System;
 
 public class RDWSimulationManager : MonoBehaviour
 {
-    public static float remainTime = 0;
-    public static float limitTime = 30;
     public SimulationSetting simulationSetting; // 시뮬레이션 환경 설정을 담은 변수
     private RedirectedUnit[] redirectedUnits; //  각 unit들을 통제하는 변수
+    private GameObject[] unitObjects;
     Space2D realSpace, virtualSpace; // 실제 공간과 가상 공간에 대한 정보를 담은 변수
-    private void GenerateUnitObject(RedirectedUnit redirectedUnit, int index)
+
+    public void GenerateUnitObjects()
     {
-        GameObject unitObject = null;
-        if (redirectedUnit.GetRedirector() is SpaceRedirector && simulationSetting.useVisualization)
+        if(unitObjects == null)
         {
-            unitObject = Instantiate(simulationSetting.prefabSetting.RLPrefab);
-            unitObject.name = "SpaceRLUnit_" + index;
-        }
-        else
-        {
-            unitObject = new GameObject();
-            unitObject.name = "Unit_" + index;
+            unitObjects = new GameObject[redirectedUnits.Length];
+            for (int i=0; i< redirectedUnits.Length; i++)
+            {
+                if (redirectedUnits[i].GetRedirector() is SpaceRedirector && simulationSetting.useVisualization)
+                {
+                    unitObjects[i] = GameObject.Instantiate(simulationSetting.prefabSetting.RLPrefab);
+                    unitObjects[i].name = "SpaceRLUnit_" + i;
+                }
+                else
+                {
+                    unitObjects[i] = new GameObject();
+                    unitObjects[i].name = "Unit_" + i;
+                }
+
+                unitObjects[i].AddComponent<RedirectedUnitObject>();
+                unitObjects[i].transform.parent = this.transform;
+            }
         }
 
-        unitObject.AddComponent<RedirectedUnitObject>();
-        unitObject.GetComponent<RedirectedUnitObject>().unit = redirectedUnit;
-        unitObject.transform.parent = this.transform;
+        for (int i = 0; i < redirectedUnits.Length; i++)
+        {
+            unitObjects[i].GetComponent<RedirectedUnitObject>().unit = redirectedUnits[i];
+            if (redirectedUnits[i].GetRedirector() is SpaceRedirector && simulationSetting.useVisualization) unitObjects[i].GetComponent<SpaceAgent>().OnEpisodeBegin();
+        }
+    }
+
+    public void DestroySpace()
+    {
+        if (realSpace != null) realSpace.Destroy();
+        if (virtualSpace != null) virtualSpace.Destroy();
+    }
+
+    public void DestroyUnits()
+    {
+        if (redirectedUnits != null)
+        {
+            for (int i = 0; i < simulationSetting.unitSettings.Length; i++)
+                if (redirectedUnits[i] != null) redirectedUnits[i].Destroy();
+        }
+    }
+
+    public void DestroyAll()
+    {
+        DestroySpace();
+        DestroyUnits();
     }
 
     public void GenerateSpaces()
@@ -50,7 +81,6 @@ public class RDWSimulationManager : MonoBehaviour
         for (int i = 0; i < simulationSetting.unitSettings.Length; i++)
         {
             redirectedUnits[i] = simulationSetting.unitSettings[i].GetUnit(realSpace, virtualSpace);
-            GenerateUnitObject(redirectedUnits[i], i);
             redirectedUnits[i].GetEpisode().targetPrefab = simulationSetting.prefabSetting.targetPrefab;
             redirectedUnits[i].GetEpisode().setShowTarget(simulationSetting.showTarget);
             redirectedUnits[i].SetShowResetLocator(simulationSetting.showResetLocator);
@@ -73,42 +103,59 @@ public class RDWSimulationManager : MonoBehaviour
     {
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
-            UnityEngine.Debug.Log("[Space]");
-            UnityEngine.Debug.Log("RealSpace: " + redirectedUnits[i].GetRealSpace().spaceObject.transform2D);
-            UnityEngine.Debug.Log("VirtualSpace: " + redirectedUnits[i].GetVirtualSpace().spaceObject.transform2D);
-            UnityEngine.Debug.Log("[User]");
-            UnityEngine.Debug.Log("RealUser: " + redirectedUnits[i].GetRealUser().transform2D);
-            UnityEngine.Debug.Log("VirtualUser: " + redirectedUnits[i].GetVirtualUser().transform2D);
-            UnityEngine.Debug.Log("[Current Epsiode]");
-            UnityEngine.Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
-            UnityEngine.Debug.Log("[Epsiode Length]");
-            UnityEngine.Debug.Log(redirectedUnits[i].GetEpisode().GetEpisodeLength());
-            UnityEngine.Debug.Log("[Result Data]");
-            UnityEngine.Debug.Log(redirectedUnits[i].resultData);
+            Debug.Log("[Space]");
+            Debug.Log("RealSpace: " + redirectedUnits[i].GetRealSpace().spaceObject.transform2D);
+            Debug.Log("VirtualSpace: " + redirectedUnits[i].GetVirtualSpace().spaceObject.transform2D);
+            Debug.Log("[User]");
+            Debug.Log("RealUser: " + redirectedUnits[i].GetRealUser().transform2D);
+            Debug.Log("VirtualUser: " + redirectedUnits[i].GetVirtualUser().transform2D);
+            Debug.Log("[Current Target]");
+            Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
+            Debug.Log("[Target Length]");
+            Debug.Log(redirectedUnits[i].GetEpisode().GetEpisodeLength());
+            Debug.Log("[Result Data]");
+            Debug.Log(redirectedUnits[i].resultData);
         }
     }
 
-    long overTime = 10 * 1000;
-    Stopwatch sw = new Stopwatch();
-    bool checkTime = true;
+    //long overTime = 10 * 1000;
+    //Stopwatch sw = new Stopwatch();
+    //bool checkTime = true;
+    //public static float remainTime = 0;
+    //public static float limitTime = 30;
 
     public void FastSimulationRoutine()
     {
-        sw.Start();
+        //int j = 0;
+        //do
+        //{
+        //    DestroyAll();
+        //    GenerateSpaces();
+        //    GenerateUnits();
+
+        //    while (!IsAllEpisodeEnd())
+        //    {
+        //        for (int i = 0; i < redirectedUnits.Length; i++)
+        //            redirectedUnits[i].Simulation(redirectedUnits);
+
+        //        if (simulationSetting.useDebugMode) DebugDraws();
+        //    }
+
+        //    PrintResult();
+        //    j++;
+
+        //} while (j < 3);
+
+        DestroyAll();
+        GenerateSpaces();
+        GenerateUnits();
 
         while (!IsAllEpisodeEnd())
         {
-
             for (int i = 0; i < redirectedUnits.Length; i++)
                 redirectedUnits[i].Simulation(redirectedUnits);
 
             if (simulationSetting.useDebugMode) DebugDraws();
-
-            if(checkTime && sw.ElapsedMilliseconds >= overTime)
-            {
-                PrintResult();
-                throw new TimeoutException();
-            }
 
         }
         PrintResult();
@@ -116,26 +163,25 @@ public class RDWSimulationManager : MonoBehaviour
 
     public IEnumerator SlowSimulationRoutine()
     {
-        sw.Start();
-
-        while (!IsAllEpisodeEnd())
+        do
         {
-            for (int i = 0; i < redirectedUnits.Length; i++)
-                redirectedUnits[i].Simulation(redirectedUnits);
+            DestroyAll();
+            GenerateSpaces();
+            GenerateUnits();
 
-            if (simulationSetting.useDebugMode) DebugDraws();
-
-
-            if (false && sw.ElapsedMilliseconds >= overTime)
+            while (!IsAllEpisodeEnd())
             {
-                PrintResult();
-                throw new TimeoutException();
+                for (int i = 0; i < redirectedUnits.Length; i++)
+                    redirectedUnits[i].Simulation(redirectedUnits);
+
+                if (simulationSetting.useDebugMode) DebugDraws();
+
+                yield return new WaitForFixedUpdate();
             }
 
-            yield return new WaitForFixedUpdate();
-        }
+            PrintResult();
 
-        PrintResult();
+        } while (simulationSetting.useContinousSimulation);
     }
 
     public void DebugDraws()
@@ -149,16 +195,9 @@ public class RDWSimulationManager : MonoBehaviour
 
     public void Start()
     {
-        GenerateSpaces();
-        GenerateUnits();
-
         if (simulationSetting.useVisualization)
-        {
             StartCoroutine(SlowSimulationRoutine());
-        }
         else
-        {
             FastSimulationRoutine();
-        }
     }
 }
