@@ -49,6 +49,12 @@ public class Object2D
         transform2D = new Transform2D(prefab.transform); // 해당 GameObject의 transform을 참조
     }
 
+    public void Destroy()
+    {
+        GameObject.Destroy(gameObject);
+        transform2D = null;
+    }
+
     public void ChangePrefab(GameObject prefab, string name = null)
     {
         GameObject.Destroy(transform2D.transform.gameObject); // 현재 참조하는 GameObject를 삭제

@@ -17,7 +17,7 @@ public class SpaceRedirector : Redirector
         {
             translation = Vector2.left;
             rotation = 0;
-            scale = Vector2.one;
+            scale = Vector2.zero;
         }
 
         public void setObstacleAction(Vector2 translation, float rotation, Vector2 scale)
@@ -29,7 +29,7 @@ public class SpaceRedirector : Redirector
     }
     
     public List<ObstacleAction> obstacleActions;
-    
+
     public override (GainType, float) ApplyRedirection(RedirectedUnit unit, Vector2 deltaPosition, float deltaRotation)
     {
 
@@ -56,16 +56,12 @@ public class SpaceRedirector : Redirector
 
             if (Vector2.Angle(virtualUser.transform2D.forward, userToObstacle) > fov && !virtualUser.IsIntersect(virtualSpace.obstacles[i])) // obstacle이 user 시야 밖에 있고 user와 충분히 멀다고 판단되는 경우
             {
-                //if (!virtualSpace.IsInside(virtualSpace.obstacles[i], 0.0f))
-                //{
-                //    obstacleActions[i].translation *= -1; // 기존과 반대 방향으로 가라는 뜻
-                //}
-
-                Vector2 samplingTranslation = obstacleActions[i].translation * Time.deltaTime;
-                float samplingRotation = obstacleActions[i].rotation * Time.deltaTime;
-                Vector2 samplingScale = obstacleActions[i].scale * Time.deltaTime;
+                Vector2 samplingTranslation = obstacleActions[i].translation * Time.fixedDeltaTime;
+                float samplingRotation = obstacleActions[i].rotation * Time.fixedDeltaTime;
+                Vector2 samplingScale = obstacleActions[i].scale * Time.fixedDeltaTime;
 
                 virtualSpace.TranslateObstacleByIndex(i, samplingTranslation);
+                if (!virtualSpace.IsInside(virtualSpace.obstacles[i], 0.0f)) virtualSpace.TranslateObstacleByIndex(i, -samplingTranslation); // space를 벗어나는 action(translation)을 취했을 경우 실제로 Translatrion을 적용하지 않음
                 virtualSpace.RotateObstacleByIndex(i, samplingRotation);
                 virtualSpace.ScaleObstacleByIndex(i, samplingScale);
             }

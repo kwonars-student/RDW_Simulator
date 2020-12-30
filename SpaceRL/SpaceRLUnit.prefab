@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6570382124643108706}
   - component: {fileID: 8340132004412933403}
   - component: {fileID: 1160651120197137853}
+  - component: {fileID: 3120193109878218557}
   m_Layer: 0
   m_Name: SpaceRLUnit
   m_TagString: Untagged
@@ -45,14 +46,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 3
+    VectorObservationSize: 12
     NumStackedVectorObservations: 1
-    VectorActionSize: 14000000
+    VectorActionSize: 08000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 1
-  m_BehaviorType: 1
+  m_BehaviorType: 0
   m_BehaviorName: SpaceRL
   TeamId: 0
   m_UseChildSensors: 1
@@ -73,4 +74,18 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
+  MaxStep: 10000
+--- !u!114 &3120193109878218557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3377572014488977381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DecisionPeriod: 20
+  TakeActionsBetweenDecisions: 1

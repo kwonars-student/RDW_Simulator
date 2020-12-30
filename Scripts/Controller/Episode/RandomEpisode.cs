@@ -13,7 +13,6 @@ public class RandomEpisode : Episode
         Vector2 samplingPosition = Vector2.zero;
         Vector2 userPosition = virtualUserTransform.localPosition;
 
-
         do
         {
             float angle = Utility.sampleUniform(-180.0f, 180.0f);
@@ -22,7 +21,7 @@ public class RandomEpisode : Episode
 
             samplingPosition = userPosition + sampleForward * distance; // local 좌표계에서 절대 위치 기준
 
-        } while (!virtualSpace.IsInside(samplingPosition, Space.Self, 0.2f)); // !virtualSpace.IsPossiblePath(samplingPosition, userPosition, Space.Self, 0.2f)
+        } while (!virtualSpace.IsInside(samplingPosition, Space.Self, 0.3f)); // !virtualSpace.IsPossiblePath(samplingPosition, userPosition, Space.Self, 0.2f)
 
         currentTargetPosition = samplingPosition;
     }

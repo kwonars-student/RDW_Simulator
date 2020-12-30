@@ -652,6 +652,7 @@ MonoBehaviour:
   simulationSetting:
     useVisualization: 1
     useDebugMode: 0
+    useContinousSimulation: 1
     prefabSetting: {fileID: 11400000, guid: 9852f6c4390897f4c87397288ab1f720, type: 2}
     realSpaceSetting:
       usePredefinedSpace: 0
@@ -667,7 +668,7 @@ MonoBehaviour:
         rotation: 0
         useRegularPolygon: 1
         count: 4
-        size: 10
+        size: 5
         vertices: []
         radius: 0
         p1: {x: 0, y: 0}
@@ -676,7 +677,7 @@ MonoBehaviour:
     virtualSpaceSetting:
       usePredefinedSpace: 1
       name: Virtual Space
-      predefinedSpace: {fileID: 6461408160479495530, guid: 153ff2b09eb4f824abdedcd9932983bb,
+      predefinedSpace: {fileID: 6461408160479495530, guid: 7963217f9ffcec24e88ba597359ba649,
         type: 3}
       position: {x: 20, y: 0}
       rotation: 0

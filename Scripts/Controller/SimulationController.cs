@@ -23,6 +23,7 @@ public class SimulationController
 
     private Vector2 previousPosition;
     private float previousRotation;
+    private Vector2 previousForward;
 
     public SimulationController() { // 기본 생성자
         this.episode = new Episode();
@@ -32,6 +33,8 @@ public class SimulationController
         this.episode = episode;
         this.translationSpeed = translationSpeed;
         this.rotationSpeed = rotationSpeed;
+        this.deltaPosition = Vector2.zero;
+        this.deltaRotation = 0;
     }
 
     public (Vector2, float) GetDelta(Vector2 directionToTarget)
@@ -65,9 +68,11 @@ public class SimulationController
     public void UpdateCurrentState(Transform2D virtualUserTransform)
     {
         deltaPosition = (virtualUserTransform.localPosition - previousPosition) / Time.fixedDeltaTime;
-        deltaRotation = (virtualUserTransform.localRotation - previousRotation) / Time.fixedDeltaTime;
+        //deltaRotation = (virtualUserTransform.localRotation - previousRotation) / Time.fixedDeltaTime;
+        deltaRotation = Vector2.SignedAngle(previousForward, virtualUserTransform.forward) / Time.fixedDeltaTime;
         previousPosition = virtualUserTransform.localPosition;
-        previousRotation = virtualUserTransform.localRotation;
+        //previousRotation = virtualUserTransform.localRotation;
+        previousForward = virtualUserTransform.forward;
     }
 
     public void ResetCurrentState(Transform2D virtualUserTransform)
@@ -75,7 +80,8 @@ public class SimulationController
         deltaPosition = Vector2.zero;
         deltaRotation = 0;
         previousPosition = virtualUserTransform.localPosition;
-        previousRotation = virtualUserTransform.localRotation;
+        //previousRotation = virtualUserTransform.localRotation;
+        previousForward = virtualUserTransform.forward;
     }
 
     public void SyncDirection(Object2D virtualUser, Vector2 virtualTargetDirection)
@@ -150,7 +156,6 @@ public class SimulationController
             //    }
             //    else
             //    {
-            //        //Debug.Log("Completed!");
             //        episode.DeleteTarget();
 
             //        isFirst = true;
@@ -158,13 +163,12 @@ public class SimulationController
             //        isFirst3 = true;
             //    }
             //}
+            //UpdateCurrentState(virtualUserTransform);
 
-            if (!virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self, 0.2f))
+            if (!virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
             {
-                Debug.Log("Re-Located");
-                virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self, 0.2f);
-                episode.ReLocateTarget();
-
+                //Debug.Log("Re-Located");
+                episode.DeleteTarget();
                 isFirst = true;
                 isFirst2 = true;
                 isFirst3 = true;
@@ -208,9 +212,8 @@ public class SimulationController
                 }
             }
 
+            UpdateCurrentState(virtualUserTransform);
         }
-
-        UpdateCurrentState(virtualUserTransform);
 
         return GetDelta(virtualUserTransform.forward);
     }

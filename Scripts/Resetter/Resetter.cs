@@ -7,15 +7,15 @@ public class Resetter
     protected float translationSpeed;
     protected float rotationSpeed;
     public bool isFirst;
-    protected float epsilonRotation, epsilonTranslation;
+    //protected float epsilonRotation, epsilonTranslation;
 
     float initialAngle;
     float maxRotTime, remainRotTime;
 
     public Resetter() { // 기본 생성자
         isFirst = true;
-        epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
-        epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+        //epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+        //epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
     }
 
     public Resetter(float translationSpeed, float rotationSpeed)
@@ -23,8 +23,8 @@ public class Resetter
         this.translationSpeed = translationSpeed;
         this.rotationSpeed = rotationSpeed;
         isFirst = true;
-        epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
-        epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+        //epsilonRotation = (rotationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
+        //epsilonTranslation = (translationSpeed * Time.fixedDeltaTime / 2) + 0.001f;
     }
 
     public void SyncDirection(Object2D realUser, Vector2 realTargetDirection)

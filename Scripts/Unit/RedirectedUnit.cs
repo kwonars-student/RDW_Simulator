@@ -12,11 +12,12 @@ public class RedirectedUnit
     public ResultData resultData;
     static int totalID = 0;
     protected int id;
+
     private SpaceAgent spaceAgent;
+    private int currentTimeStep = 0;
 
     private string status, previousStatus;
     private Object2D intersectedUser;
-    //private string flag;
 
     public RedirectedUnit() // 기본 생성자
     {
@@ -45,6 +46,18 @@ public class RedirectedUnit
         resultData.setEpisodeID(controller.GetEpisodeID());
     }
 
+    public void Destroy()
+    {
+        this.redirector = null;
+        this.resetter = null;
+        this.controller = null;
+        this.resultData = null;
+        if (virtualSpace != null) this.virtualSpace.Destroy();
+        if (realSpace != null)  this.realSpace.Destroy();
+        if (realUser != null)  this.realUser.Destroy();
+        if (virtualUser != null) this.virtualUser.Destroy();
+    }
+
     public List<Object2D> GetUsers(RedirectedUnit[] otherUnits)
     {
         List<Object2D> otherUsers = new List<Object2D>();
@@ -70,8 +83,6 @@ public class RedirectedUnit
             {
                 status = "IDLE";
             }
-
-            //flag = previousStatus;
         }
         else if (status == "USER_RESET")
         {
@@ -79,8 +90,6 @@ public class RedirectedUnit
             {
                 status = "IDLE";
             }
-
-            //flag = previousStatus;
         }
         else if (status == "IDLE")
         {
@@ -88,7 +97,6 @@ public class RedirectedUnit
             {
                 resultData.AddWallReset();
                 status = "WALL_RESET";
-                //flag = "WALL_RESET_OCCUR";
 
                 if (spaceAgent != null) spaceAgent.AddReward(-1.0f);
             }
@@ -96,30 +104,28 @@ public class RedirectedUnit
             {
                 resultData.AddUserReset();
                 status = "USER_RESET";
-                //flag = "USE_RESET_OCCUR";
             }
             else if (!GetEpisode().IsNotEnd())
             {
                 status = "END";
-                //flag = "END_OCCUR";
+                Debug.Log("EndEpisode!");
                 if (spaceAgent != null) spaceAgent.EndEpisode();
             }
             else
             {
                 status = "IDLE";
-                //flag = "IDLE";
                 if(spaceAgent != null) spaceAgent.AddReward(+0.001f);
             }
         }
 
-        //Debug.Log(flag);
         return status;
     }
 
     public void Simulation(RedirectedUnit[] otherUnits)
     {
-        string currentStatus = CheckCurrentStatus(otherUnits, previousStatus);
+        currentTimeStep += 1;
 
+        string currentStatus = CheckCurrentStatus(otherUnits, previousStatus);
         switch (currentStatus)
         {
             case "IDLE":
@@ -147,9 +153,16 @@ public class RedirectedUnit
         return resetter.ApplyWallReset(realUser, virtualUser, realSpace);
     }
 
+    private int i = 0;
     public void Move()
     {
-        if (spaceAgent != null) spaceAgent.RequestDecision();
+        //if (i % 10 == 0) spaceAgent.RequestDecision();
+        //Debug.Log(spaceAgent.StepCount);
+        //Debug.Log(i++);
+        //Debug.Log(spaceAgent.CompletedEpisodes);
+        //Debug.Log(spaceAgent.GetCumulativeReward());
+        //Debug.Log("");
+        //if (i == 100) spaceAgent.EndEpisode();
 
         (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)
         (GainType type, float degree) = redirector.ApplyRedirection(this, deltaPosition, deltaRotation); // 왜곡시킬 값을 계산
@@ -173,7 +186,17 @@ public class RedirectedUnit
     {
         this.spaceAgent = spaceAgent;
     }
+
+    public SpaceAgent GetRLAgent()
+    {
+        return spaceAgent;
+    }
     
+    public int GetCurrentTimeStep()
+    {
+        return currentTimeStep;
+    }
+
     public int GetID()
     {
         return id;

@@ -69,6 +69,16 @@ public class Space2D
         }
     }
 
+    public void Destroy()
+    {
+        for (int i = 0; i < this.obstacles.Count; i++)
+        {
+            this.obstacles[i].Destroy();
+        }
+
+        this.spaceObject.Destroy();
+    }
+
     public void GenerateSpace(Material spaceMaterial, Material obstacleMaterial, float spaceHeight, float obstacleHeight, string name = null)
     {
         this.spaceObject.GenerateShape(spaceMaterial, spaceHeight, false, name);
@@ -207,7 +217,7 @@ public class Space2D
         return isInside;
     }
 
-    public bool IsPossiblePath(Vector2 targetPosition, Vector2 sourcePosition, Space relativeTo, float bound) // TODO: Circle2D 일 때 뭔가 잘 안됨 왜인지는 확인해봐야 함
+    public bool IsPossiblePath(Vector2 targetPosition, Vector2 sourcePosition, Space relativeTo) // TODO: Circle2D 일 때 뭔가 잘 안됨 왜인지는 확인해봐야 함, bound는 의미 없는 값
     {
         if (Vector2.Distance(targetPosition, sourcePosition) <= 0.01f)
             return true;
@@ -232,17 +242,17 @@ public class Space2D
             }
 
             line = new Edge2D(localSourcePosition, localTargetPosition);
-      
-            if (obstacle.IsIntersect(line, Space.Self)) // relativeTo 와 상관없이 local로 비교 
+
+            if (obstacle.IsIntersect(line, Space.Self)) // relativeTo 와 상관없이 line과의 intersect를 obstacle local 좌표계로 비교 
             {
                 isPossible = false;
                 break;
             }
         }
 
-        line = new Edge2D(sourcePosition, targetPosition); // line이 spaceObject 좌표계에 있도록 변경
+        line = new Edge2D(sourcePosition, targetPosition);
 
-        if (spaceObject.IsIntersect(line, relativeTo, "exclude"))
+        if (spaceObject.IsIntersect(line, relativeTo, "exclude")) // line과의 intersect을 relativeTo 좌표계를 기준으로 비교
             isPossible = false;
 
         return isPossible;
