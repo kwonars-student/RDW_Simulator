@@ -165,10 +165,10 @@ public class SimulationController
             //}
             //UpdateCurrentState(virtualUserTransform);
 
-            if (!virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
+            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
             {
                 //Debug.Log("Re-Located");
-                episode.DeleteTarget();
+                episode.ReLocateTarget();
                 isFirst = true;
                 isFirst2 = true;
                 isFirst3 = true;

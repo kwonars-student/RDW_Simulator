@@ -31,7 +31,7 @@ public class Redirector
         return (type, degree);
     }
 
-    public virtual Dictionary<string, float> GetResult()
+    public virtual Dictionary<string, float> GetResult() // Redirector로 인해 일어난 여러 결과들을 반환하는 함수
     {
         return new Dictionary<string, float>();
     }

@@ -27,33 +27,44 @@ public class GainRedirector : Redirector
     protected float rotationGain;
     protected float curvatureGain;
 
-    public float GetApplidedGain(GainType type) // TODO: 얘를 추상화 할순 없나?
+    public override Dictionary<string, float> GetResult()
     {
-        switch (type)
-        {
-            case GainType.Translation:
-                return Mathf.Abs(GetTranslationGain());
-            case GainType.Rotation:
-                return Mathf.Abs(GetRotationGain());
-            case GainType.Curvature:
-                return Mathf.Abs(GetCurvatureGain());
-            default:
-                return 0;
-        }
+        Dictionary<string, float> result = new Dictionary<string, float>();
+
+        result.Add("translationGain", Mathf.Abs(translationGain));
+        result.Add("rotationGain", Mathf.Abs(rotationGain));
+        result.Add("curvatureGain", Mathf.Abs(curvatureGain));
+
+        return result;
     }
 
-    public float GetTranslationGain()
-    {
-        return translationGain;
-    }
+    //public float GetApplidedGain(GainType type) // TODO: 얘를 추상화 할순 없나?
+    //{
+    //    switch (type)
+    //    {
+    //        case GainType.Translation:
+    //            return Mathf.Abs(GetTranslationGain());
+    //        case GainType.Rotation:
+    //            return Mathf.Abs(GetRotationGain());
+    //        case GainType.Curvature:
+    //            return Mathf.Abs(GetCurvatureGain());
+    //        default:
+    //            return 0;
+    //    }
+    //}
 
-    public float GetRotationGain()
-    {
-        return rotationGain;
-    }
+    //public float GetTranslationGain()
+    //{
+    //    return translationGain;
+    //}
 
-    public float GetCurvatureGain()
-    {
-        return curvatureGain;
-    }
+    //public float GetRotationGain()
+    //{
+    //    return rotationGain;
+    //}
+
+    //public float GetCurvatureGain()
+    //{
+    //    return curvatureGain;
+    //}
 }

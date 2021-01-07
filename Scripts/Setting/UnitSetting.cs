@@ -54,7 +54,7 @@ public class UnitSetting
 
         return new RedirectedUnitBuilder()
             .SetController(GetController())
-            .SetRedirector(GetRedirector())
+            .SetRedirector(GetRedirector(virtualSpace))
             .SetResetter(GetRestter())
             .SetRealSpace(realSpace)
             .SetVirtualSpace(virtualSpace)
@@ -68,7 +68,7 @@ public class UnitSetting
         return new SimulationController(GetEpisode(), translationSpeed, rotationSpeed);
     }
 
-    public Redirector GetRedirector()
+    public Redirector GetRedirector(Space2D virtualSpace)
     {
         Redirector redirector;
 
@@ -78,7 +78,7 @@ public class UnitSetting
                 redirector = new S2CRedirector();
                 break;
             case RedirectType.Space:
-                redirector = new SpaceRedirector();
+                redirector = new SpaceRedirector(virtualSpace);
                 break;
             case RedirectType.Null:
                 redirector = new NullRedirector();

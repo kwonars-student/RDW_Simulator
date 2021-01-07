@@ -170,18 +170,21 @@ public class Space2D
         return samplingPosition;
     }
 
-    public bool IsInside(Object2D otherObject, float bound)
+    public bool IsInside(Object2D otherObject, float bound, bool checkOnlySpace = false)
     {
         bool isInside = true;
 
-        foreach (var obstacle in this.obstacles)
+        if(!checkOnlySpace)
         {
-            if (obstacle == otherObject)
-                continue;
-            else if(obstacle.IsIntersect(otherObject) || obstacle.IsInside(otherObject, 0))  // obstacle과 만나거나 아예 안쪽에 있을 경우 space 안에 있다고 보지 않는다
+            foreach (var obstacle in this.obstacles)
             {
-                isInside = false;
-                break;
+                if (obstacle == otherObject)
+                    continue;
+                else if (obstacle.IsIntersect(otherObject) || obstacle.IsInside(otherObject, 0))  // obstacle과 만나거나 아예 안쪽에 있을 경우 space 안에 있다고 보지 않는다
+                {
+                    isInside = false;
+                    break;
+                }
             }
         }
 
@@ -217,7 +220,7 @@ public class Space2D
         return isInside;
     }
 
-    public bool IsPossiblePath(Vector2 targetPosition, Vector2 sourcePosition, Space relativeTo) // TODO: Circle2D 일 때 뭔가 잘 안됨 왜인지는 확인해봐야 함, bound는 의미 없는 값
+    public bool IsPossiblePath(Vector2 targetPosition, Vector2 sourcePosition, Space relativeTo) // TODO: Circle2D 일 때 뭔가 잘 안됨 왜인지는 확인해봐야 함
     {
         if (Vector2.Distance(targetPosition, sourcePosition) <= 0.01f)
             return true;

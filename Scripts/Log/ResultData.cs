@@ -24,11 +24,14 @@ public class ResultData
         };
     }
 
-    public void setData(Dictionary<string, float> dict)
+    public void setData(Dictionary<string, float> dict, bool useAddition = false)
     {
         foreach(KeyValuePair<string, float> pair in dict)
         {
-            data.Add(pair.Key, pair.Value);
+            if(useAddition)
+                AddData(pair.Key, pair.Value);
+            else
+                setData(pair.Key, pair.Value);
         }
     }
 

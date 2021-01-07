@@ -51,7 +51,7 @@ public class Episode
 
     protected void InstaniateTarget()
     {
-        targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
+        targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform); // TODO: Continous simulation을 할 때 삭제하는 기존 Virtual Space Object를 parent로 삼아서 target도 render 되지 않는 문제 발생
         targetObject.transform.localPosition = Utility.CastVector2Dto3D(currentTargetPosition.Value) + new Vector3(0, 1, 0);
     }
 

@@ -91,7 +91,7 @@ public class RDWSimulationManager : MonoBehaviour
     {
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
-            if (redirectedUnits[i].GetCurrentTimeStep() >= redirectedUnits[i].GetRLAgent().MaxStep)
+            if (redirectedUnits[i].GetRLAgent() != null && redirectedUnits[i].GetCurrentTimeStep() >= redirectedUnits[i].GetRLAgent().MaxStep)
                 return true;
             if (redirectedUnits[i].GetEpisode().IsNotEnd())
                 return false;
@@ -200,5 +200,9 @@ public class RDWSimulationManager : MonoBehaviour
             StartCoroutine(SlowSimulationRoutine());
         else
             FastSimulationRoutine();
+
+        //DestroyAll();
+        //GenerateSpaces();
+        //GenerateUnits();  
     }
 }
