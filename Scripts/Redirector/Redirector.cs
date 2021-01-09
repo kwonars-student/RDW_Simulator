@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using Unity.MLAgents;
 
 public enum GainType { Translation = 0, Rotation = 1, Curvature = 2, Undefined = -1 };
 
@@ -34,5 +35,15 @@ public class Redirector
     public virtual Dictionary<string, float> GetResult()
     {
         return new Dictionary<string, float>();
+    }
+
+    public virtual void SetRLArrangementAgent(ArrangementAgent agent) // Arrangement RDW에서 활용
+    {
+
+    }
+
+    public virtual void ObstacleArrangement(RedirectedUnit unit) // Arrangement RDW에서 활용
+    {
+
     }
 }

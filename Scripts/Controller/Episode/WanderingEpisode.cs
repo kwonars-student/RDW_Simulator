@@ -34,7 +34,7 @@ public class WanderingEpisode : Episode
             Vector2 sampleForward = Utility.RotateVector2(virtualUserTransform.forward, angle);
             samplingPosition = userPosition + sampleForward * distance; // local 좌표계에서 절대 위치 기준
 
-        } while (!virtualSpace.IsInside(samplingPosition, Space.Self, 0.2f)); // !virtualSpace.IsPossiblePath(samplingPosition, userPosition, Space.Self, 0.2f)
+        } while (!virtualSpace.IsInside(samplingPosition, Space.Self, 0.3f)); // !virtualSpace.IsPossiblePath(samplingPosition, userPosition, Space.Self, 0.2f)
 
         currentTargetPosition = samplingPosition;
     }

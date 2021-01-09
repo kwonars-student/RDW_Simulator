@@ -14,9 +14,12 @@ public class UnitSetting
     public int episodeLength;
     public string episodeFileName;
 
-    public bool useRandomStart;
+    public bool useRandomStartReal;
+    public bool useRandomStartVirtual;
     public GameObject userPrefab;
     public float userStartRotation;
+    public float realStartRotation;
+    public float virtualStartRotation;
     public Vector2 realStartPosition;
     public Vector2 virtualStartPosition;
     public float translationSpeed;
@@ -26,10 +29,16 @@ public class UnitSetting
     {
         Object2D realUser, virtualUser;
 
-        if (useRandomStart)
+        if (useRandomStartReal)
         {
             realStartPosition = realSpace.GetRandomPoint(0.2f);
+            realStartRotation = Utility.sampleUniform(0f, 360f);
+        }
+
+        if (useRandomStartVirtual)
+        {
             virtualStartPosition = virtualSpace.GetRandomPoint(0.2f);
+            virtualStartRotation = Utility.sampleUniform(0f, 360f);
         }
 
         if (userPrefab != null)
@@ -37,19 +46,19 @@ public class UnitSetting
             switch (userPrefab.tag) // 좀더 깔끔한 코드 있을 꺼 같은데 (추상화 가능성)
             {
                 default:
-                    realUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetParent(realSpace.spaceObject).Build();
-                    virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetParent(virtualSpace.spaceObject).Build();
+                    realUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetParent(realSpace.spaceObject).Build();
+                    virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
                     break;
                 case "Circle":
-                    realUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetParent(realSpace.spaceObject).Build();
-                    virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetParent(virtualSpace.spaceObject).Build();
+                    realUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetParent(realSpace.spaceObject).Build();
+                    virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
                     break;
             }
         }
         else
         {
-            realUser = new Circle2DBuilder().SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetRadius(0.5f).SetParent(realSpace.spaceObject).Build();
-            virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetRadius(0.5f).SetParent(virtualSpace.spaceObject).Build();
+            realUser = new Circle2DBuilder().SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetRadius(0.5f).SetParent(realSpace.spaceObject).Build();
+            virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetRadius(0.5f).SetParent(virtualSpace.spaceObject).Build();
         }
 
         return new RedirectedUnitBuilder()

@@ -45,6 +45,11 @@ public class Episode
         return currentEpisodeIndex;
     }
 
+    public void SetCurrentEpisodeIndex(int currentEpisodeIndex)
+    {
+        this.currentEpisodeIndex = currentEpisodeIndex;
+    }
+
     public int GetEpisodeLength()
     {
         return episodeLength;

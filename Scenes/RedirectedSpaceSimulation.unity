@@ -652,6 +652,7 @@ MonoBehaviour:
   simulationSetting:
     useVisualization: 1
     useDebugMode: 0
+    useContinousSimulation: 1
     prefabSetting: {fileID: 11400000, guid: 9852f6c4390897f4c87397288ab1f720, type: 2}
     realSpaceSetting:
       usePredefinedSpace: 0
@@ -700,16 +701,19 @@ MonoBehaviour:
       episodeType: 3
       episodeLength: 1000
       episodeFileName: 
-      useRandomStart: 0
+      useRandomStartReal: 0
+      useRandomStartVirtual: 0
       userPrefab: {fileID: 3594628791589679955, guid: f133cf5eff70dbe418039e6141fe27e3,
         type: 3}
       userStartRotation: 0
+      realStartRotation: 0
+      virtualStartRotation: 0
       realStartPosition: {x: 0, y: 0}
       virtualStartPosition: {x: 0, y: 0}
       translationSpeed: 0.5
       rotationSpeed: 60
     showTarget: 0
-    showResetLocator: 1
+    showResetLocator: 0
 --- !u!1 &1862952063
 GameObject:
   m_ObjectHideFlags: 0

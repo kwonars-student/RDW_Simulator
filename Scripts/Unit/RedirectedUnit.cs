@@ -13,8 +13,8 @@ public class RedirectedUnit
     static int totalID = 0;
     protected int id;
     private SpaceAgent spaceAgent;
-    private int currentTimeStep = 0;
     private ArrangementAgent arrangementAgent;
+    private int currentTimeStep = 0;
 
     private bool showResetLocator = false;
     private GameObject resetLocPrefab = null;
@@ -22,6 +22,10 @@ public class RedirectedUnit
 
     private string status, previousStatus;
     private Object2D intersectedUser;
+
+    private bool initialStep;
+    private int step;
+    private int nextStep;
 
     public RedirectedUnit() // 기본 생성자
     {
@@ -58,8 +62,8 @@ public class RedirectedUnit
         this.resetter = null;
         this.controller = null;
         this.resultData = null;
-        if (virtualSpace != null) this.virtualSpace.Destroy();
-        if (realSpace != null)  this.realSpace.Destroy();
+        // if (virtualSpace != null) this.virtualSpace.Destroy();
+        // if (realSpace != null)  this.realSpace.Destroy();
         if (realUser != null)  this.realUser.Destroy();
         if (virtualUser != null) this.virtualUser.Destroy();
     }
@@ -117,6 +121,15 @@ public class RedirectedUnit
                 status = "WALL_RESET";
 
                 if (spaceAgent != null) spaceAgent.AddReward(-1.0f);
+                if(redirector is ArrangementRedirector)
+                {
+                    if (arrangementAgent != null)
+                    {
+                        arrangementAgent.AddReward(-0.01f);
+                        Debug.Log("Give Reset Reward!");
+                    }
+                }
+
             }
             else if (resetter.NeedUserReset(realUser, otherUsers, out intersectedUser))
             {
@@ -128,11 +141,38 @@ public class RedirectedUnit
                 status = "END";
                 Debug.Log("EndEpisode!");
                 if (spaceAgent != null) spaceAgent.EndEpisode();
+
+                if(redirector is ArrangementRedirector)
+                {
+                    if (arrangementAgent != null)
+                    {
+                        // Do Nothing. 이미 다른 곳에서 End처리 함. // arrangementAgent.EndEpisode();
+                    }
+                }
+                
             }
             else
             {
                 status = "IDLE";
                 if(spaceAgent != null) spaceAgent.AddReward(+0.001f);
+
+                if(redirector is ArrangementRedirector)
+                {
+                    step = controller.GetEpisode().GetCurrentEpisodeIndex();
+                    if(initialStep)
+                    {
+                        initialStep = false;
+                        nextStep = step + 1;
+                        if(arrangementAgent != null) arrangementAgent.AddReward(+0.001f);
+                        Debug.Log("Give Step Reward!");
+                    }
+                    else if(!initialStep && nextStep == controller.GetEpisode().GetCurrentEpisodeIndex())
+                    {
+                        initialStep = true;
+                    }
+                }
+
+                
             }
         }
 
@@ -181,6 +221,15 @@ public class RedirectedUnit
         //Debug.Log(spaceAgent.GetCumulativeReward());
         //Debug.Log("");
         //if (i == 100) spaceAgent.EndEpisode();
+        
+        // (GainType type, float degree) = redirector.ApplyRedirection(this, Vector2.zero, 0f); // 왜곡시킬 값을 계산
+        // (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)
+        // (type, degree) = redirector.ApplyRedirection(this, deltaPosition, deltaRotation); // 왜곡시킬 값을 계산
+
+        if(redirector is ArrangementRedirector)
+        {
+            redirector.ObstacleArrangement(this); // VirtualMove 전에 호출하여 virtualSpace의 배치 변형
+        }
 
         (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)
         (GainType type, float degree) = redirector.ApplyRedirection(this, deltaPosition, deltaRotation); // 왜곡시킬 값을 계산
@@ -213,6 +262,11 @@ public class RedirectedUnit
     public SpaceAgent GetRLAgent()
     {
         return spaceAgent;
+    }
+
+    public ArrangementAgent GetRLArrangementAgent()
+    {
+        return arrangementAgent;
     }
      
     public int GetCurrentTimeStep()
@@ -253,7 +307,6 @@ public class RedirectedUnit
     public Object2D GetRealUser()
     {
         return realUser;
-
     }
 
     public Object2D GetVirtualUser()

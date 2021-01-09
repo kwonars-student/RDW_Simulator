@@ -15,6 +15,7 @@ public class SimulationController
     Vector2 targetPosition;
     Vector2 virtualTargetDirection = Vector2.zero;
     Vector2 virtualTargetPosition;
+    bool RLActionReady = false; // Action을 위해 한번 이상의 Fixed Update 필요하기 때문
 
     [HideInInspector]
     public float deltaRotation;
@@ -112,8 +113,9 @@ public class SimulationController
 
         if (episode.IsNotEnd())
         {
-            if (isFirst)
-            {
+            if (isFirst && RLActionReady) // 배치 적용 없이 한번 초기화 되면 안바뀌는 문제 해결. 다음 FixedUpdate에서 First를 시키는 방식.
+            {   
+                // Debug.Log("VirtualMove Initial");
                 isFirst = false;
                 targetPosition = episode.GetTarget(virtualUserTransform, virtualSpace);
                 initialToTarget = targetPosition - virtualUserTransform.localPosition;
@@ -128,6 +130,11 @@ public class SimulationController
                 maxTransTime = initialDistance / translationSpeed;
                 remainRotTime = 0;
                 remainTransTime = 0;
+            }
+            else if(!RLActionReady)
+            {
+                RLActionReady = true;
+                return GetDelta(virtualUserTransform.forward);
             }
 
             //if (remainRotTime < maxRotTime)
@@ -166,10 +173,11 @@ public class SimulationController
             //    }
             //}
 
-            if (!virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
+            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
             {
                 //Debug.Log("Re-Located");
-                episode.DeleteTarget();
+                //episode.DeleteTarget();
+                episode.ReLocateTarget();
 
                 isFirst = true;
                 isFirst2 = true;

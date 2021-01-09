@@ -9,6 +9,12 @@ public class RDWSimulationManager : MonoBehaviour
     private GameObject[] unitObjects;
     Space2D realSpace, virtualSpace; // 실제 공간과 가상 공간에 대한 정보를 담은 변수
 
+    private bool SpaceRLMode = false;
+    private bool ArrangementRLMode = false;
+
+    private bool initializeRLAgent = false;
+    private int cntForInitialize = 0;
+
     public void GenerateUnitObjects()
     {
         if(unitObjects == null)
@@ -20,6 +26,13 @@ public class RDWSimulationManager : MonoBehaviour
                 {
                     unitObjects[i] = GameObject.Instantiate(simulationSetting.prefabSetting.RLPrefab);
                     unitObjects[i].name = "SpaceRLUnit_" + i;
+                    SpaceRLMode = true;
+                }
+                else if(redirectedUnits[i].GetRedirector() is ArrangementRedirector && simulationSetting.useVisualization)
+                {
+                    unitObjects[i] = GameObject.Instantiate(simulationSetting.prefabSetting.arrangementRLPrefab);
+                    unitObjects[i].name = "ArrangementRLUnit_" + i;
+                    ArrangementRLMode = true;
                 }
                 else
                 {
@@ -35,7 +48,16 @@ public class RDWSimulationManager : MonoBehaviour
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
             unitObjects[i].GetComponent<RedirectedUnitObject>().unit = redirectedUnits[i];
-            if (redirectedUnits[i].GetRedirector() is SpaceRedirector && simulationSetting.useVisualization) unitObjects[i].GetComponent<SpaceAgent>().OnEpisodeBegin();
+            if (redirectedUnits[i].GetRedirector() is SpaceRedirector && simulationSetting.useVisualization)
+            {
+                unitObjects[i].GetComponent<SpaceAgent>().OnEpisodeBegin();
+            }
+            else if (redirectedUnits[i].GetRedirector() is ArrangementRedirector && simulationSetting.useVisualization)
+            {
+                // unitObjects[i].GetComponent<ArrangementAgent>().OnEpisodeBegin();
+                unitObjects[i].GetComponent<ArrangementAgent>();
+                redirectedUnits[i].GetRedirector().SetRLArrangementAgent(unitObjects[i].GetComponent<ArrangementAgent>());
+            }
         }
     }
 
@@ -74,24 +96,73 @@ public class RDWSimulationManager : MonoBehaviour
             virtualSpace.GenerateSpace(simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
     }
 
+    public void GenerateRealSpace()
+    {
+        realSpace = simulationSetting.realSpaceSetting.GetSpace();
+        realSpace.spaceObject.transform2D.parent = this.transform;
+
+        if (!simulationSetting.realSpaceSetting.usePredefinedSpace)
+            realSpace.GenerateSpace(simulationSetting.prefabSetting.realMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
+    }
+
+    public void GenerateVirtualSpace()
+    {
+        virtualSpace = simulationSetting.virtualSpaceSetting.GetSpace();
+        virtualSpace.spaceObject.transform2D.parent = this.transform;
+
+        if (!simulationSetting.virtualSpaceSetting.usePredefinedSpace)
+            virtualSpace.GenerateSpace(simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
+    }
+
     public void GenerateUnits()
     {
         redirectedUnits = new RedirectedUnit[simulationSetting.unitSettings.Length];
         
         for (int i = 0; i < simulationSetting.unitSettings.Length; i++)
         {
-            redirectedUnits[i] = simulationSetting.unitSettings[i].GetUnit(realSpace, virtualSpace);
+            redirectedUnits[i] = simulationSetting.unitSettings[i].GetUnit(realSpace, virtualSpace); // 실질적으로 가져옴.
             redirectedUnits[i].GetEpisode().targetPrefab = simulationSetting.prefabSetting.targetPrefab;
             redirectedUnits[i].GetEpisode().setShowTarget(simulationSetting.showTarget);
             redirectedUnits[i].SetShowResetLocator(simulationSetting.showResetLocator);
             redirectedUnits[i].SetResetLocPrefab(simulationSetting.prefabSetting.resetLocPrefab);
         }
+        GenerateUnitObjects();
     }
 
     public bool IsAllEpisodeEnd()
     {
+        
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
+            // Debug.Log(redirectedUnits[i].GetCurrentTimeStep());
+            // Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
+            // Debug.Log(redirectedUnits.Length); // 1만 출력됨
+            // Debug.Log(redirectedUnits[i].GetCurrentTimeStep()); State 판단할때마다 계속 1씩 증가함. 엄청 빨리 올라감. 1000되면 끝남
+            // Debug.Log(redirectedUnits[i].GetArrangementRLAgent().MaxStep); 1000이 출력됨
+            // Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
+            if(SpaceRLMode)
+            {
+                if (redirectedUnits[i].GetCurrentTimeStep() >= redirectedUnits[i].GetRLAgent().MaxStep)
+                return true;
+            }
+            else if(ArrangementRLMode)
+            {
+                if (redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex() >= redirectedUnits[i].GetEpisode().GetEpisodeLength()) // 2,000 Length에 MaxStep은 100,000 정도까지 해야함
+                {
+
+                    DestroyUnits();
+                    GenerateUnits();
+
+                    unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode(); // EndEpisode -> Observation -> Begin ...
+                    redirectedUnits[i].GetEpisode().SetCurrentEpisodeIndex(0);
+                    unitObjects[i].GetComponent<ArrangementAgent>().SetActionReady(true);
+                    unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
+
+
+                    return false;
+                }
+            }
+            
             if (redirectedUnits[i].GetEpisode().IsNotEnd())
                 return false;
         }
@@ -103,18 +174,18 @@ public class RDWSimulationManager : MonoBehaviour
     {
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
-            Debug.Log("[Space]");
-            Debug.Log("RealSpace: " + redirectedUnits[i].GetRealSpace().spaceObject.transform2D);
-            Debug.Log("VirtualSpace: " + redirectedUnits[i].GetVirtualSpace().spaceObject.transform2D);
-            Debug.Log("[User]");
-            Debug.Log("RealUser: " + redirectedUnits[i].GetRealUser().transform2D);
-            Debug.Log("VirtualUser: " + redirectedUnits[i].GetVirtualUser().transform2D);
-            Debug.Log("[Current Target]");
-            Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
-            Debug.Log("[Target Length]");
-            Debug.Log(redirectedUnits[i].GetEpisode().GetEpisodeLength());
-            Debug.Log("[Result Data]");
-            Debug.Log(redirectedUnits[i].resultData);
+            // Debug.Log("[Space]");
+            // Debug.Log("RealSpace: " + redirectedUnits[i].GetRealSpace().spaceObject.transform2D);
+            // Debug.Log("VirtualSpace: " + redirectedUnits[i].GetVirtualSpace().spaceObject.transform2D);
+            // Debug.Log("[User]");
+            // Debug.Log("RealUser: " + redirectedUnits[i].GetRealUser().transform2D);
+            // Debug.Log("VirtualUser: " + redirectedUnits[i].GetVirtualUser().transform2D);
+            // Debug.Log("[Current Target]");
+            // Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
+            // Debug.Log("[Target Length]");
+            // Debug.Log(redirectedUnits[i].GetEpisode().GetEpisodeLength());
+            // Debug.Log("[Result Data]");
+            // Debug.Log(redirectedUnits[i].resultData);
         }
     }
 
@@ -149,11 +220,15 @@ public class RDWSimulationManager : MonoBehaviour
         DestroyAll();
         GenerateSpaces();
         GenerateUnits();
+        
 
         while (!IsAllEpisodeEnd())
         {
             for (int i = 0; i < redirectedUnits.Length; i++)
+            {
                 redirectedUnits[i].Simulation(redirectedUnits);
+            }
+
 
             if (simulationSetting.useDebugMode) DebugDraws();
 
@@ -169,6 +244,12 @@ public class RDWSimulationManager : MonoBehaviour
             GenerateSpaces();
             GenerateUnits();
 
+            //if(!initializeRLAgent)
+            //{
+            //    initializeRLAgent = true;
+            //    yield return new WaitForFixedUpdate();
+            //}
+
             while (!IsAllEpisodeEnd())
             {
                 for (int i = 0; i < redirectedUnits.Length; i++)
@@ -180,6 +261,7 @@ public class RDWSimulationManager : MonoBehaviour
             }
 
             PrintResult();
+            //initializeRLAgent = false;
 
         } while (simulationSetting.useContinousSimulation);
     }

@@ -6,6 +6,9 @@ using UnityEngine;
 public class ArrangementRedirector : Redirector
 {
     public ArrangementAgent arrangementAgent;
+    public bool executed = false;
+    public bool ready = true;
+    public int cnt = 0;
 
     public class ObstacleAction
     {
@@ -28,14 +31,22 @@ public class ArrangementRedirector : Redirector
         }
     }
     
+    public override void SetRLArrangementAgent(ArrangementAgent arrangementAgent)
+    {
+        this.arrangementAgent = arrangementAgent;
+    }
+    
     public List<ObstacleAction> obstacleActions;
     
     public override (GainType, float) ApplyRedirection(RedirectedUnit unit, Vector2 deltaPosition, float deltaRotation)
     {
-
         (GainType type, float degree) = base.ApplyRedirection(unit, deltaPosition, deltaRotation); // redirector
+        return (type, degree);
+    }
 
-        // space manipulation 
+    public override void ObstacleArrangement(RedirectedUnit unit)
+    {
+                // space manipulation 
         Space2D virtualSpace = unit.GetVirtualSpace();
         Object2D virtualUser = unit.virtualUser;
 
@@ -48,29 +59,68 @@ public class ArrangementRedirector : Redirector
 
         }
 
-        float fov = 85.0f;
-        for(int i=0; i<virtualSpace.obstacles.Count; i++)
+
+        if(!executed && ready && cnt < 2)
         {
-            Vector2 obstaclePosition = virtualSpace.obstacles[i].transform2D.localPosition;
-            Vector2 userToObstacle = obstaclePosition - virtualUser.transform2D.localPosition;
 
-            if (Vector2.Angle(virtualUser.transform2D.forward, userToObstacle) > fov && !virtualUser.IsIntersect(virtualSpace.obstacles[i])) // obstacle이 user 시야 밖에 있고 user와 충분히 멀다고 판단되는 경우
+            if(cnt == 1)
             {
-                //if (!virtualSpace.IsInside(virtualSpace.obstacles[i], 0.0f))
-                //{
-                //    obstacleActions[i].translation *= -1; // 기존과 반대 방향으로 가라는 뜻
-                //}
 
-                Vector2 samplingTranslation = obstacleActions[i].translation * Time.deltaTime;
-                float samplingRotation = obstacleActions[i].rotation * Time.deltaTime;
-                Vector2 samplingScale = obstacleActions[i].scale * Time.deltaTime;
+                for (int i=0; i<virtualSpace.obstacles.Count; i++)
+                {
+                    // Transform2D virtualUserTransform = virtualUser.transform2D;
+                    // Episode episode = unit.GetEpisode();
+                    // Vector2 targetPosition = episode.GetTarget(virtualUserTransform, virtualSpace);
 
-                virtualSpace.TranslateObstacleByIndex(i, samplingTranslation);
-                virtualSpace.RotateObstacleByIndex(i, samplingRotation);
-                virtualSpace.ScaleObstacleByIndex(i, samplingScale);
+                    // Debug.Log("Virtual User Position : "+ virtualUser.transform2D.localPosition);
+                    // Debug.Log("Target Position : "+ targetPosition);
+
+                    Vector2 samplingTranslation = obstacleActions[i].translation;
+                    float samplingRotation = obstacleActions[i].rotation;
+                    Vector2 samplingScale = obstacleActions[i].scale;
+
+                    // Obstacle 움직이기
+                    virtualSpace.TranslateObstacleByIndex(i, samplingTranslation);
+
+                    if(virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f))
+                    // if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
+                    // if (virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f) && virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
+                    {
+                        virtualSpace.TranslateObstacleByIndex(i, -samplingTranslation);
+                        // arrangementAgent.AddReward(-0.5f);
+                        // Debug.Log("Give Collision Reward!");
+                    }
+
+                    if (!virtualSpace.IsInside(virtualSpace.obstacles[i], 0.0f))
+                    {
+                        virtualSpace.TranslateObstacleByIndex(i, -samplingTranslation);
+                        arrangementAgent.AddReward(-0.5f);
+                        Debug.Log("Give Outside Reward!");
+                    }
+
+
+                }
+            }
+            cnt++;
+
+            if (cnt >= 2)
+            {
+                executed = true;
+                ready = false;
+            }
+
+        }
+        else
+        {
+            if(!ready && unit.GetEpisode().GetCurrentEpisodeIndex()+1 == unit.GetEpisode().GetEpisodeLength())
+            {
+                ready = true;
+            }
+            else if(ready && unit.GetEpisode().GetCurrentEpisodeIndex() == 0)
+            {
+                executed = false;
+                cnt = 0;
             }
         }
-
-        return (type, degree);
     }
 }
