@@ -19,7 +19,7 @@ public class ArrangementAgent : Agent
         unit.SetRLArrangementAgent(this);
         //ArrangementRedirector arrangementRedirector = (ArrangementRedirector)unit.GetRedirector();
 
-        Debug.Log("OnEpisodeBegin called");
+        // Debug.Log("OnEpisodeBegin called");
 
         // if (ready2)
         // {
@@ -41,7 +41,7 @@ public class ArrangementAgent : Agent
     //환경 정보를 관측 및 수집해 정책 결정을 위해 브레인에 전달하는 메소드
     public override void CollectObservations(VectorSensor sensor) // sensor should be normalized in [-1, 1] or [0, 1], state space : 2(float) + 4(Vec2) + 4(Vec2) + 8(개) * 2(Vec2)
     {
-        Debug.Log("CollectObservations called");
+        // Debug.Log("CollectObservations called");
         unit = GetComponent<RedirectedUnitObject>().unit;
         // if (unit.GetEpisode().GetCurrentEpisodeIndex() == cnt || true)
         // {
@@ -74,20 +74,20 @@ public class ArrangementAgent : Agent
         Vector2 normalizedVirtualLocalPosition = new Vector2(virtualUserLocalPosition.x / virtualSpaceBound.extents.x, virtualUserLocalPosition.y / virtualSpaceBound.extents.y); // [-1, 1]
         sensor.AddObservation(normalizedVirtualLocalPosition);
 
-        // // virtual user forward
-        // Vector2 virtualUserForward = unit.GetVirtualUser().transform2D.forward; // [-1, 1], already normalized
-        // sensor.AddObservation(virtualUserForward);
+        // virtual user forward
+        Vector2 virtualUserForward = unit.GetVirtualUser().transform2D.forward; // [-1, 1], already normalized
+        sensor.AddObservation(virtualUserForward);
 
 
         // virtual obstacle local positions
         //Bounds2D virtualSpaceBound = unit.GetVirtualSpace().spaceObject.bound;
-        List<Object2D> obstacles = unit.GetVirtualSpace().obstacles;
-        Vector2[] normalizedObstacleLocalPositions = new Vector2[obstacles.Count];
-        for (int i = 0; i < obstacles.Count; i++)
-        {
-            normalizedObstacleLocalPositions[i] = new Vector2(obstacles[i].transform2D.localPosition.x / virtualSpaceBound.extents.x, obstacles[i].transform2D.localPosition.y / virtualSpaceBound.extents.y); // [-1, 1]
-            sensor.AddObservation(normalizedObstacleLocalPositions[i]);
-        }
+        // List<Object2D> obstacles = unit.GetVirtualSpace().obstacles;
+        // Vector2[] normalizedObstacleLocalPositions = new Vector2[obstacles.Count];
+        // for (int i = 0; i < obstacles.Count; i++)
+        // {
+        //     normalizedObstacleLocalPositions[i] = new Vector2(obstacles[i].transform2D.localPosition.x / virtualSpaceBound.extents.x, obstacles[i].transform2D.localPosition.y / virtualSpaceBound.extents.y); // [-1, 1]
+        //     sensor.AddObservation(normalizedObstacleLocalPositions[i]);
+        // }
 
         //cnt++;
         // }
@@ -101,12 +101,12 @@ public class ArrangementAgent : Agent
      //브레인(정책)으로 부터 전달 받은 행동을 실행하는 메소드
     public override void OnActionReceived(float[] vectorAction) // vectorAction is normalized in [-1, 1], action space : 8(개) * 2(Vec2)
     {
-        Debug.Log("OnActionReceived called");
+        // Debug.Log("OnActionReceived called");
         if (unit.GetEpisode().GetCurrentEpisodeIndex() == 0 && ready)
         {
             //Debug.Log("CurrentEpisodeIndex in OnActionReceived : " + unit.GetEpisode().GetCurrentEpisodeIndex());
             ArrangementRedirector arrangementRedirector = (ArrangementRedirector)unit.GetRedirector();
-            float maxTranslation = 2f;
+            float maxTranslation = 2f; // Environment1: 2f, Environment2: 2f
             float maxScale = 0;
 
             for (int i = 0; i < vectorAction.Length; i += eachActionSpace)

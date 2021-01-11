@@ -701,17 +701,17 @@ MonoBehaviour:
       episodeType: 3
       episodeLength: 1000
       episodeFileName: 
-      useRandomStartReal: 0
-      useRandomStartVirtual: 0
-      userPrefab: {fileID: 3594628791589679955, guid: f133cf5eff70dbe418039e6141fe27e3,
+      useRandomStartReal: 1
+      useRandomStartVirtual: 1
+      userPrefab: {fileID: 3594628791589679955, guid: 0acf7343fb0854d4aa18aeb55b79a20d,
         type: 3}
       userStartRotation: 0
       realStartRotation: 0
       virtualStartRotation: 0
       realStartPosition: {x: 0, y: 0}
       virtualStartPosition: {x: 0, y: 0}
-      translationSpeed: 0.5
-      rotationSpeed: 60
+      translationSpeed: 4
+      rotationSpeed: 500
     showTarget: 0
     showResetLocator: 0
 --- !u!1 &1862952063

@@ -6,6 +6,7 @@ public class Space2D
 {
     public Object2D spaceObject;
     public List<Object2D> obstacles;
+    private List<Vector2> initialObstaclePositions;
 
     public Space2D() // 기본 생성자
     {
@@ -82,13 +83,41 @@ public class Space2D
     public void GenerateSpace(Material spaceMaterial, Material obstacleMaterial, float spaceHeight, float obstacleHeight, string name = null)
     {
         this.spaceObject.GenerateShape(spaceMaterial, spaceHeight, false, name);
-
+        
         for (int i=0; i<this.obstacles.Count; i++)
         {
             string obstacleName = "obstacle_" + i;
             this.obstacles[i].GenerateShape(obstacleMaterial, obstacleHeight, true, obstacleName);
             this.obstacles[i].transform2D.parent = this.spaceObject.transform2D.transform;
         }
+    }
+
+    public List<Vector2> GetInitialObstaclePositions()
+    {
+        return this.initialObstaclePositions;
+    }
+
+    public void SetInitialObstaclePositions(List<Vector2> initialObstaclePositions)
+    {
+        this.initialObstaclePositions = initialObstaclePositions;
+    }
+
+    public Vector2 GetObstaclePositionByIndex(int index)
+    {
+        if (index >= 0 && index < this.obstacles.Count)
+        {
+            return this.obstacles[index].transform2D.localPosition;
+        }
+        else
+        {
+            return Vector2.zero;
+        }
+    }
+
+    public void JumpObstacleByIndex(int index, Vector2 displacement, Space relativeTo = Space.Self)
+    {
+        if(index >= 0 && index < this.obstacles.Count)
+            this.obstacles[index].transform2D.localPosition = displacement;
     }
 
     public void TranslateObstacleByIndex(int index, Vector2 translation, Space relativeTo = Space.Self)

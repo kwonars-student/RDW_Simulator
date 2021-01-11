@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using System;
 
@@ -14,6 +15,9 @@ public class RDWSimulationManager : MonoBehaviour
 
     private bool initializeRLAgent = false;
     private int cntForInitialize = 0;
+
+    private bool initializedForObstaclePosition = false;
+    private List<Vector2> initialObstaclePositions;
 
     public void GenerateUnitObjects()
     {
@@ -84,16 +88,8 @@ public class RDWSimulationManager : MonoBehaviour
 
     public void GenerateSpaces()
     {
-        realSpace = simulationSetting.realSpaceSetting.GetSpace();
-        virtualSpace = simulationSetting.virtualSpaceSetting.GetSpace();
-
-        realSpace.spaceObject.transform2D.parent = this.transform;
-        virtualSpace.spaceObject.transform2D.parent = this.transform;
-        
-        if (!simulationSetting.realSpaceSetting.usePredefinedSpace)
-            realSpace.GenerateSpace(simulationSetting.prefabSetting.realMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
-        if (!simulationSetting.virtualSpaceSetting.usePredefinedSpace)
-            virtualSpace.GenerateSpace(simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
+        GenerateRealSpace();
+        GenerateVirtualSpace();
     }
 
     public void GenerateRealSpace()
@@ -111,7 +107,21 @@ public class RDWSimulationManager : MonoBehaviour
         virtualSpace.spaceObject.transform2D.parent = this.transform;
 
         if (!simulationSetting.virtualSpaceSetting.usePredefinedSpace)
+        {
             virtualSpace.GenerateSpace(simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
+        }
+            
+        if(!initializedForObstaclePosition)
+        {
+            initializedForObstaclePosition = true;
+            this.initialObstaclePositions = new List<Vector2>();
+            for (int i=0; i<virtualSpace.obstacles.Count; i++)
+            {
+                initialObstaclePositions.Add(virtualSpace.GetObstaclePositionByIndex(i));
+            }
+
+            virtualSpace.SetInitialObstaclePositions(initialObstaclePositions);
+        }
     }
 
     public void GenerateUnits()
@@ -238,12 +248,18 @@ public class RDWSimulationManager : MonoBehaviour
 
     public IEnumerator SlowSimulationRoutine()
     {
+        Time.timeScale = 1f;
         do
         {
             DestroyAll();
             GenerateSpaces();
             GenerateUnits();
 
+            for (int i = 0; i < redirectedUnits.Length; i++)
+            {
+                unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
+            }
+            
             //if(!initializeRLAgent)
             //{
             //    initializeRLAgent = true;
@@ -253,7 +269,10 @@ public class RDWSimulationManager : MonoBehaviour
             while (!IsAllEpisodeEnd())
             {
                 for (int i = 0; i < redirectedUnits.Length; i++)
+                {
                     redirectedUnits[i].Simulation(redirectedUnits);
+                }
+                    
 
                 if (simulationSetting.useDebugMode) DebugDraws();
 

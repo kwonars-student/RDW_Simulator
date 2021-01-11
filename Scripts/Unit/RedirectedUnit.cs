@@ -126,7 +126,7 @@ public class RedirectedUnit
                     if (arrangementAgent != null)
                     {
                         arrangementAgent.AddReward(-0.01f);
-                        Debug.Log("Give Reset Reward!");
+                        // Debug.Log("Give Reset Reward!");
                     }
                 }
 
@@ -164,7 +164,7 @@ public class RedirectedUnit
                         initialStep = false;
                         nextStep = step + 1;
                         if(arrangementAgent != null) arrangementAgent.AddReward(+0.001f);
-                        Debug.Log("Give Step Reward!");
+                        // Debug.Log("Give Step Reward!");
                     }
                     else if(!initialStep && nextStep == controller.GetEpisode().GetCurrentEpisodeIndex())
                     {
