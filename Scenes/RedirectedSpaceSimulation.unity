@@ -646,14 +646,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1360866780}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32b72894b0195484f82b196bca4fd2ce, type: 3}
+  m_Script: {fileID: 11500000, guid: 4f9c276cea797314ea8a4dea40294605, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   simulationSetting:
     useVisualization: 1
     useDebugMode: 0
     useContinousSimulation: 1
-    prefabSetting: {fileID: 11400000, guid: 9852f6c4390897f4c87397288ab1f720, type: 2}
+    prefabSetting: {fileID: 11400000, guid: 44d2741166066a84ca3987e75f90a062, type: 2}
     realSpaceSetting:
       usePredefinedSpace: 0
       name: Real Space
@@ -677,7 +677,7 @@ MonoBehaviour:
     virtualSpaceSetting:
       usePredefinedSpace: 1
       name: Virtual Space
-      predefinedSpace: {fileID: 6461408160479495530, guid: 2b2b3f828d04caf4e9bb5b326d1430b3,
+      predefinedSpace: {fileID: 6461408160479495530, guid: 9583cd6879a3a8a449e36ac187734429,
         type: 3}
       position: {x: 20, y: 0}
       rotation: 0
@@ -703,7 +703,7 @@ MonoBehaviour:
       episodeFileName: 
       useRandomStartReal: 1
       useRandomStartVirtual: 1
-      userPrefab: {fileID: 3594628791589679955, guid: 0acf7343fb0854d4aa18aeb55b79a20d,
+      userPrefab: {fileID: 3594628791589679955, guid: 025372ef7f89ac144b3abb9972ea1399,
         type: 3}
       userStartRotation: 0
       realStartRotation: 0

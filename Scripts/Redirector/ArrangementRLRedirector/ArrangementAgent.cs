@@ -52,15 +52,15 @@ public class ArrangementAgent : Agent
         // float normalizedRealLocalRotation = ((realUserLocalRotation % 360) + 360) % 360 / 360; // [0, 1]
         // sensor.AddObservation(normalizedRealLocalRotation);
 
-        // // real user local position
-        // Bounds2D realSpaceBound = unit.GetRealSpace().spaceObject.bound;
-        // Vector2 realUserLocalPosition = unit.GetRealUser().transform2D.localPosition;
-        // Vector2 normalizedRealLocalPosition = new Vector2(realUserLocalPosition.x / realSpaceBound.extents.x, realUserLocalPosition.y / realSpaceBound.extents.y); // [-1, 1]
-        // sensor.AddObservation(normalizedRealLocalPosition);
+        // real user local position
+        Bounds2D realSpaceBound = unit.GetRealSpace().spaceObject.bound;
+        Vector2 realUserLocalPosition = unit.GetRealUser().transform2D.localPosition;
+        Vector2 normalizedRealLocalPosition = new Vector2(realUserLocalPosition.x / realSpaceBound.extents.x, realUserLocalPosition.y / realSpaceBound.extents.y); // [-1, 1]
+        sensor.AddObservation(normalizedRealLocalPosition);
 
-        // // real user forward
-        // Vector2 realUserForward = unit.GetRealUser().transform2D.forward; // [-1, 1], already normalized
-        // sensor.AddObservation(realUserForward);
+        // real user forward
+        Vector2 realUserForward = unit.GetRealUser().transform2D.forward; // [-1, 1], already normalized
+        sensor.AddObservation(realUserForward);
 
 
         // // virtual user local rotation

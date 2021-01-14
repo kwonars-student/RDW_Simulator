@@ -18,6 +18,9 @@ behaviors:
       extrinsic:
         gamma: 0.99
         strength: 1.0
-    max_steps: 500000
+    max_steps: 100000
     time_horizon: 64
-    summary_freq: 1000
+    summary_freq: 10
+engine_settings:
+  time_scale: 100
+  no_graphics: true
