@@ -228,7 +228,8 @@ public class RedirectedUnit
 
         if(redirector is ArrangementRedirector)
         {
-            redirector.ObstacleArrangement(this); // VirtualMove 전에 호출하여 virtualSpace의 배치 변형
+            ArrangementRedirector arrangementRedirector = (ArrangementRedirector) redirector;
+            arrangementRedirector.ObstacleArrangement(this); // VirtualMove 전에 호출하여 virtualSpace의 배치 변형
         }
 
         (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)

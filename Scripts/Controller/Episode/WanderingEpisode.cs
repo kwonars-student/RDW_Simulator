@@ -7,6 +7,8 @@ public class WanderingEpisode : Episode
     private int count;
     private int emergencyExitCount;
     private bool emergencyExit = false;
+    private Vector2 previousUserPosition;
+    // private Vector2 previousTargetPosition1;
 
     public WanderingEpisode() : base() { }
 
@@ -37,7 +39,7 @@ public class WanderingEpisode : Episode
                 {
                     emergencyExit = true;
                     emergencyExitCount = 0;
-                    virtualUserTransform.Translate(-virtualUserTransform.localPosition * Time.fixedDeltaTime, Space.World);
+                    virtualUserTransform.Translate(previousUserPosition - virtualUserTransform.localPosition, Space.World);
                     break;
                 }
             }
@@ -50,10 +52,12 @@ public class WanderingEpisode : Episode
         if (emergencyExit)
         {
             emergencyExit = false;
-            currentTargetPosition = virtualUserTransform.localPosition - virtualUserTransform.localPosition * Time.fixedDeltaTime;
+            currentTargetPosition = previousUserPosition;
         }
         else
         {
+            count = 1;
+            previousUserPosition = userPosition;
             currentTargetPosition = samplingPosition;
         }
         

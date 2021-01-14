@@ -60,7 +60,8 @@ public class RDWSimulationManager : MonoBehaviour
             {
                 // unitObjects[i].GetComponent<ArrangementAgent>().OnEpisodeBegin();
                 unitObjects[i].GetComponent<ArrangementAgent>();
-                redirectedUnits[i].GetRedirector().SetRLArrangementAgent(unitObjects[i].GetComponent<ArrangementAgent>());
+                ArrangementRedirector arrangementRedirector = (ArrangementRedirector) redirectedUnits[i].GetRedirector();
+                arrangementRedirector.SetRLArrangementAgent(unitObjects[i].GetComponent<ArrangementAgent>());
             }
         }
     }
@@ -248,7 +249,7 @@ public class RDWSimulationManager : MonoBehaviour
 
     public IEnumerator SlowSimulationRoutine()
     {
-        Time.timeScale = 1f;
+        Time.timeScale = 10f;
         do
         {
             DestroyAll();

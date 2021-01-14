@@ -36,14 +36,5 @@ public class Redirector
     {
         return new Dictionary<string, float>();
     }
-
-    public virtual void SetRLArrangementAgent(ArrangementAgent agent) // Arrangement RDW에서 활용
-    {
-
-    }
-
-    public virtual void ObstacleArrangement(RedirectedUnit unit) // Arrangement RDW에서 활용
-    {
-
-    }
+    
 }

@@ -40,12 +40,12 @@ public class ArrangementRedirector : Redirector
         return (type, degree);
     }
     
-    public override void SetRLArrangementAgent(ArrangementAgent arrangementAgent)
+    public void SetRLArrangementAgent(ArrangementAgent arrangementAgent)
     {
         this.arrangementAgent = arrangementAgent;
     }
     
-    public override void ObstacleArrangement(RedirectedUnit unit)
+    public void ObstacleArrangement(RedirectedUnit unit)
     {
                 // space manipulation 
         Space2D virtualSpace = unit.GetVirtualSpace();
@@ -90,7 +90,7 @@ public class ArrangementRedirector : Redirector
                     // if (virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f) && virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
                     {
                         virtualSpace.JumpObstacleByIndex(i, initialObstaclePositions[i]);
-                        arrangementAgent.AddReward(-1f);
+                        arrangementAgent.AddReward(0.1f); // 바로 끝나는 경우이므로 평균 Reward값을 주고 끝냄.
                         unit.GetEpisode().SetCurrentEpisodeIndex(unit.GetEpisode().GetEpisodeLength());
                         // Debug.Log("Give Collision Reward!");
                     }
