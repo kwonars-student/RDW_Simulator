@@ -8,7 +8,6 @@ public class WanderingEpisode : Episode
     private int emergencyExitCount;
     private bool emergencyExit = false;
     private Vector2 previousUserPosition;
-    // private Vector2 previousTargetPosition1;
 
     public WanderingEpisode() : base() { }
 

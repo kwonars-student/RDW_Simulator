@@ -90,7 +90,7 @@ public class ArrangementRedirector : Redirector
                     // if (virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f) && virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
                     {
                         virtualSpace.JumpObstacleByIndex(i, initialObstaclePositions[i]);
-                        arrangementAgent.AddReward(0.1f); // 바로 끝나는 경우이므로 평균 Reward값을 주고 끝냄.
+                        arrangementAgent.AddReward(0.32f); // 바로 끝나는 경우이므로 평균 Reward값을 주고 끝냄.
                         unit.GetEpisode().SetCurrentEpisodeIndex(unit.GetEpisode().GetEpisodeLength());
                         // Debug.Log("Give Collision Reward!");
                     }

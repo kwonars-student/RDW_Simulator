@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Unity.MLAgents;
 
 public class RDWSimulationManager : MonoBehaviour
 {
@@ -26,13 +27,13 @@ public class RDWSimulationManager : MonoBehaviour
             unitObjects = new GameObject[redirectedUnits.Length];
             for (int i=0; i< redirectedUnits.Length; i++)
             {
-                if (redirectedUnits[i].GetRedirector() is SpaceRedirector && simulationSetting.useVisualization)
+                if (redirectedUnits[i].GetRedirector() is SpaceRedirector)// && simulationSetting.useVisualization)
                 {
                     unitObjects[i] = GameObject.Instantiate(simulationSetting.prefabSetting.RLPrefab);
                     unitObjects[i].name = "SpaceRLUnit_" + i;
                     SpaceRLMode = true;
                 }
-                else if(redirectedUnits[i].GetRedirector() is ArrangementRedirector && simulationSetting.useVisualization)
+                else if(redirectedUnits[i].GetRedirector() is ArrangementRedirector)// && simulationSetting.useVisualization)
                 {
                     unitObjects[i] = GameObject.Instantiate(simulationSetting.prefabSetting.arrangementRLPrefab);
                     unitObjects[i].name = "ArrangementRLUnit_" + i;
@@ -52,13 +53,12 @@ public class RDWSimulationManager : MonoBehaviour
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
             unitObjects[i].GetComponent<RedirectedUnitObject>().unit = redirectedUnits[i];
-            if (redirectedUnits[i].GetRedirector() is SpaceRedirector && simulationSetting.useVisualization)
+            if (redirectedUnits[i].GetRedirector() is SpaceRedirector)// && simulationSetting.useVisualization)
             {
                 unitObjects[i].GetComponent<SpaceAgent>().OnEpisodeBegin();
             }
-            else if (redirectedUnits[i].GetRedirector() is ArrangementRedirector && simulationSetting.useVisualization)
+            else if (redirectedUnits[i].GetRedirector() is ArrangementRedirector)// && simulationSetting.useVisualization)
             {
-                // unitObjects[i].GetComponent<ArrangementAgent>().OnEpisodeBegin();
                 unitObjects[i].GetComponent<ArrangementAgent>();
                 ArrangementRedirector arrangementRedirector = (ArrangementRedirector) redirectedUnits[i].GetRedirector();
                 arrangementRedirector.SetRLArrangementAgent(unitObjects[i].GetComponent<ArrangementAgent>());
@@ -185,18 +185,18 @@ public class RDWSimulationManager : MonoBehaviour
     {
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
-            // Debug.Log("[Space]");
-            // Debug.Log("RealSpace: " + redirectedUnits[i].GetRealSpace().spaceObject.transform2D);
-            // Debug.Log("VirtualSpace: " + redirectedUnits[i].GetVirtualSpace().spaceObject.transform2D);
-            // Debug.Log("[User]");
-            // Debug.Log("RealUser: " + redirectedUnits[i].GetRealUser().transform2D);
-            // Debug.Log("VirtualUser: " + redirectedUnits[i].GetVirtualUser().transform2D);
-            // Debug.Log("[Current Target]");
-            // Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
-            // Debug.Log("[Target Length]");
-            // Debug.Log(redirectedUnits[i].GetEpisode().GetEpisodeLength());
-            // Debug.Log("[Result Data]");
-            // Debug.Log(redirectedUnits[i].resultData);
+            Debug.Log("[Space]");
+            Debug.Log("RealSpace: " + redirectedUnits[i].GetRealSpace().spaceObject.transform2D);
+            Debug.Log("VirtualSpace: " + redirectedUnits[i].GetVirtualSpace().spaceObject.transform2D);
+            Debug.Log("[User]");
+            Debug.Log("RealUser: " + redirectedUnits[i].GetRealUser().transform2D);
+            Debug.Log("VirtualUser: " + redirectedUnits[i].GetVirtualUser().transform2D);
+            Debug.Log("[Current Target]");
+            Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
+            Debug.Log("[Target Length]");
+            Debug.Log(redirectedUnits[i].GetEpisode().GetEpisodeLength());
+            Debug.Log("[Result Data]");
+            Debug.Log(redirectedUnits[i].resultData);
         }
     }
 
@@ -227,24 +227,30 @@ public class RDWSimulationManager : MonoBehaviour
         //    j++;
 
         //} while (j < 3);
-
-        DestroyAll();
-        GenerateSpaces();
-        GenerateUnits();
-        
-
-        while (!IsAllEpisodeEnd())
+        do
         {
+            DestroyAll();
+            GenerateSpaces();
+            GenerateUnits();
+
             for (int i = 0; i < redirectedUnits.Length; i++)
             {
-                redirectedUnits[i].Simulation(redirectedUnits);
+                unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
             }
 
+            while (!IsAllEpisodeEnd())
+            {
+                for (int i = 0; i < redirectedUnits.Length; i++)
+                {
+                    redirectedUnits[i].Simulation(redirectedUnits);
+                    Academy.Instance.EnvironmentStep();
+                }
 
-            if (simulationSetting.useDebugMode) DebugDraws();
+            }
 
-        }
-        PrintResult();
+            PrintResult();
+
+        } while (simulationSetting.useContinousSimulation);
     }
 
     public IEnumerator SlowSimulationRoutine()
@@ -273,7 +279,6 @@ public class RDWSimulationManager : MonoBehaviour
                 {
                     redirectedUnits[i].Simulation(redirectedUnits);
                 }
-                    
 
                 if (simulationSetting.useDebugMode) DebugDraws();
 
