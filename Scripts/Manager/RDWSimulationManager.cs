@@ -49,7 +49,10 @@ public class RDWSimulationManager : MonoBehaviour
                 unitObjects[i].transform.parent = this.transform;
             }
         }
+    }
 
+    public void AssignUnitObjects()
+    {
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
             unitObjects[i].GetComponent<RedirectedUnitObject>().unit = redirectedUnits[i];
@@ -138,6 +141,37 @@ public class RDWSimulationManager : MonoBehaviour
             redirectedUnits[i].SetResetLocPrefab(simulationSetting.prefabSetting.resetLocPrefab);
         }
         GenerateUnitObjects();
+        AssignUnitObjects();
+    }
+
+    public void ReassignUnits()
+    {        
+        for (int i = 0; i < simulationSetting.unitSettings.Length; i++)
+        {
+            if (simulationSetting.unitSettings[i].useRandomStartReal)
+            {
+                redirectedUnits[i].realUser.transform2D.localPosition = realSpace.GetRandomPoint(0.2f);
+                redirectedUnits[i].realUser.transform2D.localRotation = Utility.sampleUniform(0f, 360f);
+            }
+            else
+            {
+                redirectedUnits[i].realUser.transform2D.localPosition = Vector2.zero;
+                redirectedUnits[i].realUser.transform2D.localRotation = 0;
+            }
+
+            if (simulationSetting.unitSettings[i].useRandomStartVirtual)
+            {
+                redirectedUnits[i].virtualUser.transform2D.localPosition = virtualSpace.GetRandomPoint(0.2f);
+                redirectedUnits[i].virtualUser.transform2D.localRotation = Utility.sampleUniform(0f, 360f);
+            }
+            else
+            {
+                redirectedUnits[i].virtualUser.transform2D.localPosition = Vector2.zero;
+                redirectedUnits[i].virtualUser.transform2D.localRotation = 0;
+            }
+
+        }
+        AssignUnitObjects();
     }
 
     public bool IsAllEpisodeEnd()
@@ -145,11 +179,9 @@ public class RDWSimulationManager : MonoBehaviour
         
         for (int i = 0; i < redirectedUnits.Length; i++)
         {
-            // Debug.Log(redirectedUnits[i].GetCurrentTimeStep());
-            // Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
             // Debug.Log(redirectedUnits.Length); // 1만 출력됨
             // Debug.Log(redirectedUnits[i].GetCurrentTimeStep()); State 판단할때마다 계속 1씩 증가함. 엄청 빨리 올라감. 1000되면 끝남
-            // Debug.Log(redirectedUnits[i].GetArrangementRLAgent().MaxStep); 1000이 출력됨
+            // Debug.Log(redirectedUnits[i].GetArrangementRLAgent().MaxStep);
             // Debug.Log(redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex());
             if(SpaceRLMode)
             {
@@ -161,14 +193,23 @@ public class RDWSimulationManager : MonoBehaviour
                 if (redirectedUnits[i].GetEpisode().GetCurrentEpisodeIndex() >= redirectedUnits[i].GetEpisode().GetEpisodeLength()) // 2,000 Length에 MaxStep은 100,000 정도까지 해야함
                 {
 
-                    DestroyUnits();
-                    GenerateUnits();
-
-                    unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode(); // EndEpisode -> Observation -> Begin ...
+                    // DestroyUnits();
+                    // GenerateUnits();
+                    ArrangementRedirector arrangementRedirector = (ArrangementRedirector)redirectedUnits[i].GetRedirector();
+                    if (arrangementRedirector.GetEpisodeSkipNeeded())
+                    {
+                        arrangementRedirector.SetEpisodeSkipNeeded(false);
+                        unitObjects[i].GetComponent<ArrangementAgent>().OnEpisodeBegin();
+                    }
+                    else
+                    {
+                        unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode(); // EndEpisode -> Observation -> Begin ...
+                    }
+                    
+                    ReassignUnits();
                     redirectedUnits[i].GetEpisode().SetCurrentEpisodeIndex(0);
                     unitObjects[i].GetComponent<ArrangementAgent>().SetActionReady(true);
                     unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
-
 
                     return false;
                 }

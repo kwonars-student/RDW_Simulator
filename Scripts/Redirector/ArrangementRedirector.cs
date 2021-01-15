@@ -10,6 +10,7 @@ public class ArrangementRedirector : Redirector
     private bool ready = true;
     private int cnt = 0;
     private List<Vector2> initialObstaclePositions;
+    private bool episodeSkipNeeded = false;
 
     public class ObstacleAction
     {
@@ -44,7 +45,17 @@ public class ArrangementRedirector : Redirector
     {
         this.arrangementAgent = arrangementAgent;
     }
-    
+
+    public bool GetEpisodeSkipNeeded()
+    {
+        return episodeSkipNeeded;
+    }
+
+    public void SetEpisodeSkipNeeded(bool episodeSkipNeeded)
+    {
+        this.episodeSkipNeeded = episodeSkipNeeded;
+    }
+
     public void ObstacleArrangement(RedirectedUnit unit)
     {
                 // space manipulation 
@@ -85,14 +96,15 @@ public class ArrangementRedirector : Redirector
                     // Obstacle 움직이기
                     virtualSpace.JumpObstacleByIndex(i, displacement);
 
-                    if(virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f))
+                    if (virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f))
                     // if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
                     // if (virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f) && virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
                     {
-                        virtualSpace.JumpObstacleByIndex(i, initialObstaclePositions[i]);
-                        arrangementAgent.AddReward(0.32f); // 바로 끝나는 경우이므로 평균 Reward값을 주고 끝냄.
-                        unit.GetEpisode().SetCurrentEpisodeIndex(unit.GetEpisode().GetEpisodeLength());
+                        episodeSkipNeeded = true;
+                        //virtualSpace.JumpObstacleByIndex(i, initialObstaclePositions[i]);
+                        // arrangementAgent.AddReward(0.32f); // 바로 끝나는 경우이므로 평균 Reward값을 주고 끝냄.
                         // Debug.Log("Give Collision Reward!");
+                        unit.GetEpisode().SetCurrentEpisodeIndex(unit.GetEpisode().GetEpisodeLength());
                     }
 
                     // if (!virtualSpace.IsInside(virtualSpace.obstacles[i], 0.0f))

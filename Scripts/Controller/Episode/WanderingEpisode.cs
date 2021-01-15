@@ -51,7 +51,7 @@ public class WanderingEpisode : Episode
         if (emergencyExit)
         {
             emergencyExit = false;
-            currentTargetPosition = previousUserPosition;
+            currentTargetPosition = previousUserPosition + 0.1f*(previousUserPosition - virtualUserTransform.localPosition);
         }
         else
         {
