@@ -2,23 +2,22 @@
     "ArrangementRL": {
         "checkpoints": [
             {
-                "steps": 3571,
-                "file_path": "results\\RandomExp25\\ArrangementRL\\ArrangementRL-3571.onnx",
-                "reward": 0.39248771802491644,
-                "creation_time": 1610678350.261582
+                "steps": 10,
+                "file_path": "results\\RandomExp25\\ArrangementRL\\ArrangementRL-10.onnx",
+                "reward": 0.37239762842655183,
+                "creation_time": 1610679787.3284829
             }
         ],
         "final_checkpoint": {
-            "steps": 3571,
+            "steps": 10,
             "file_path": "results\\RandomExp25\\ArrangementRL.onnx",
-            "reward": 0.39248771802491644,
-            "creation_time": 1610678350.261582
+            "reward": 0.37239762842655183,
+            "creation_time": 1610679787.3284829
         }
     },
     "metadata": {
         "stats_format_version": "0.2.0",
-        "mlagents_version": "0.23.0.dev0",
-        "torch_version": "1.7.0+cu110",
-        "tensorflow_version": -1
+        "mlagents_version": "0.24.0.dev0",
+        "torch_version": "1.7.0+cu110"
     }
 }

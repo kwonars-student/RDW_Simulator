@@ -24,13 +24,12 @@ behaviors:
     init_path: null
     keep_checkpoints: 5
     checkpoint_interval: 500000
-    max_steps: 10
+    max_steps: 100000
     time_horizon: 64
     summary_freq: 10
     threaded: true
     self_play: null
     behavioral_cloning: null
-    framework: pytorch
 env_settings:
   env_path: null
   env_args: null
@@ -41,7 +40,7 @@ engine_settings:
   width: 84
   height: 84
   quality_level: 5
-  time_scale: 200.0
+  time_scale: 100.0
   target_frame_rate: -1
   capture_frame_rate: 60
   no_graphics: true
