@@ -95,7 +95,8 @@ public class ArrangementRedirector : Redirector
 
                     // Obstacle 움직이기
                     virtualSpace.JumpObstacleByIndex(i, displacement);
-
+                    virtualSpace.RotateObstacleByIndex(i, samplingRotation);
+                    
                     if (virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f))
                     // if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
                     // if (virtualSpace.obstacles[i].IsInside(virtualUser, 0.0f) && virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))

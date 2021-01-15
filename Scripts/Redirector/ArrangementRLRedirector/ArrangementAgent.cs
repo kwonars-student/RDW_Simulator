@@ -7,7 +7,8 @@ using Unity.MLAgents.Sensors;
 public class ArrangementAgent : Agent
 {
     RedirectedUnit unit;
-    int eachActionSpace = 2; // for each obstacle, they have 2 action space (translation,)
+    // int eachActionSpace = 2; // for each obstacle, they have 2 action space (translation,)
+    int eachActionSpace = 3; // for each obstacle, they have 3 action space (translation, rotation)
     bool ready = true;
     bool ready2 = true;
     int cnt = 0;
@@ -112,9 +113,9 @@ public class ArrangementAgent : Agent
             for (int i = 0; i < vectorAction.Length; i += eachActionSpace)
             {
                 Vector2 selectedTranslation = new Vector2(vectorAction[i] * maxTranslation, vectorAction[i + 1] * maxTranslation);
-                //float selectedRotation = vectorAction[i + 2] * 180;
+                float selectedRotation = vectorAction[i + 2] * 180;
+                //float selectedRotation = 0;
                 //Vector2 selectedScale = new Vector2(vectorAction[i + 3] * maxScale, vectorAction[i + 4] * maxScale);
-                float selectedRotation = 0;
                 Vector2 selectedScale = Vector2.zero;
 
                 int j = i / eachActionSpace;
