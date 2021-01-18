@@ -137,7 +137,7 @@ public class ArrangementAgent : Agent
         {
             //Debug.Log("CurrentEpisodeIndex in OnActionReceived : " + unit.GetEpisode().GetCurrentEpisodeIndex());
             ArrangementRedirector arrangementRedirector = (ArrangementRedirector)unit.GetRedirector();
-            float maxTranslation = 2f; // Environment1: 2f, Environment2: 2f
+            float maxTranslation = 3f; // Environment1: 2f, Environment2: 2f, Environment2: 3f
             float maxScale = 0;
 
             for (int i = 0; i < vectorAction.Length; i += eachActionSpace)

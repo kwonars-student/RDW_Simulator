@@ -181,7 +181,15 @@ public class RDWSimulationManager : MonoBehaviour
     {
         for(int i = 0; i < redirectedUnits.Length; i++)
         {
-            redirectedUnits[i].ClearResetLocObjects();
+            redirectedUnits[i].DeleteResetLocObjects();
+        }
+    }
+
+    public void GenerateResetLocators()
+    {
+        for(int i = 0; i < redirectedUnits.Length; i++)
+        {
+            redirectedUnits[i].GenerateResetLocObjects();
         }
     }
 
@@ -206,7 +214,9 @@ public class RDWSimulationManager : MonoBehaviour
 
                     // DestroyUnits();
                     // GenerateUnits();
+                    // Debug.Log("Number of Resets: " + redirectedUnits[i].GetNumOfResetLocObjects());
                     DeleteResetLocators();
+                    GenerateResetLocators();
 
                     if (redirectedUnits[i].GetEpisode().GetWrongEpisode())
                     {

@@ -332,11 +332,22 @@ public class RedirectedUnit
         this.resetLocPrefab = resetLocPrefab;
     }
 
-    public void ClearResetLocObjects()
+    public void DeleteResetLocObjects()
     {
         for(int i = 0; i < resetLocObjects.Count ; i++)
         {
             GameObject.Destroy(resetLocObjects[i]);
         }
+        resetLocObjects = null;
+    }
+
+    public void GenerateResetLocObjects()
+    {
+        resetLocObjects = new List<GameObject>();
+    }
+
+    public int GetNumOfResetLocObjects()
+    {
+        return resetLocObjects.Count;
     }
 }
