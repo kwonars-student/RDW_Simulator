@@ -101,6 +101,25 @@ public class SimulationController
         if (virtualUser.gameObject != null) virtualUser.gameObject.transform.localPosition = Utility.CastVector2Dto3D(virtualTargetPosition);
     }
 
+    public void SetRLActionReady(bool RLActionReady)
+    {
+        this.RLActionReady = RLActionReady;
+    }
+
+    public void SetControllerFirstTrue()
+    {
+        this.isFirst = false;
+        this.isFirst2 = false;
+        this.isFirst3 = false;
+    }
+
+    public void SetControllerFirstFalse()
+    {
+        this.isFirst = false;
+        this.isFirst2 = false;
+        this.isFirst3 = false;
+    }
+
     public (Vector2, float) VirtualMove(Object2D virtualUser, Space2D virtualSpace)
     {
         Transform2D virtualUserTransform = virtualUser.transform2D;
@@ -113,11 +132,22 @@ public class SimulationController
 
         if (episode.IsNotEnd())
         {
+
             if (isFirst && RLActionReady) // 배치 적용 없이 한번 초기화 되면 안바뀌는 문제 해결. 다음 FixedUpdate에서 First를 시키는 방식.
             {   
                 // Debug.Log("VirtualMove Initial");
                 isFirst = false;
                 targetPosition = episode.GetTarget(virtualUserTransform, virtualSpace);
+                if(episode.GetWrongEpisode())
+                {
+                    //episode.SetWrongEpisode(false);
+                    //episode.DeleteTarget();
+                    SetControllerFirstTrue();
+                    //remainRotTime = maxRotTime;
+                    //remainTransTime = maxTransTime;
+                    return GetDelta(virtualUserTransform.forward);
+                }
+
                 initialToTarget = targetPosition - virtualUserTransform.localPosition;
                 float InitialAngle = Vector2.SignedAngle(virtualUserTransform.forward, initialToTarget);
                 float initialDistance = Vector2.Distance(virtualUserTransform.localPosition, targetPosition);
@@ -130,6 +160,12 @@ public class SimulationController
                 maxTransTime = initialDistance / translationSpeed;
                 remainRotTime = 0;
                 remainTransTime = 0;
+
+                //if (maxTransTime - remainTransTime > 0.06f)
+                //{
+                //    Debug.Log(maxTransTime - remainTransTime);
+                //}
+
             }
             else if(!RLActionReady)
             {

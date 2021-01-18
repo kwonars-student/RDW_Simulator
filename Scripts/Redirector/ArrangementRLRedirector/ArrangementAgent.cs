@@ -48,10 +48,11 @@ public class ArrangementAgent : Agent
         // {
         //     // Debug.Log("Sensored : " + cnt);
 
-        // // real user local rotation
-        // float realUserLocalRotation = unit.GetRealUser().transform2D.localRotation;
+        // real user local rotation
+        float realUserLocalRotation = unit.GetRealUser().transform2D.localRotation;
         // float normalizedRealLocalRotation = ((realUserLocalRotation % 360) + 360) % 360 / 360; // [0, 1]
-        // sensor.AddObservation(normalizedRealLocalRotation);
+        float normalizedRealLocalRotation = (realUserLocalRotation + 180) / 180; // [-1, 1]
+        sensor.AddObservation(normalizedRealLocalRotation);
 
         // real user local position
         Bounds2D realSpaceBound = unit.GetRealSpace().spaceObject.bound;
@@ -59,15 +60,16 @@ public class ArrangementAgent : Agent
         Vector2 normalizedRealLocalPosition = new Vector2(realUserLocalPosition.x / realSpaceBound.extents.x, realUserLocalPosition.y / realSpaceBound.extents.y); // [-1, 1]
         sensor.AddObservation(normalizedRealLocalPosition);
 
-        // real user forward
-        Vector2 realUserForward = unit.GetRealUser().transform2D.forward; // [-1, 1], already normalized
-        sensor.AddObservation(realUserForward);
+        // // real user forward
+        // Vector2 realUserForward = unit.GetRealUser().transform2D.forward; // [-1, 1], already normalized
+        // sensor.AddObservation(realUserForward);
 
 
-        // // virtual user local rotation
-        // float virtualUserLocalRotation = unit.GetVirtualUser().transform2D.localRotation;
+        // virtual user local rotation
+        float virtualUserLocalRotation = unit.GetVirtualUser().transform2D.localRotation;
         // float normalizedVirtualLocalRotation = ((virtualUserLocalRotation % 360) + 360) % 360 / 360; // [0, 1]
-        // sensor.AddObservation(normalizedVirtualLocalRotation);
+        float normalizedVirtualLocalRotation = (virtualUserLocalRotation + 180) / 180; // [-1, 1]
+        sensor.AddObservation(normalizedVirtualLocalRotation);
 
         // virtual user local position
         Bounds2D virtualSpaceBound = unit.GetVirtualSpace().spaceObject.bound;
@@ -75,18 +77,46 @@ public class ArrangementAgent : Agent
         Vector2 normalizedVirtualLocalPosition = new Vector2(virtualUserLocalPosition.x / virtualSpaceBound.extents.x, virtualUserLocalPosition.y / virtualSpaceBound.extents.y); // [-1, 1]
         sensor.AddObservation(normalizedVirtualLocalPosition);
 
-        // virtual user forward
-        Vector2 virtualUserForward = unit.GetVirtualUser().transform2D.forward; // [-1, 1], already normalized
-        sensor.AddObservation(virtualUserForward);
+        // Debug.Log("VirLoc: " + virtualUserLocalPosition + ", VirInitLoc: " + unit.GetEpisode().GetVirtualAgentInitialPosition());
+
+        // // virtual user forward
+        // Vector2 virtualUserForward = unit.GetVirtualUser().transform2D.forward; // [-1, 1], already normalized
+        // sensor.AddObservation(virtualUserForward);
 
 
-        // virtual obstacle local positions
-        //Bounds2D virtualSpaceBound = unit.GetVirtualSpace().spaceObject.bound;
+        // // virtual obstacle local positions
+        // // Bounds2D virtualSpaceBound = unit.GetVirtualSpace().spaceObject.bound;
         // List<Object2D> obstacles = unit.GetVirtualSpace().obstacles;
         // Vector2[] normalizedObstacleLocalPositions = new Vector2[obstacles.Count];
         // for (int i = 0; i < obstacles.Count; i++)
         // {
         //     normalizedObstacleLocalPositions[i] = new Vector2(obstacles[i].transform2D.localPosition.x / virtualSpaceBound.extents.x, obstacles[i].transform2D.localPosition.y / virtualSpaceBound.extents.y); // [-1, 1]
+        //     sensor.AddObservation(normalizedObstacleLocalPositions[i]);
+        // }
+
+        // virtual obstacle relative positions
+        // Bounds2D virtualSpaceBound = unit.GetVirtualSpace().spaceObject.bound;
+        // List<Object2D> obstacles = unit.GetVirtualSpace().obstacles;
+        // Vector2[] normalizedObstacleLocalPositions = new Vector2[obstacles.Count];
+        // for (int i = 0; i < obstacles.Count; i++)
+        // {
+        //     normalizedObstacleLocalPositions[i] =
+        //         new Vector2(
+        //             (obstacles[i].transform2D.localPosition.x-unit.GetVirtualUser().transform2D.localPosition.x) / virtualSpaceBound.extents.x,
+        //             (obstacles[i].transform2D.localPosition.y-unit.GetVirtualUser().transform2D.localPosition.y) / virtualSpaceBound.extents.y
+        //             ); // [-1, 1]
+        //     sensor.AddObservation(normalizedObstacleLocalPositions[i]);
+        // }
+
+        // // virtual obstacle relative rotations
+        // // Bounds2D virtualSpaceBound = unit.GetVirtualSpace().spaceObject.bound;
+        // // List<Object2D> obstacles = unit.GetVirtualSpace().obstacles;
+        // float[] normalizedObstacleLocalRotations = new float[obstacles.Count];
+        // Debug.Log(obstacles[0].transform2D.localRotation);
+        // for (int i = 0; i < obstacles.Count; i++)
+        // {
+        //     normalizedObstacleLocalRotations[i] = (obstacles[i].transform2D.localRotation - unit.GetVirtualUser().transform2D.localRotation) / 360f; // [-1, 1]
+
         //     sensor.AddObservation(normalizedObstacleLocalPositions[i]);
         // }
 
@@ -113,8 +143,8 @@ public class ArrangementAgent : Agent
             for (int i = 0; i < vectorAction.Length; i += eachActionSpace)
             {
                 Vector2 selectedTranslation = new Vector2(vectorAction[i] * maxTranslation, vectorAction[i + 1] * maxTranslation);
-                float selectedRotation = vectorAction[i + 2] * 180;
-                //float selectedRotation = 0;
+                float selectedRotation = vectorAction[i + 2] * 45;
+                // float selectedRotation = 0;
                 //Vector2 selectedScale = new Vector2(vectorAction[i + 3] * maxScale, vectorAction[i + 4] * maxScale);
                 Vector2 selectedScale = Vector2.zero;
 

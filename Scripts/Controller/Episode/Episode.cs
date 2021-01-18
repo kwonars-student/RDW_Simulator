@@ -12,10 +12,44 @@ public class Episode
     public GameObject targetPrefab = null;
     protected GameObject targetObject = null;
     public bool showTarget = false;
+    private bool wrongEpisode = false;
+
+    protected Vector2 realAgentInitialPosition;
+    protected Vector2 virtualAgentInitialPosition;
+
+    public Vector2 GetRealAgentInitialPosition()
+    {
+        return realAgentInitialPosition;
+    }
+    
+    public void SetRealAgentInitialPosition(Vector2 realAgentInitialPosition)
+    {
+        this.realAgentInitialPosition = realAgentInitialPosition;
+    }
+
+    public Vector2 GetVirtualAgentInitialPosition()
+    {
+        return virtualAgentInitialPosition;
+    }
+
+    public void SetVirtualAgentInitialPosition(Vector2 virtualAgentInitialPosition)
+    {
+        this.virtualAgentInitialPosition = virtualAgentInitialPosition;
+    }
 
     public void setShowTarget(bool showTarget)
     {
         this.showTarget = showTarget;
+    }
+
+    public bool GetWrongEpisode()
+    {
+        return wrongEpisode;
+    }
+
+    public void SetWrongEpisode(bool wrongEpisode)
+    {
+        this.wrongEpisode = wrongEpisode;
     }
 
     public Episode() { // 기본 생성자

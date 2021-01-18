@@ -18,7 +18,7 @@ public class RedirectedUnit
 
     private bool showResetLocator = false;
     private GameObject resetLocPrefab = null;
-    private GameObject resetLocObject = null;
+    private List<GameObject> resetLocObjects;
 
     private string status, previousStatus;
     private Object2D intersectedUser;
@@ -33,6 +33,7 @@ public class RedirectedUnit
         resetter = new Resetter();
         controller = new SimulationController();
         resultData = new ResultData();
+        resetLocObjects = new List<GameObject>();
         id = -1;
 
         status = "UNDEFINED"; // TODO: 이래도 되나?     
@@ -50,6 +51,7 @@ public class RedirectedUnit
         this.virtualUser = virtualUser;
         this.status = "IDLE";
 
+        resetLocObjects = new List<GameObject>();
         resultData = new ResultData();
         resultData.setUnitID(totalID++);
         id = totalID;
@@ -93,8 +95,8 @@ public class RedirectedUnit
                 && showResetLocator
           )
         {
-            resetLocObject = GameObject.Instantiate(resetLocPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
-            resetLocObject.transform.localPosition = virtualUser.gameObject.transform.localPosition + new Vector3(0, 1, 0);
+            resetLocObjects.Add(GameObject.Instantiate(resetLocPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform));
+            resetLocObjects[resetLocObjects.Count - 1].transform.localPosition = virtualUser.gameObject.transform.localPosition + new Vector3(0, 1, 0);
         }
 
         if (status == "WALL_RESET")
@@ -328,5 +330,13 @@ public class RedirectedUnit
     public void SetResetLocPrefab(GameObject resetLocPrefab)
     {
         this.resetLocPrefab = resetLocPrefab;
+    }
+
+    public void ClearResetLocObjects()
+    {
+        for(int i = 0; i < resetLocObjects.Count ; i++)
+        {
+            GameObject.Destroy(resetLocObjects[i]);
+        }
     }
 }

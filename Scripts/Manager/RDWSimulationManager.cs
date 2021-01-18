@@ -65,6 +65,11 @@ public class RDWSimulationManager : MonoBehaviour
                 unitObjects[i].GetComponent<ArrangementAgent>();
                 ArrangementRedirector arrangementRedirector = (ArrangementRedirector) redirectedUnits[i].GetRedirector();
                 arrangementRedirector.SetRLArrangementAgent(unitObjects[i].GetComponent<ArrangementAgent>());
+
+                // 이하 Reassign용.
+                arrangementRedirector.SetRedirectorReady();
+                unitObjects[i].GetComponent<ArrangementAgent>().SetActionReady(true);
+                redirectedUnits[i].controller.SetRLActionReady(false);
             }
         }
     }
@@ -137,6 +142,8 @@ public class RDWSimulationManager : MonoBehaviour
             redirectedUnits[i] = simulationSetting.unitSettings[i].GetUnit(realSpace, virtualSpace); // 실질적으로 가져옴.
             redirectedUnits[i].GetEpisode().targetPrefab = simulationSetting.prefabSetting.targetPrefab;
             redirectedUnits[i].GetEpisode().setShowTarget(simulationSetting.showTarget);
+            redirectedUnits[i].GetEpisode().SetRealAgentInitialPosition(simulationSetting.unitSettings[i].realStartPosition);
+            redirectedUnits[i].GetEpisode().SetVirtualAgentInitialPosition(simulationSetting.unitSettings[i].virtualStartPosition);
             redirectedUnits[i].SetShowResetLocator(simulationSetting.showResetLocator);
             redirectedUnits[i].SetResetLocPrefab(simulationSetting.prefabSetting.resetLocPrefab);
         }
@@ -150,28 +157,32 @@ public class RDWSimulationManager : MonoBehaviour
         {
             if (simulationSetting.unitSettings[i].useRandomStartReal)
             {
-                redirectedUnits[i].realUser.transform2D.localPosition = realSpace.GetRandomPoint(0.2f);
-                redirectedUnits[i].realUser.transform2D.localRotation = Utility.sampleUniform(0f, 360f);
+                simulationSetting.unitSettings[i].realStartPosition = realSpace.GetRandomPoint(0.2f);
+                simulationSetting.unitSettings[i].realStartRotation = Utility.sampleUniform(0f, 360f);
             }
-            else
-            {
-                redirectedUnits[i].realUser.transform2D.localPosition = Vector2.zero;
-                redirectedUnits[i].realUser.transform2D.localRotation = 0;
-            }
+            redirectedUnits[i].realUser.transform2D.localPosition = simulationSetting.unitSettings[i].realStartPosition;
+            redirectedUnits[i].realUser.transform2D.localRotation = simulationSetting.unitSettings[i].realStartRotation;
 
             if (simulationSetting.unitSettings[i].useRandomStartVirtual)
             {
-                redirectedUnits[i].virtualUser.transform2D.localPosition = virtualSpace.GetRandomPoint(0.2f);
-                redirectedUnits[i].virtualUser.transform2D.localRotation = Utility.sampleUniform(0f, 360f);
+                simulationSetting.unitSettings[i].virtualStartPosition = virtualSpace.GetRandomPoint(0.2f);
+                simulationSetting.unitSettings[i].virtualStartRotation = Utility.sampleUniform(0f, 360f);
             }
-            else
-            {
-                redirectedUnits[i].virtualUser.transform2D.localPosition = Vector2.zero;
-                redirectedUnits[i].virtualUser.transform2D.localRotation = 0;
-            }
+            redirectedUnits[i].virtualUser.transform2D.localPosition = simulationSetting.unitSettings[i].virtualStartPosition;
+            redirectedUnits[i].virtualUser.transform2D.localRotation = simulationSetting.unitSettings[i].virtualStartRotation;
 
+            redirectedUnits[i].GetEpisode().SetRealAgentInitialPosition(simulationSetting.unitSettings[i].realStartPosition);
+            redirectedUnits[i].GetEpisode().SetVirtualAgentInitialPosition(simulationSetting.unitSettings[i].virtualStartPosition);
         }
         AssignUnitObjects();
+    }
+
+    public void DeleteResetLocators()
+    {
+        for(int i = 0; i < redirectedUnits.Length; i++)
+        {
+            redirectedUnits[i].ClearResetLocObjects();
+        }
     }
 
     public bool IsAllEpisodeEnd()
@@ -195,20 +206,19 @@ public class RDWSimulationManager : MonoBehaviour
 
                     // DestroyUnits();
                     // GenerateUnits();
-                    ArrangementRedirector arrangementRedirector = (ArrangementRedirector)redirectedUnits[i].GetRedirector();
-                    if (arrangementRedirector.GetEpisodeSkipNeeded())
+                    DeleteResetLocators();
+
+                    if (redirectedUnits[i].GetEpisode().GetWrongEpisode())
                     {
-                        arrangementRedirector.SetEpisodeSkipNeeded(false);
-                        unitObjects[i].GetComponent<ArrangementAgent>().OnEpisodeBegin();
+                        redirectedUnits[i].GetEpisode().SetWrongEpisode(false);
+                        //redirectedUnits[i].controller.SetControllerFirstFalse();
+                        unitObjects[i].GetComponent<ArrangementAgent>().AddReward(-1f);
+
                     }
-                    else
-                    {
-                        unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode(); // EndEpisode -> Observation -> Begin ...
-                    }
-                    
+
+                    unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode(); // EndEpisode -> Observation -> Begin ...
                     ReassignUnits();
                     redirectedUnits[i].GetEpisode().SetCurrentEpisodeIndex(0);
-                    unitObjects[i].GetComponent<ArrangementAgent>().SetActionReady(true);
                     unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
 
                     return false;
