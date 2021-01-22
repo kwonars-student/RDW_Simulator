@@ -128,6 +128,7 @@ public class RedirectedUnit
                     if (arrangementAgent != null)
                     {
                         arrangementAgent.AddReward(-0.01f);
+                        arrangementAgent.AddTotalReward(-0.01f);
                         // Debug.Log("Give Reset Reward!");
                     }
                 }
@@ -165,10 +166,24 @@ public class RedirectedUnit
                     {
                         initialStep = false;
                         nextStep = step + 1;
-                        if(arrangementAgent != null) arrangementAgent.AddReward(+0.001f);
+                        if(arrangementAgent != null)
+                        {
+                            if(realUser.transform2D.localPosition.x>1.5 || realUser.transform2D.localPosition.x<-1.5 || realUser.transform2D.localPosition.y>1.5 || realUser.transform2D.localPosition.y<-1.5)
+                            {
+                                arrangementAgent.AddReward(-0.002f);
+                                arrangementAgent.AddTotalReward(-0.002f);
+                            }
+                            else
+                            {
+                                arrangementAgent.AddReward(+0.001f);
+                                arrangementAgent.AddTotalReward(+0.001f);
+                            }
+
+                            // Debug.Log(realUser.transform2D.localPosition);
+                        }
                         // Debug.Log("Give Step Reward!");
                     }
-                    else if(!initialStep && nextStep == controller.GetEpisode().GetCurrentEpisodeIndex())
+                    else if(!initialStep && (nextStep == controller.GetEpisode().GetCurrentEpisodeIndex()))
                     {
                         initialStep = true;
                     }
@@ -349,5 +364,10 @@ public class RedirectedUnit
     public int GetNumOfResetLocObjects()
     {
         return resetLocObjects.Count;
+    }
+
+    public void SetInitialStep(bool initialStep)
+    {
+        this.initialStep = initialStep;
     }
 }

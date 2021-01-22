@@ -72,6 +72,7 @@ public class RDWSimulationManager : MonoBehaviour
                 arrangementRedirector.SetRedirectorReady();
                 unitObjects[i].GetComponent<ArrangementAgent>().SetActionReady(true);
                 redirectedUnits[i].controller.SetRLActionReady(false);
+                redirectedUnits[i].SetInitialStep(true);
             }
         }
     }
@@ -217,28 +218,58 @@ public class RDWSimulationManager : MonoBehaviour
                     // DestroyUnits();
                     // GenerateUnits();
                     episodeCnt++;
-                    Debug.Log("Number of Resets: " + redirectedUnits[i].GetNumOfResetLocObjects());
+                    // Debug.Log("Number of Resets: " + redirectedUnits[i].GetNumOfResetLocObjects());
+                    // Debug.Log(episodeCnt);
                     DeleteResetLocators();
                     GenerateResetLocators();
 
+                    
                     if (redirectedUnits[i].GetEpisode().GetWrongEpisode())
                     {
                         redirectedUnits[i].GetEpisode().SetWrongEpisode(false);
                         //redirectedUnits[i].controller.SetControllerFirstFalse();
-                        unitObjects[i].GetComponent<ArrangementAgent>().AddReward(-1f);
+                        unitObjects[i].GetComponent<ArrangementAgent>().AddReward(-1.2f); // Give Average Reward
+                        unitObjects[i].GetComponent<ArrangementAgent>().AddTotalReward(-1.2f);
 
+                        unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode();
+                        ReassignUnits();
+                        redirectedUnits[i].GetEpisode().SetCurrentEpisodeIndex(0);
+                        unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
+
+                        virtualSpace.SetObstaclesToInitialPosition();
+                        //Debug.Log(unitObjects[i].GetComponent<ArrangementAgent>().GetTotalReward());
+                        unitObjects[i].GetComponent<ArrangementAgent>().SetTotalReward(0);
+                        return false;
                     }
 
-                    unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode(); // EndEpisode -> Observation -> Begin ...
-                    ReassignUnits();
-                    redirectedUnits[i].GetEpisode().SetCurrentEpisodeIndex(0);
-                    unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
-
-                    if(episodeCnt == 500)
+                    if(episodeCnt % 25 == 0)
                     {
-                        return true;
+                        unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode();
+                        ReassignUnits();
+                        redirectedUnits[i].GetEpisode().SetCurrentEpisodeIndex(0);
+                        unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
+
+                        // if(episodeCnt % 25 * 10000)
+                        // {
+                        //     return true;
+                        // }
+                        // else
+                        // {
+                        //     return false;    
+                        // }
+                    }
+                    else
+                    {
+                        unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode(); // EndEpisode -> Observation -> Begin ...
+                        ReassignUnits();
+                        redirectedUnits[i].GetEpisode().SetCurrentEpisodeIndex(0);
+                        unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
                     }
 
+                    virtualSpace.SetObstaclesToInitialPosition();
+
+                    //Debug.Log(unitObjects[i].GetComponent<ArrangementAgent>().GetTotalReward());
+                    unitObjects[i].GetComponent<ArrangementAgent>().SetTotalReward(0);
                     return false;
                 }
             }
@@ -324,7 +355,7 @@ public class RDWSimulationManager : MonoBehaviour
 
     public IEnumerator SlowSimulationRoutine()
     {
-        Time.timeScale = 50f;
+        Time.timeScale = 10f;
         do
         {
             DestroyAll();

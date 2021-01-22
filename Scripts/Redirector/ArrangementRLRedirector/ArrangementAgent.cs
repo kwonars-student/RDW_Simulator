@@ -8,10 +8,12 @@ public class ArrangementAgent : Agent
 {
     RedirectedUnit unit;
     // int eachActionSpace = 2; // for each obstacle, they have 2 action space (translation,)
-    int eachActionSpace = 3; // for each obstacle, they have 3 action space (translation, rotation)
+    int eachActionSpace = 2; // for each obstacle, they have 3 action space (translation, rotation)
     bool ready = true;
     bool ready2 = true;
     int cnt = 0;
+
+    float totalReward = 0;
 
     // 에피소드가 시작할때마다 호출
     public override void OnEpisodeBegin()
@@ -96,17 +98,19 @@ public class ArrangementAgent : Agent
 
         // virtual obstacle relative positions
         // Bounds2D virtualSpaceBound = unit.GetVirtualSpace().spaceObject.bound;
-        // List<Object2D> obstacles = unit.GetVirtualSpace().obstacles;
-        // Vector2[] normalizedObstacleLocalPositions = new Vector2[obstacles.Count];
-        // for (int i = 0; i < obstacles.Count; i++)
-        // {
-        //     normalizedObstacleLocalPositions[i] =
-        //         new Vector2(
-        //             (obstacles[i].transform2D.localPosition.x-unit.GetVirtualUser().transform2D.localPosition.x) / virtualSpaceBound.extents.x,
-        //             (obstacles[i].transform2D.localPosition.y-unit.GetVirtualUser().transform2D.localPosition.y) / virtualSpaceBound.extents.y
-        //             ); // [-1, 1]
-        //     sensor.AddObservation(normalizedObstacleLocalPositions[i]);
-        // }
+        List<Object2D> obstacles = unit.GetVirtualSpace().obstacles;
+        Vector2[] normalizedObstacleLocalPositions = new Vector2[obstacles.Count];
+        for (int i = 0; i < obstacles.Count; i++)
+        {
+            normalizedObstacleLocalPositions[i] =
+                new Vector2(
+                    (obstacles[i].transform2D.localPosition.x-unit.GetVirtualUser().transform2D.localPosition.x) / virtualSpaceBound.extents.x,
+                    (obstacles[i].transform2D.localPosition.y-unit.GetVirtualUser().transform2D.localPosition.y) / virtualSpaceBound.extents.y
+                    ); // [-1, 1]
+            sensor.AddObservation(normalizedObstacleLocalPositions[i]);
+        }
+
+        Vector2 Obs = obstacles[0].transform2D.localPosition;
 
         // // virtual obstacle relative rotations
         // // Bounds2D virtualSpaceBound = unit.GetVirtualSpace().spaceObject.bound;
@@ -137,14 +141,15 @@ public class ArrangementAgent : Agent
         {
             //Debug.Log("CurrentEpisodeIndex in OnActionReceived : " + unit.GetEpisode().GetCurrentEpisodeIndex());
             ArrangementRedirector arrangementRedirector = (ArrangementRedirector)unit.GetRedirector();
-            float maxTranslation = 3f; // Environment1: 2f, Environment2: 2f, Environment2: 3f
+            float maxTranslation = 4.25f; // Environment1: 2f, Environment2: 2f, Environment3: 3f, Environment4: 4.25f
             float maxScale = 0;
 
             for (int i = 0; i < vectorAction.Length; i += eachActionSpace)
             {
-                Vector2 selectedTranslation = new Vector2(vectorAction[i] * maxTranslation, vectorAction[i + 1] * maxTranslation);
-                float selectedRotation = vectorAction[i + 2] * 45;
-                // float selectedRotation = 0;
+                // Vector2 selectedTranslation = new Vector2(vectorAction[i] * maxTranslation, vectorAction[i + 1] * maxTranslation);
+                Vector2 selectedTranslation = new Vector2((vectorAction[i]+1) * maxTranslation, (vectorAction[i + 1]+1) * maxTranslation); // Environment4
+                // float selectedRotation = vectorAction[i + 2] * 45;
+                float selectedRotation = 0;
                 //Vector2 selectedScale = new Vector2(vectorAction[i + 3] * maxScale, vectorAction[i + 4] * maxScale);
                 Vector2 selectedScale = Vector2.zero;
 
@@ -182,6 +187,21 @@ public class ArrangementAgent : Agent
     public void SetActionReady(bool ready)
     {
         this.ready = ready;
+    }
+
+    public void AddTotalReward(float totalReward)
+    {
+        this.totalReward = this.totalReward + totalReward;
+    }
+
+    public void SetTotalReward(float totalReward)
+    {
+        this.totalReward = totalReward;
+    }
+
+    public float GetTotalReward()
+    {
+        return this.totalReward;
     }
 }
  

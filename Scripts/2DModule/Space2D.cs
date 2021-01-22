@@ -102,6 +102,14 @@ public class Space2D
         this.initialObstaclePositions = initialObstaclePositions;
     }
 
+    public void SetObstaclesToInitialPosition()
+    {
+        for (int i=0; i<this.obstacles.Count; i++)
+        {
+            this.obstacles[i].transform2D.localPosition = this.initialObstaclePositions[i];
+        }
+    }
+
     public Vector2 GetObstaclePositionByIndex(int index)
     {
         if (index >= 0 && index < this.obstacles.Count)
