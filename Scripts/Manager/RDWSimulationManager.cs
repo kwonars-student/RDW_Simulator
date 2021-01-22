@@ -20,6 +20,8 @@ public class RDWSimulationManager : MonoBehaviour
     private bool initializedForObstaclePosition = false;
     private List<Vector2> initialObstaclePositions;
 
+    private int episodeCnt = 0;
+
     public void GenerateUnitObjects()
     {
         if(unitObjects == null)
@@ -214,7 +216,8 @@ public class RDWSimulationManager : MonoBehaviour
 
                     // DestroyUnits();
                     // GenerateUnits();
-                    // Debug.Log("Number of Resets: " + redirectedUnits[i].GetNumOfResetLocObjects());
+                    episodeCnt++;
+                    Debug.Log("Number of Resets: " + redirectedUnits[i].GetNumOfResetLocObjects());
                     DeleteResetLocators();
                     GenerateResetLocators();
 
@@ -230,6 +233,11 @@ public class RDWSimulationManager : MonoBehaviour
                     ReassignUnits();
                     redirectedUnits[i].GetEpisode().SetCurrentEpisodeIndex(0);
                     unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
+
+                    if(episodeCnt == 500)
+                    {
+                        return true;
+                    }
 
                     return false;
                 }
@@ -316,7 +324,7 @@ public class RDWSimulationManager : MonoBehaviour
 
     public IEnumerator SlowSimulationRoutine()
     {
-        Time.timeScale = 10f;
+        Time.timeScale = 50f;
         do
         {
             DestroyAll();
