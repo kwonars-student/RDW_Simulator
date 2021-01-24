@@ -148,7 +148,9 @@ public class RDWSimulationManager : MonoBehaviour
             redirectedUnits[i].GetEpisode().SetRealAgentInitialPosition(simulationSetting.unitSettings[i].realStartPosition);
             redirectedUnits[i].GetEpisode().SetVirtualAgentInitialPosition(simulationSetting.unitSettings[i].virtualStartPosition);
             redirectedUnits[i].SetShowResetLocator(simulationSetting.showResetLocator);
+            redirectedUnits[i].SetShowRealWall(simulationSetting.showRealWall);
             redirectedUnits[i].SetResetLocPrefab(simulationSetting.prefabSetting.resetLocPrefab);
+            redirectedUnits[i].SetRealWallPrefab(simulationSetting.prefabSetting.realWallPrefab);
         }
         GenerateUnitObjects();
         AssignUnitObjects();
@@ -196,6 +198,23 @@ public class RDWSimulationManager : MonoBehaviour
         }
     }
 
+    public void DeleteRealWalls()
+    {
+        for(int i = 0; i < redirectedUnits.Length; i++)
+        {
+            redirectedUnits[i].DeleteRealWallObjects();
+        }
+    }
+
+    public void GenerateRealWalls()
+    {
+        for(int i = 0; i < redirectedUnits.Length; i++)
+        {
+            redirectedUnits[i].GenerateRealWallObjects();
+        }
+    }
+
+
     public bool IsAllEpisodeEnd()
     {
         
@@ -222,7 +241,8 @@ public class RDWSimulationManager : MonoBehaviour
                     // Debug.Log(episodeCnt);
                     DeleteResetLocators();
                     GenerateResetLocators();
-
+                    DeleteRealWalls();
+                    GenerateRealWalls();
                     
                     if (redirectedUnits[i].GetEpisode().GetWrongEpisode())
                     {

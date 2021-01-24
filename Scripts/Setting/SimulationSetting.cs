@@ -15,5 +15,6 @@ public class SimulationSetting
     public UnitSetting[] unitSettings;
     public bool showTarget;
     public bool showResetLocator;
+    public bool showRealWall;
     
 }

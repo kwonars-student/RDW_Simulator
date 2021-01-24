@@ -20,6 +20,10 @@ public class RedirectedUnit
     private GameObject resetLocPrefab = null;
     private List<GameObject> resetLocObjects;
 
+    private bool showRealWall = false;
+    private GameObject realWallPrefab = null;
+    private List<GameObject> realWallObjects;
+
     private string status, previousStatus;
     private Object2D intersectedUser;
 
@@ -34,6 +38,7 @@ public class RedirectedUnit
         controller = new SimulationController();
         resultData = new ResultData();
         resetLocObjects = new List<GameObject>();
+        realWallObjects = new List<GameObject>();
         id = -1;
 
         status = "UNDEFINED"; // TODO: 이래도 되나?     
@@ -52,6 +57,7 @@ public class RedirectedUnit
         this.status = "IDLE";
 
         resetLocObjects = new List<GameObject>();
+        realWallObjects = new List<GameObject>();
         resultData = new ResultData();
         resultData.setUnitID(totalID++);
         id = totalID;
@@ -92,11 +98,50 @@ public class RedirectedUnit
         if( 
                 ( (status == "WALL_RESET" && previousStatus == "WALL_RESET_DONE") ||
                   (status == "USER_RESET" && previousStatus == "USER_RESET_DONE")    )
-                && showResetLocator
           )
         {
-            resetLocObjects.Add(GameObject.Instantiate(resetLocPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform));
-            resetLocObjects[resetLocObjects.Count - 1].transform.localPosition = virtualUser.gameObject.transform.localPosition + new Vector3(0, 1, 0);
+            if(showResetLocator)
+            {
+                resetLocObjects.Add(GameObject.Instantiate(resetLocPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform));
+                resetLocObjects[resetLocObjects.Count - 1].transform.localPosition = virtualUser.gameObject.transform.localPosition + new Vector3(0, 2, 0);
+            }
+            
+            if(showRealWall)
+            {
+                realWallObjects.Add(GameObject.Instantiate(realWallPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform));
+
+                Vector3 realCenterPosition =  Utility.CastVector2Dto3D( Utility.RotateVector2(-realUser.transform2D.localPosition, virtualUser.transform2D.localRotation - realUser.transform2D.localRotation));
+                realWallObjects[realWallObjects.Count - 1].transform.localPosition =
+                    virtualUser.gameObject.transform.localPosition
+                    + realCenterPosition + Utility.CastVector2Dto3D(Utility.CastVector3Dto2D(realCenterPosition).normalized * -0.7f)
+                     //+ virtualUser.gameObject.transform.forward * realUser.gameObject.transform.localPosition.magnitude
+                     //+ virtualUser.gameObject.transform.forward * - 0.7f
+                    + new Vector3(0, 2, 0);
+
+                realWallObjects[realWallObjects.Count - 1].transform.localRotation =
+                    Utility.CastRotation2Dto3D(
+                        virtualUser.transform2D.localRotation - realUser.transform2D.localRotation + 90f
+                        );
+                // if(realUser.transform2D.localPosition.y >= 0)
+                // {
+                //     realWallObjects[realWallObjects.Count - 1].transform.localRotation =
+                //         Utility.CastRotation2Dto3D(
+                //             Utility.CastRotation3Dto2D(virtualUser.gameObject.transform.localRotation)
+                //             - Vector2.Angle(Utility.CastVector3Dto2D(realUser.gameObject.transform.localPosition), Vector2.right) + 90f
+                //             );
+
+                // }
+                // else
+                // {
+                //     realWallObjects[realWallObjects.Count - 1].transform.localRotation =
+                //         Utility.CastRotation2Dto3D(
+                //             Utility.CastRotation3Dto2D(virtualUser.gameObject.transform.localRotation)
+                //             + Vector2.Angle(Utility.CastVector3Dto2D(realUser.gameObject.transform.localPosition), Vector2.right) - 90f
+                //             );
+                // }
+
+            }
+            
         }
 
         if (status == "WALL_RESET")
@@ -369,5 +414,29 @@ public class RedirectedUnit
     public void SetInitialStep(bool initialStep)
     {
         this.initialStep = initialStep;
+    }
+
+    public void SetShowRealWall(bool showRealWall)
+    {
+        this.showRealWall = showRealWall;
+    }
+
+    public void SetRealWallPrefab(GameObject realWallPrefab)
+    {
+        this.realWallPrefab = realWallPrefab;
+    }
+
+    public void DeleteRealWallObjects()
+    {
+        for(int i = 0; i < realWallObjects.Count ; i++)
+        {
+            GameObject.Destroy(realWallObjects[i]);
+        }
+        realWallObjects = null;
+    }
+
+    public void GenerateRealWallObjects()
+    {
+        realWallObjects = new List<GameObject>();
     }
 }
