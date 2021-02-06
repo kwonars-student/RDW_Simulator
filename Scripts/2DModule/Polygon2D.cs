@@ -1,10 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Polygon2D : Object2D
 {
     private List<Vector2> vertices; // local 좌표계 기준
+    private Vector2 squareCenter; // local 좌표계 기준
+    private List<Vector2> crossBoundaryPoints; // local 좌표계 기준
 
     public Polygon2D() : base() // 기본 생성자
     {
@@ -13,17 +16,26 @@ public class Polygon2D : Object2D
         vertices.Add(new Vector2(-0.5f, 0.5f));
         vertices.Add(new Vector2(-0.5f, -0.5f));
         vertices.Add(new Vector2(0.5f, -0.5f));
+
+        crossBoundaryPoints = new List<Vector2>();
+        squareCenter = GetSquareCenter();
+        crossBoundaryPoints = GetCrossBoundaryPoints();
     }
 
     public Polygon2D(Polygon2D otherObject, string name = null) : base(otherObject, name) // 복사 생성자
     {
         this.vertices = new List<Vector2>(otherObject.vertices);
+        this.squareCenter = GetSquareCenter();
+        this.crossBoundaryPoints = GetCrossBoundaryPoints();
     }
 
     public Polygon2D(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, Object2D parentObject = null, List<Vector2> vertices = null) : base(prefab, name, localPosition, localRotation, localScale, parentObject) // vertex 위치를 직접 지정 하여 polygon을 생성하는 생성자
     {
         if(prefab == null)
             this.vertices = new List<Vector2>(vertices);
+
+        this.squareCenter = GetSquareCenter();
+        this.crossBoundaryPoints = GetCrossBoundaryPoints();
     }
 
     public Polygon2D(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, int count, float size, Object2D parentObject = null) : base(prefab, name, localPosition, localRotation, localScale, parentObject) // n각형과 size를 지정하여 polygon을 생성하는 방식 생성자
@@ -36,6 +48,8 @@ public class Polygon2D : Object2D
             vertices.Add(new Vector2(-size / 2, -size / 2));
             vertices.Add(new Vector2(size / 2, -size / 2));
         }
+        this.squareCenter = GetSquareCenter();
+        this.crossBoundaryPoints = GetCrossBoundaryPoints();
     }
 
     public Polygon2D(GameObject prefab) : base(prefab) // 참조 생성자
@@ -46,6 +60,8 @@ public class Polygon2D : Object2D
 
         this.vertices = new List<Vector2>();
         this.vertices = connectionGraph.FindOutline(true);
+        this.squareCenter = GetSquareCenter();
+        this.crossBoundaryPoints = GetCrossBoundaryPoints();
     }
 
     public override Object2D Clone(string name = null)
@@ -110,6 +126,150 @@ public class Polygon2D : Object2D
         }
     }
 
+    public Vector2 GetCrossBoundaryVertex(int index, Space relativeTo)
+    {
+        // int realIndex = Utility.mod(index, vertices.Count);
+
+        if (relativeTo == Space.Self)
+            return crossBoundaryPoints[index];
+        else
+            return this.transform2D.TransformPointToGlobal(crossBoundaryPoints[index]);
+    }
+
+    public Vector2 GetSquareCenter()
+    {
+        Vector2 v_max = Vector2.zero;
+        Vector2 v_min = Vector2.zero;
+        Vector2 c = Vector2.zero;
+
+        //Debug.Log(vertices.Count);
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            if(v_max.x <= vertices[i].x)
+            {
+                v_max.x = vertices[i].x;
+            }
+            if(v_min.x >= vertices[i].x)
+            {
+                v_min.x = vertices[i].x;
+            }
+
+            if(v_max.y <= vertices[i].y)
+            {
+                v_max.y = vertices[i].y;
+            }
+            if(v_min.y >= vertices[i].y)
+            {
+                v_min.y = vertices[i].y;
+            }
+        }
+
+        c = 0.5f*(v_max + v_min);
+
+        return c;
+    }
+
+    public List<Vector2> GetCrossBoundaryPoints()
+    {
+        List<Vector2> possibleCrossPoints = new List<Vector2>();
+        List<Vector2> crossPoints = new List<Vector2>(); // 순서: 상 하 좌 우
+        Vector2 c = this.squareCenter;
+        List<float> temp1 = new List<float>();
+        List<float> temp2 = new List<float>();
+        List<float> temp3 = new List<float>();
+        List<float> temp4 = new List<float>();
+        int p=0;
+
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            // Debug.Log(vertices[0].x+ vertices[0].y);
+            // Debug.Log(vertices[1].x + vertices[1].y);
+            // Debug.Log(vertices[2].x + vertices[2].y);
+            // Debug.Log(vertices[3].x + vertices[3].y);
+            if (i-1 < 0)
+            {
+                p = vertices.Count - 1;
+            }
+            else
+            {
+                p = i-1;
+            }
+
+            if( c.x == vertices[p].x )
+            {
+                possibleCrossPoints.Add(vertices[p]);
+            }
+            else if(c.x == vertices[i].x)
+            {
+                possibleCrossPoints.Add(vertices[i]);
+            }
+            else if( (c.x - vertices[p].x)*(c.x - vertices[i].x) < 0 )
+            {
+                if(vertices[i].x == vertices[p].x)
+                {
+                    Debug.Log("Cannot Devide by Zero!");
+                }
+                else
+                {
+                    possibleCrossPoints.Add(new Vector2(c.x, vertices[p].y + (c.x-vertices[p].x)*(vertices[i].y - vertices[p].y)/(vertices[i].x - vertices[p].x)));
+                    // Vector2 a = new Vector2(c.x, vertices[p].y + (c.x - vertices[p].x) * (vertices[i].y - vertices[p].y) / (vertices[i].x - vertices[p].x));
+                    // Debug.Log(a.x + a.y);
+                }
+            }
+
+            if( c.y == vertices[p].y )
+            {
+                possibleCrossPoints.Add(vertices[p]);
+            }
+            else if(c.y == vertices[i].y)
+            {
+                possibleCrossPoints.Add(vertices[i]);
+            }
+            else if( (c.y - vertices[p].y)*(c.y - vertices[i].y) < 0 )
+            {
+                if(vertices[i].y == vertices[p].y)
+                {
+                    Debug.Log("Cannot Devide by Zero!");
+                }
+                else
+                {
+                    possibleCrossPoints.Add(new Vector2(vertices[p].x + (c.y-vertices[p].y)*(vertices[i].x - vertices[p].x)/(vertices[i].y - vertices[p].y), c.y));
+                    //Debug.Log(new Vector2(vertices[p].x + (c.y-vertices[p].y)*(vertices[i].x - vertices[p].x)/(vertices[i].y - vertices[p].y), c.y));
+                    // Debug.Log(vertices[i]);
+                }
+            }
+        }
+
+        for (int i = 0; i < possibleCrossPoints.Count; i++)
+        {
+            //Debug.Log(possibleCrossPoints[i]);
+            if(possibleCrossPoints[i].x == c.x && possibleCrossPoints[i].y > c.y)
+            {
+                temp1.Add(possibleCrossPoints[i].y);
+            }
+            else if(possibleCrossPoints[i].x == c.x && possibleCrossPoints[i].y < c.y)
+            {
+                temp2.Add(possibleCrossPoints[i].y);
+            }
+            else if(possibleCrossPoints[i].y == c.y && possibleCrossPoints[i].x < c.x)
+            {
+                temp3.Add(possibleCrossPoints[i].x);
+            }
+            else if(possibleCrossPoints[i].y == c.y && possibleCrossPoints[i].x > c.x)
+            {
+                temp4.Add(possibleCrossPoints[i].x);
+            }
+            
+        }
+
+        crossPoints.Add(new Vector2(c.x, temp1.Min()));
+        crossPoints.Add(new Vector2(c.x, temp2.Max()));
+        crossPoints.Add(new Vector2(temp3.Min(), c.y));
+        crossPoints.Add(new Vector2(temp4.Max(), c.y));
+
+        return crossPoints;
+    }
+
     public override void Initialize(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, Transform parent)
     {
         base.Initialize(prefab, name, localPosition, localRotation, localScale, parent);
@@ -127,65 +287,28 @@ public class Polygon2D : Object2D
 
     public override Mesh GenerateMesh(bool useOutNormal, float height)
     {
-        Vector3[] vertices = null;
-        int[] triangles = null;
-        Vector3[] normals = null;
+        Vector2[] vertices2DArray = new Vector2[this.vertices.Count];
+        Vector3[] vertices3DArray = new Vector3[this.vertices.Count];
 
-        int n = this.vertices.Count;
-        vertices = new Vector3[6 * n]; // vertex 지정
-        vertices[0] = vertices[7] = vertices[19] = Utility.CastVector2Dto3D(GetVertex(0, Space.Self)); // 음... 하드 코딩
-        vertices[1] = vertices[6] = vertices[11] = Utility.CastVector2Dto3D(GetVertex(1, Space.Self));
-        vertices[2] = vertices[10] = vertices[14] = Utility.CastVector2Dto3D(GetVertex(2, Space.Self));
-        vertices[3] = vertices[15] = vertices[18] = Utility.CastVector2Dto3D(GetVertex(3, Space.Self));
-        vertices[4] = vertices[16] = vertices[20] = Utility.CastVector2Dto3D(GetVertex(0, Space.Self), height);
-        vertices[5] = vertices[8] = vertices[21] = Utility.CastVector2Dto3D(GetVertex(1, Space.Self), height);
-        vertices[9] = vertices[13] = vertices[22] = Utility.CastVector2Dto3D(GetVertex(2, Space.Self), height);
-        vertices[12] = vertices[17] = vertices[23] = Utility.CastVector2Dto3D(GetVertex(3, Space.Self), height);
-
-        if (useOutNormal) // 바깥쪽에서 보이고 싶을 경우
+        for (int i = 0; i < this.vertices.Count; i++)
         {
-            triangles = new int[] // index 지정
-            {
-                1,2,3,3,0,1, // 바깥쪽으로 face 생성 
-                5,6,7,7,4,5,
-                9,10,11,11,8,9,
-                13,12,15,15,14,13,
-                17,16,19,19,18,17,
-                21,20,23,23,22,21
-            };
-
-            normals = new Vector3[6 * n]; // normal 지정
-            normals[0] = normals[1] = normals[2] = normals[3] = new Vector3(0, -1, 0); // 음... 하드 코딩
-            normals[4] = normals[5] = normals[6] = normals[7] = new Vector3(0, 0, 1);
-            normals[8] = normals[9] = normals[10] = normals[11] = new Vector3(-1, 0, 0);
-            normals[12] = normals[13] = normals[14] = normals[15] = new Vector3(0, 0, -1);
-            normals[16] = normals[17] = normals[18] = normals[19] = new Vector3(1, 0, 0);
-            normals[20] = normals[21] = normals[22] = normals[23] = new Vector3(0, 1, 0);
-
+            vertices2DArray[i] = this.vertices[i];
         }
-        else // 안쪽에서 보이고 싶을 경우
-        {
-            triangles = new int[] // index 지정
-            {
-                1,0,3,3,2,1,  // 안쪽으로 face 생성 
-                5,4,7,7,6,5,
-                9,8,11,11,10,9,
-                13,14,15,15,12,13,
-                17,18,19,19,16,17,
-            };
 
-            normals = new Vector3[6 * n]; // normal 지정
-            normals[0] = normals[1] = normals[2] = normals[3] = new Vector3(0, 1, 0); // 음... 하드 코딩
-            normals[4] = normals[5] = normals[6] = normals[7] = new Vector3(0, 0, -1);
-            normals[8] = normals[9] = normals[10] = normals[11] = new Vector3(1, 0, 0);
-            normals[12] = normals[13] = normals[14] = normals[15] = new Vector3(0, 0, 1);
-            normals[16] = normals[17] = normals[18] = normals[19] = new Vector3(-1, 0, 0);
+        // Use the triangulator to get indices for creating triangles
+        Triangulator tr = new Triangulator(vertices2DArray);
+        int[] triangles = tr.Triangulate();
+
+        for (int i = 0; i < this.vertices.Count; i++)
+        {
+            vertices3DArray[i] = Utility.CastVector2Dto3D(GetVertex(i, Space.Self));//this.vertices[i];
         }
 
         Mesh mesh = new Mesh();
-        mesh.vertices = vertices;
+        mesh.vertices = vertices3DArray;
         mesh.triangles = triangles;
-        mesh.normals = normals;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
 
         return mesh;
     }
@@ -288,11 +411,24 @@ public class Polygon2D : Object2D
     public override void DebugDraw(Color color)
     {
         int n = this.vertices.Count;
+        //Debug.Log(vertices[3]);
         for (int i = 0; i < n; i++)
         {
             Vector3 vec1 = Utility.CastVector2Dto3D(GetVertex(i, Space.World));
             Vector3 vec2 = Utility.CastVector2Dto3D(GetVertex(i+1, Space.World));
             Debug.DrawLine(vec1, vec2, color);
         }
+
+        // Debug.Log(crossBoundaryPoints[0]);
+        // Debug.Log(crossBoundaryPoints[1]);
+        // Debug.Log(crossBoundaryPoints[2]);
+        // Debug.Log(crossBoundaryPoints[3]);
+
+        Vector3 cp1 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(0, Space.World));
+        Vector3 cp2 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(1, Space.World));
+        Vector3 cp3 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(2, Space.World));
+        Vector3 cp4 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(3, Space.World));
+        Debug.DrawLine(cp1, cp2, color);
+        Debug.DrawLine(cp3, cp4, color);
     }
 }

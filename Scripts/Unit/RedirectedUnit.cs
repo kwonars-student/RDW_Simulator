@@ -31,6 +31,8 @@ public class RedirectedUnit
     private int step;
     private int nextStep;
 
+    private int idleComboCnt;
+
     public RedirectedUnit() // 기본 생성자
     {
         redirector = new Redirector();
@@ -113,7 +115,7 @@ public class RedirectedUnit
                 Vector3 realCenterPosition =  Utility.CastVector2Dto3D( Utility.RotateVector2(-realUser.transform2D.localPosition, virtualUser.transform2D.localRotation - realUser.transform2D.localRotation));
                 realWallObjects[realWallObjects.Count - 1].transform.localPosition =
                     virtualUser.gameObject.transform.localPosition
-                    + realCenterPosition + Utility.CastVector2Dto3D(Utility.CastVector3Dto2D(realCenterPosition).normalized * -0.7f)
+                    + realCenterPosition + Utility.CastVector2Dto3D(Utility.CastVector3Dto2D(realCenterPosition).normalized * -0.6f) // Translation Speed 4 -> -0.7f
                      //+ virtualUser.gameObject.transform.forward * realUser.gameObject.transform.localPosition.magnitude
                      //+ virtualUser.gameObject.transform.forward * - 0.7f
                     + new Vector3(0, 2, 0);
@@ -172,8 +174,9 @@ public class RedirectedUnit
                 {
                     if (arrangementAgent != null)
                     {
-                        arrangementAgent.AddReward(-0.01f);
-                        arrangementAgent.AddTotalReward(-0.01f);
+                        // arrangementAgent.AddReward(-0.01f);
+                        // arrangementAgent.AddTotalReward(-0.01f);
+                        idleComboCnt = 0;
                         // Debug.Log("Give Reset Reward!");
                     }
                 }
@@ -206,23 +209,36 @@ public class RedirectedUnit
 
                 if(redirector is ArrangementRedirector)
                 {
+
                     step = controller.GetEpisode().GetCurrentEpisodeIndex();
                     if(initialStep)
                     {
+                        idleComboCnt++;
                         initialStep = false;
                         nextStep = step + 1;
                         if(arrangementAgent != null)
                         {
-                            if(realUser.transform2D.localPosition.x>1.5 || realUser.transform2D.localPosition.x<-1.5 || realUser.transform2D.localPosition.y>1.5 || realUser.transform2D.localPosition.y<-1.5)
+                            // if(realUser.transform2D.localPosition.x>1.5 || realUser.transform2D.localPosition.x<-1.5 || realUser.transform2D.localPosition.y>1.5 || realUser.transform2D.localPosition.y<-1.5)
+                            // {
+                            //     arrangementAgent.AddReward(-0.001f);
+                            //     arrangementAgent.AddTotalReward(-0.001f);
+                            // }
+                            // else
+                            // {
+                            //     arrangementAgent.AddReward(+0.001f);
+                            //     arrangementAgent.AddTotalReward(+0.001f);
+                            // }
+                            if(idleComboCnt > 17)
                             {
-                                arrangementAgent.AddReward(-0.002f);
-                                arrangementAgent.AddTotalReward(-0.002f);
+                                arrangementAgent.AddReward(+0.01f);
+                                arrangementAgent.AddTotalReward(0.01f);
                             }
                             else
                             {
-                                arrangementAgent.AddReward(+0.001f);
-                                arrangementAgent.AddTotalReward(+0.001f);
+                                arrangementAgent.AddReward(-0.001f);
+                                arrangementAgent.AddTotalReward(-0.001f);
                             }
+
 
                             // Debug.Log(realUser.transform2D.localPosition);
                         }

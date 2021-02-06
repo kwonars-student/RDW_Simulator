@@ -21,6 +21,7 @@ public class RDWSimulationManager : MonoBehaviour
     private List<Vector2> initialObstaclePositions;
 
     private int episodeCnt = 0;
+    private bool useTiling = false;
 
     public void GenerateUnitObjects()
     {
@@ -115,8 +116,21 @@ public class RDWSimulationManager : MonoBehaviour
 
     public void GenerateVirtualSpace()
     {
-        virtualSpace = simulationSetting.virtualSpaceSetting.GetSpace();
-        virtualSpace.spaceObject.transform2D.parent = this.transform;
+        useTiling = simulationSetting.virtualSpaceTilingSetting.useTiling;
+
+        Polygon2D polygonObject = (Polygon2D) realSpace.spaceObject;
+                
+        if(useTiling)
+        {
+            virtualSpace = simulationSetting.virtualSpaceTilingSetting.GetSpace(polygonObject.GetVertices());
+            virtualSpace.spaceObject.transform2D.parent = this.transform;
+        }
+        else
+        {
+            virtualSpace = simulationSetting.virtualSpaceSetting.GetSpace();
+            virtualSpace.spaceObject.transform2D.parent = this.transform;
+        }
+
 
         if (!simulationSetting.virtualSpaceSetting.usePredefinedSpace)
         {
@@ -247,9 +261,9 @@ public class RDWSimulationManager : MonoBehaviour
                     if (redirectedUnits[i].GetEpisode().GetWrongEpisode())
                     {
                         redirectedUnits[i].GetEpisode().SetWrongEpisode(false);
-                        //redirectedUnits[i].controller.SetControllerFirstFalse();
-                        unitObjects[i].GetComponent<ArrangementAgent>().AddReward(-1.2f); // Give Average Reward
-                        unitObjects[i].GetComponent<ArrangementAgent>().AddTotalReward(-1.2f);
+                        redirectedUnits[i].controller.SetControllerFirstFalse();
+                        unitObjects[i].GetComponent<ArrangementAgent>().AddReward(0.5f); // Give Average Reward
+                        unitObjects[i].GetComponent<ArrangementAgent>().AddTotalReward(0.5f);
 
                         unitObjects[i].GetComponent<ArrangementAgent>().EndEpisode();
                         ReassignUnits();
@@ -375,18 +389,21 @@ public class RDWSimulationManager : MonoBehaviour
 
     public IEnumerator SlowSimulationRoutine()
     {
-        Time.timeScale = 10f;
+        Time.timeScale = 2f;
         do
         {
             DestroyAll();
             GenerateSpaces();
             GenerateUnits();
 
+            
+
             for (int i = 0; i < redirectedUnits.Length; i++)
             {
-                unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
+                if (redirectedUnits[i].GetRedirector() is ArrangementRedirector)
+                    unitObjects[i].GetComponent<ArrangementAgent>().RequestDecision();
             }
-            
+
             //if(!initializeRLAgent)
             //{
             //    initializeRLAgent = true;

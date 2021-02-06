@@ -83,6 +83,7 @@ public class Space2DBuilder
     protected float localRotation = 0;
     protected Vector2 localScale = Vector2.one;
     protected Object2D spaceObject;
+    protected Object2D parentObject;
     protected List<Object2D> obstacles;
 
     public Space2DBuilder SetName(string _name)
@@ -127,6 +128,12 @@ public class Space2DBuilder
         return this;
     }
 
+    public Space2DBuilder SetParent(Object2D _parentObject)
+    {
+        parentObject = _parentObject;
+        return this;
+    }
+
     public void initialize()
     {
         prefab = null;
@@ -135,6 +142,7 @@ public class Space2DBuilder
         localRotation = 0;
         localScale = Vector2.one;
         spaceObject = null;
+        parentObject = null;
         obstacles = null;
     }
 
