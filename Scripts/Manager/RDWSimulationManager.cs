@@ -125,6 +125,10 @@ public class RDWSimulationManager : MonoBehaviour
             virtualSpace = simulationSetting.virtualSpaceTilingSetting.GetSpace(polygonObject.GetVertices());
             virtualSpace.parentSpaceObject.transform2D.parent = this.transform;
 
+            Polygon2D realSpaceObject = (Polygon2D) realSpace.spaceObject;
+            Polygon2D virtualSpaceObject = (Polygon2D) virtualSpace.spaceObject;
+            realSpaceObject.SetCrossBoundaryPoints(virtualSpaceObject.GetCrossBoundaryPoints());
+
             if (!simulationSetting.virtualSpaceSetting.usePredefinedSpace)
             {
                 virtualSpace.GenerateTiledSpace(simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);

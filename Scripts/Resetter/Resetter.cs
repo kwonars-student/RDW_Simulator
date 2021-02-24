@@ -70,7 +70,7 @@ public class Resetter
     public bool NeedWallReset(Object2D realUser, Space2D realSpace)
     {
         Vector2 realUserPosition = realUser.transform2D.localPosition;
-        return !realSpace.IsInside(realUserPosition, Space.Self, 0.00001f); // 0.2f
+        return !realSpace.IsInside(realUserPosition, Space.Self, 0.01f); // 0.2f
         //return !realSpace.IsInside(realUser, 0);
     }
 

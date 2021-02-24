@@ -343,6 +343,11 @@ public class Polygon2D : Object2D
         return this.crossBoundaryPoints;
     }
 
+    public void SetCrossBoundaryPoints(List<Vector2> crossBoundaryPoints)
+    {
+        this.crossBoundaryPoints = crossBoundaryPoints;
+    }
+
     public List<Vector2> GetCrossXFromTo()
     {
         return this.crossXFromTo;

@@ -97,7 +97,7 @@ public class Episode
     protected void InstaniateTarget()
     {
         targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
-        targetObject.transform.localPosition = Utility.CastVector2Dto3D(currentTargetPosition.Value) + new Vector3(0, 1, 0);
+        targetObject.transform.localPosition = Utility.CastVector2Dto3D(currentTargetPosition.Value) + new Vector3(0, 1.35f, 0);
     }
 
     public bool IsNotEnd()

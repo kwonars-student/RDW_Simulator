@@ -120,7 +120,7 @@ public class SimulationController
         this.isFirst3 = false;
     }
 
-    public (Vector2, float) VirtualMove(Object2D virtualUser, Space2D virtualSpace)
+    public (Vector2, float) VirtualMove(Object2D virtualUser, Space2D virtualSpace, Object2D realUser = null, Space2D realSpace = null)
     {
         Transform2D virtualUserTransform = virtualUser.transform2D;
 
@@ -209,6 +209,53 @@ public class SimulationController
             //    }
             //}
             WanderingEpisode wEpisode = (WanderingEpisode) episode;
+
+            if(wEpisode.syncMode)
+            {
+                wEpisode.syncMode = false;
+                Debug.Log("realUser localPosition in SyncMode: " + realUser.transform2D.localPosition);
+                Debug.Log("virtualUser localPosition in SyncMode: " + virtualUser.transform2D.localPosition);
+                Polygon2D realSpaceObject = (Polygon2D) realSpace.spaceObject;
+                Polygon2D virtualSpaceObject = (Polygon2D) virtualSpace.spaceObject;
+
+                List<Vector2> realSpaceCrossBoundaryPoints = realSpaceObject.GetCrossBoundaryPoints();
+
+                if(wEpisode.resetType == "1R")
+                {
+                    virtualUser.transform2D.localPosition = wEpisode.resetPoint + realSpaceCrossBoundaryPoints[0] - realUser.transform2D.localPosition;
+                }
+                else if(wEpisode.resetType == "1T" || wEpisode.resetType == "4T")
+                {
+                    virtualUser.transform2D.localPosition = wEpisode.resetPoint + realSpaceCrossBoundaryPoints[1] - realUser.transform2D.localPosition;
+                }
+                else if(wEpisode.resetType == "1L")
+                {
+                    virtualUser.transform2D.localPosition = wEpisode.resetPoint + realSpaceCrossBoundaryPoints[2] - realUser.transform2D.localPosition;
+                }
+                else if(wEpisode.resetType == "1B" || wEpisode.resetType == "4B")
+                {
+                    virtualUser.transform2D.localPosition = wEpisode.resetPoint + realSpaceCrossBoundaryPoints[3] - realUser.transform2D.localPosition;
+                }
+                else if(wEpisode.resetType == "2R")
+                {
+                    virtualUser.transform2D.localPosition = wEpisode.resetPoint - realSpaceCrossBoundaryPoints[2] + realUser.transform2D.localPosition;
+                }
+                else if(wEpisode.resetType == "2T" || wEpisode.resetType == "3T")
+                {
+                    virtualUser.transform2D.localPosition = wEpisode.resetPoint - realSpaceCrossBoundaryPoints[3] + realUser.transform2D.localPosition;
+                }
+                else if(wEpisode.resetType == "2L")
+                {
+                    virtualUser.transform2D.localPosition = wEpisode.resetPoint - realSpaceCrossBoundaryPoints[0] + realUser.transform2D.localPosition;
+                }
+                else if(wEpisode.resetType == "2B" || wEpisode.resetType == "3B")
+                {
+                    virtualUser.transform2D.localPosition = wEpisode.resetPoint - realSpaceCrossBoundaryPoints[1] + realUser.transform2D.localPosition;
+                }
+
+                UpdateCurrentState(virtualUserTransform);
+                return GetDelta(virtualUserTransform.forward);
+            }
 
             if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self) && !wEpisode.resetMode && !wEpisode.pathRestoreMode)
             //if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))

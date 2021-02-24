@@ -105,7 +105,7 @@ public class RedirectedUnit
             if(showResetLocator)
             {
                 resetLocObjects.Add(GameObject.Instantiate(resetLocPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform));
-                resetLocObjects[resetLocObjects.Count - 1].transform.localPosition = virtualUser.gameObject.transform.localPosition + new Vector3(0, 2, 0);
+                resetLocObjects[resetLocObjects.Count - 1].transform.localPosition = virtualUser.gameObject.transform.localPosition + new Vector3(0, 0, 0);
             }
             
             if(showRealWall)
@@ -310,7 +310,17 @@ public class RedirectedUnit
             arrangementRedirector.ObstacleArrangement(this); // VirtualMove 전에 호출하여 virtualSpace의 배치 변형
         }
 
-        (Vector2 deltaPosition, float deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)
+        Vector2 deltaPosition = new Vector2(0,0);
+        float deltaRotation = 0f;
+        if(virtualSpace.tileMode)
+        {
+            (deltaPosition, deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace, realUser, realSpace); // 가상 유저를 이동 (시뮬레이션)
+        }
+        else
+        {
+            (deltaPosition, deltaRotation) = controller.VirtualMove(virtualUser, virtualSpace); // 가상 유저를 이동 (시뮬레이션)
+        }
+
         (GainType type, float degree) = redirector.ApplyRedirection(this, deltaPosition, deltaRotation); // 왜곡시킬 값을 계산
         controller.RealMove(realUser, type, degree); // 실제 유저를 이동
 
