@@ -491,6 +491,10 @@ public class Polygon2D : Object2D
         for (int i = 0; i < vertices.Count; i++)
         {
             Edge2D boundary = GetEdge(i, relativeTo);
+            // Debug.Log("targetLine Vector1: " + targetLine.p1 );
+            // Debug.Log("targetLine Vector2: " + targetLine.p2 );
+            // Debug.Log("EdgeCheck Vector1: " + boundary.p1 );
+            // Debug.Log("EdgeCheck Vector2: " + boundary.p2 );
 
             if (boundary.CheckIntersect(targetLine, bound, option) == Intersect.EXIST)
                 numOfIntersect += 1;
