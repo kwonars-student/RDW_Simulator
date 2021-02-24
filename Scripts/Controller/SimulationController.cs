@@ -208,11 +208,16 @@ public class SimulationController
             //        isFirst3 = true;
             //    }
             //}
+            WanderingEpisode wEpisode = (WanderingEpisode) episode;
 
-            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
+            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self) && !wEpisode.resetMode && !wEpisode.pathRestoreMode)
+            //if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
             {
                 //Debug.Log("Re-Located");
                 //episode.DeleteTarget();
+
+                //WanderingEpisode wEpisode = (WanderingEpisode) episode;
+                //if(!wEpisode.skipBit)
                 episode.ReLocateTarget();
 
                 isFirst = true;
@@ -222,7 +227,7 @@ public class SimulationController
             else
             {
                 if (remainRotTime < maxRotTime)
-                {
+                {                    
                     virtualUser.transform2D.Rotate(initialAngleDirection * rotationSpeed * Time.fixedDeltaTime);
                     remainRotTime += Time.fixedDeltaTime;
                 }
@@ -231,7 +236,8 @@ public class SimulationController
                     if (isFirst2) // 방향을 동기화
                     {
                         isFirst2 = false;
-                        SyncDirection(virtualUser, virtualTargetDirection);
+                        if(!(this.episode is WanderingEpisode))
+                            SyncDirection(virtualUser, virtualTargetDirection);
                     }
                     else
                     {
@@ -244,7 +250,8 @@ public class SimulationController
                     if (isFirst3) // 위치를 동기화
                     {
                         isFirst3 = false;
-                        SyncPosition(virtualUser, virtualTargetPosition);
+                        if(!(this.episode is WanderingEpisode))
+                            SyncPosition(virtualUser, virtualTargetPosition);
                     }
                     else
                     {

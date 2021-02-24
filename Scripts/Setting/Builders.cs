@@ -83,7 +83,10 @@ public class Space2DBuilder
     protected float localRotation = 0;
     protected Vector2 localScale = Vector2.one;
     protected Object2D spaceObject;
-    protected Object2D parentObject;
+    protected List<Object2D> spaceObjects;
+    protected Object2D parentSpaceObject;
+    protected List<Vector2> tileCrossingVectors;
+    protected List<int> tileAreaSetting;
     protected List<Object2D> obstacles;
 
     public Space2DBuilder SetName(string _name)
@@ -122,27 +125,46 @@ public class Space2DBuilder
         return this;
     }
 
+    public Space2DBuilder SetSpaceObjects(List<Object2D> spaceObjects)
+    {
+        this.spaceObjects = spaceObjects;
+        return this;
+    }
+
+    public Space2DBuilder SetTileCrossingVectors(List<Vector2> _tileCrossingVectors)
+    {
+        this.tileCrossingVectors = _tileCrossingVectors;
+        return this;
+    }
+
+    public Space2DBuilder SetTileAreaSetting(List<int> _tileAreaSetting)
+    {
+        this.tileAreaSetting = _tileAreaSetting;
+        return this;
+    }
+
     public Space2DBuilder SetObstacles(List<Object2D> obstacles)
     {
         this.obstacles = obstacles;
         return this;
     }
 
-    public Space2DBuilder SetParent(Object2D _parentObject)
+    public Space2DBuilder SetParentSpaceObject(Object2D _parentSpaceObject)
     {
-        parentObject = _parentObject;
+        parentSpaceObject = _parentSpaceObject;
         return this;
     }
 
     public void initialize()
     {
         prefab = null;
-        name = "Object2D";
+        name = "Space2D";
         localPosition = Vector2.zero;
         localRotation = 0;
         localScale = Vector2.one;
         spaceObject = null;
-        parentObject = null;
+        spaceObjects = null;
+        parentSpaceObject = null;
         obstacles = null;
     }
 
@@ -152,6 +174,8 @@ public class Space2DBuilder
 
         if (spaceObject != null)
             result = new Space2D(spaceObject, obstacles);
+        else if(spaceObjects != null && parentSpaceObject != null && tileCrossingVectors != null)
+            result = new Space2D(parentSpaceObject, spaceObjects, tileCrossingVectors, tileAreaSetting, obstacles);
         else
             result = new Space2D(prefab, name, localPosition, localRotation, localScale);
         initialize();
@@ -248,27 +272,45 @@ public class Object2DBuilder : AbstractBuilder<Object2D, Object2DBuilder>
 public class Polygon2DBuilder : AbstractBuilder<Polygon2D, Polygon2DBuilder>
 {
     protected bool useRegularPolygon = true;
+    protected bool tileMode = false;
     protected List<Vector2> vertices = null;
     protected int count = 4;
     protected float size = 1;
+    protected List<float> rotationInfo = new List<float>(new float[] {0, 0});
+    protected Vector2 movementInfo = Vector2.zero;
+    protected int tileType = 0;
 
     public Polygon2DBuilder() : base()
     {
         useRegularPolygon = true;
+        tileMode = false;
         vertices = null;
         count = 4;
         size = 1;
         name = "Polygon2D";
+        rotationInfo = new List<float>(new float[] {0, 0});
+        movementInfo = Vector2.zero;
+        tileType = 0;
     }
 
     public override void initialize()
     {
         base.initialize();
         useRegularPolygon = true;
+        tileMode = false;
         vertices = null;
         count = 4;
         size = 1;
         name = "Polygon2D";
+        rotationInfo = new List<float>(new float[] {0, 0});
+        movementInfo = Vector2.zero;
+        tileType = 0;
+    }
+
+    public Polygon2DBuilder SetTileMode(bool _tileMode)
+    {
+        tileMode = _tileMode;
+        return _builderInstance;
     }
 
     public Polygon2DBuilder SetMode(bool _useRegularPolygon)
@@ -295,6 +337,21 @@ public class Polygon2DBuilder : AbstractBuilder<Polygon2D, Polygon2DBuilder>
         return _builderInstance;
     }
 
+    public Polygon2DBuilder SetCrossingInfo(List<float> _rotationInfo, Vector2 _movementInfo)
+    {
+        for(int i=0; i < 2; i++)
+            rotationInfo[i] = _rotationInfo[i];
+        movementInfo = _movementInfo;
+
+        return _builderInstance;
+    }
+
+    public Polygon2DBuilder SetTileType(int _tileType)
+    {
+        tileType = _tileType;
+        return _builderInstance;
+    }
+
     public override Polygon2D Build()
     {
         Polygon2D result = null;
@@ -302,7 +359,17 @@ public class Polygon2DBuilder : AbstractBuilder<Polygon2D, Polygon2DBuilder>
         if (useRegularPolygon)
             result = new Polygon2D(prefab, name, localPosition, localRotation, localScale, count, size, parentObject);
         else
-            result = new Polygon2D(prefab, name, localPosition, localRotation, localScale, parentObject, vertices);
+        {
+            if(tileMode)
+            {
+                List<float> movementFloatInfo = new List<float>();
+                movementFloatInfo.Add(movementInfo.x);
+                movementFloatInfo.Add(movementInfo.y);
+                result = new Polygon2D(prefab, name, localPosition, localRotation, localScale, parentObject, vertices, tileType, rotationInfo, movementFloatInfo);
+            }
+            else
+                result = new Polygon2D(prefab, name, localPosition, localRotation, localScale, parentObject, vertices);
+        }
 
         initialize();
         return result;

@@ -21,7 +21,7 @@ public class RDWSimulationManager : MonoBehaviour
     private List<Vector2> initialObstaclePositions;
 
     private int episodeCnt = 0;
-    private bool useTiling = false;
+    private bool tileMode = false;
 
     public void GenerateUnitObjects()
     {
@@ -116,37 +116,53 @@ public class RDWSimulationManager : MonoBehaviour
 
     public void GenerateVirtualSpace()
     {
-        useTiling = simulationSetting.virtualSpaceTilingSetting.useTiling;
+        tileMode = simulationSetting.virtualSpaceTilingSetting.tileMode;
 
         Polygon2D polygonObject = (Polygon2D) realSpace.spaceObject;
                 
-        if(useTiling)
+        if(tileMode)
         {
             virtualSpace = simulationSetting.virtualSpaceTilingSetting.GetSpace(polygonObject.GetVertices());
-            virtualSpace.spaceObject.transform2D.parent = this.transform;
+            virtualSpace.parentSpaceObject.transform2D.parent = this.transform;
+
+            if (!simulationSetting.virtualSpaceSetting.usePredefinedSpace)
+            {
+                virtualSpace.GenerateTiledSpace(simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
+            }
+                
+            if(!initializedForObstaclePosition)
+            {
+                initializedForObstaclePosition = true;
+                this.initialObstaclePositions = new List<Vector2>();
+                for (int i=0; i<virtualSpace.obstacles.Count; i++)
+                {
+                    initialObstaclePositions.Add(virtualSpace.GetObstaclePositionByIndex(i));
+                }
+
+                virtualSpace.SetInitialObstaclePositions(initialObstaclePositions);
+            }
         }
         else
         {
             virtualSpace = simulationSetting.virtualSpaceSetting.GetSpace();
             virtualSpace.spaceObject.transform2D.parent = this.transform;
-        }
-
-
-        if (!simulationSetting.virtualSpaceSetting.usePredefinedSpace)
-        {
-            virtualSpace.GenerateSpace(simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
-        }
-            
-        if(!initializedForObstaclePosition)
-        {
-            initializedForObstaclePosition = true;
-            this.initialObstaclePositions = new List<Vector2>();
-            for (int i=0; i<virtualSpace.obstacles.Count; i++)
+        
+            if (!simulationSetting.virtualSpaceSetting.usePredefinedSpace)
             {
-                initialObstaclePositions.Add(virtualSpace.GetObstaclePositionByIndex(i));
+                virtualSpace.GenerateSpace(simulationSetting.prefabSetting.virtualMaterial, simulationSetting.prefabSetting.obstacleMaterial, 3, 2);
             }
+                
+            if(!initializedForObstaclePosition)
+            {
+                initializedForObstaclePosition = true;
+                this.initialObstaclePositions = new List<Vector2>();
+                for (int i=0; i<virtualSpace.obstacles.Count; i++)
+                {
+                    initialObstaclePositions.Add(virtualSpace.GetObstaclePositionByIndex(i));
+                }
 
-            virtualSpace.SetInitialObstaclePositions(initialObstaclePositions);
+                virtualSpace.SetInitialObstaclePositions(initialObstaclePositions);
+            }
         }
     }
 
@@ -331,6 +347,8 @@ public class RDWSimulationManager : MonoBehaviour
             Debug.Log(redirectedUnits[i].GetEpisode().GetEpisodeLength());
             Debug.Log("[Result Data]");
             Debug.Log(redirectedUnits[i].resultData);
+            Debug.Log("[Number of Resets]");
+            Debug.Log(redirectedUnits[i].GetNumOfResetLocObjects());
         }
     }
 
@@ -389,14 +407,12 @@ public class RDWSimulationManager : MonoBehaviour
 
     public IEnumerator SlowSimulationRoutine()
     {
-        Time.timeScale = 2f;
+        Time.timeScale = 2f;//2f;
         do
         {
             DestroyAll();
             GenerateSpaces();
             GenerateUnits();
-
-            
 
             for (int i = 0; i < redirectedUnits.Length; i++)
             {

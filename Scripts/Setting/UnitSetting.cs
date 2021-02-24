@@ -47,18 +47,31 @@ public class UnitSetting
             {
                 default:
                     realUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetParent(realSpace.spaceObject).Build();
-                    virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
+                    
+                    if(virtualSpace.tileMode)
+                        virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.parentSpaceObject).Build();
+                    else
+                        virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
+
                     break;
                 case "Circle":
                     realUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetParent(realSpace.spaceObject).Build();
-                    virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
+
+                    if(virtualSpace.tileMode)
+                        virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.parentSpaceObject).Build();
+                    else
+                        virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
                     break;
             }
         }
         else
         {
             realUser = new Circle2DBuilder().SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetRadius(0.5f).SetParent(realSpace.spaceObject).Build();
-            virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetRadius(0.5f).SetParent(virtualSpace.spaceObject).Build();
+
+            if(virtualSpace.tileMode)
+                virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetRadius(0.5f).SetParent(virtualSpace.parentSpaceObject).Build();
+            else
+                virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetRadius(0.5f).SetParent(virtualSpace.spaceObject).Build();
         }
 
         return new RedirectedUnitBuilder()

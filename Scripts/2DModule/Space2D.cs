@@ -5,7 +5,12 @@ using UnityEngine;
 public class Space2D 
 {
     public Object2D spaceObject;
+    public List<Object2D> spaceObjects; // tile용
+    public Object2D parentSpaceObject; // tile용
+    public List<Vector2> tileCrossingVectors; // tile용
+    public List<int> tileAreaSetting; // tile용
     public List<Object2D> obstacles;
+    public bool tileMode = false;
     private List<Vector2> initialObstaclePositions;
 
     public Space2D() // 기본 생성자
@@ -70,6 +75,36 @@ public class Space2D
         }
     }
 
+    public Space2D(Object2D parentSpaceObject, List<Object2D> spaceObjects, List<Vector2> tileCrossingVectors, List<int> tileAreaSetting, List<Object2D> obstacles) // 참조 생성자
+    {
+        this.tileMode = true;
+
+        this.parentSpaceObject = parentSpaceObject;
+        this.spaceObjects = spaceObjects;
+        this.tileCrossingVectors = tileCrossingVectors;
+        this.tileAreaSetting = tileAreaSetting;
+
+        // foreach (Object2D spaceObject in this.spaceObjects)
+        // {
+        //     spaceObject.transform2D.parent = this.parentSpaceObject.transform2D.transform;
+        // }
+
+        this.spaceObject = this.spaceObjects[0];
+        this.parentSpaceObject.transform2D.localPosition = this.spaceObjects[0].transform2D.localPosition;
+        //spaceObject.transform2D.localPosition = new Vector2(2f,2f);
+        //Debug.Log(this.spaceObject.transform2D.localPosition);
+        //Debug.Log(this.parentSpaceObject.transform2D.localPosition);
+        // Debug.Log(this.parentSpaceObject.transform2D.localPosition);
+        // Debug.Log(spaceObjects[0].transform2D.localPosition);
+        // Debug.Log(spaceObjects[1].transform2D.localPosition);
+
+        this.obstacles = obstacles;
+        foreach (Object2D obstacle in this.obstacles)
+        {
+            obstacle.transform2D.parent = this.spaceObject.transform2D.transform;
+        }
+    }
+
     public void Destroy()
     {
         for (int i = 0; i < this.obstacles.Count; i++)
@@ -90,6 +125,28 @@ public class Space2D
             this.obstacles[i].GenerateShape(obstacleMaterial, obstacleHeight, true, obstacleName);
             this.obstacles[i].transform2D.parent = this.spaceObject.transform2D.transform;
         }
+    }
+
+    public void GenerateTiledSpace(Material spaceMaterial, Material obstacleMaterial, float spaceHeight, float obstacleHeight, string name = null)
+    {
+        for (int i=0; i<this.spaceObjects.Count; i++)
+        {
+            string obstacleName = "tile_" + i;
+            this.spaceObjects[i].GenerateShape(spaceMaterial, spaceHeight, true, obstacleName);
+            this.spaceObjects[i].transform2D.parent = this.parentSpaceObject.transform2D.transform;
+        }
+        
+        for (int i=0; i<this.obstacles.Count; i++)
+        {
+            string obstacleName = "obstacle_" + i;
+            this.obstacles[i].GenerateShape(obstacleMaterial, obstacleHeight, true, obstacleName);
+            this.obstacles[i].transform2D.parent = this.parentSpaceObject.transform2D.transform;
+        }
+    }
+
+    public void SetTileMode(bool tileMode)
+    {
+        this.tileMode = tileMode;
     }
 
     public List<Vector2> GetInitialObstaclePositions()
@@ -254,6 +311,32 @@ public class Space2D
         return isInside;
     }
 
+    public bool IsInsideTile(Vector2 samplingPosition, Vector2 tileLocation, Space relativeTo, float bound) // samplingPosition이 relativeTo 좌표계에 있다고 가정
+    {
+        bool isInsideTile = true;
+
+        // foreach (var obstacle in this.obstacles) // obstacle 밖에 있는지를 확인
+        // {
+        //     Vector2 localSamplingPosition = Vector2.zero;
+
+        //     if (relativeTo == Space.World)
+        //         localSamplingPosition = obstacle.transform2D.TransformPointToLocal(samplingPosition);
+        //     else
+        //         localSamplingPosition = spaceObject.transform2D.TransformPointToOtherLocal(samplingPosition, obstacle.transform2D);
+
+        //     if (obstacle.IsInside(localSamplingPosition, Space.Self, -0.2f)) // relativeTo 와 상관없이 local로 비교 
+        //     {
+        //         isInside = false;
+        //         break;
+        //     }
+        // }
+
+        if (!spaceObject.IsInsideTile(samplingPosition, tileLocation, relativeTo, bound)) // spaceObject 안에 있는지를 확인
+            isInsideTile = false;
+
+        return isInsideTile;
+    }
+
     public bool IsPossiblePath(Vector2 targetPosition, Vector2 sourcePosition, Space relativeTo) // TODO: Circle2D 일 때 뭔가 잘 안됨 왜인지는 확인해봐야 함
     {
         if (Vector2.Distance(targetPosition, sourcePosition) <= 0.01f)
@@ -290,6 +373,47 @@ public class Space2D
         line = new Edge2D(sourcePosition, targetPosition);
 
         if (spaceObject.IsIntersect(line, relativeTo, "exclude")) // line과의 intersect을 relativeTo 좌표계를 기준으로 비교
+            isPossible = false;
+
+        return isPossible;
+    }
+
+    public bool IsPossiblePath(Vector2 targetPosition, Vector2 sourcePosition, Space relativeTo, float bound) // TODO: Circle2D 일 때 뭔가 잘 안됨 왜인지는 확인해봐야 함
+    {
+        if (Vector2.Distance(targetPosition, sourcePosition) <= 0.01f)
+            return true;
+
+        bool isPossible = true;
+        Edge2D line = null;
+
+        foreach (var obstacle in this.obstacles)
+        {
+            Vector2 localTargetPosition = Vector2.zero;
+            Vector2 localSourcePosition = Vector2.zero;
+
+            if (relativeTo == Space.World)
+            {
+                localTargetPosition = obstacle.transform2D.TransformPointToLocal(targetPosition);
+                localSourcePosition = obstacle.transform2D.TransformPointToLocal(sourcePosition);
+            }
+            else
+            {
+                localTargetPosition = spaceObject.transform2D.TransformPointToOtherLocal(targetPosition, obstacle.transform2D);
+                localSourcePosition = spaceObject.transform2D.TransformPointToOtherLocal(sourcePosition, obstacle.transform2D);
+            }
+
+            line = new Edge2D(localSourcePosition, localTargetPosition);
+      
+            if (obstacle.IsIntersect(line, Space.Self)) // relativeTo 와 상관없이 // relativeTo 와 상관없이 line과의 intersect를 obstacle local 좌표계로 비교 
+            {
+                isPossible = false;
+                break;
+            }
+        }
+
+        line = new Edge2D(sourcePosition, targetPosition);
+
+        if (spaceObject.IsIntersect(line, relativeTo, "exclude", bound)) // line과의 intersect을 relativeTo 좌표계를 기준으로 비교
             isPossible = false;
 
         return isPossible;

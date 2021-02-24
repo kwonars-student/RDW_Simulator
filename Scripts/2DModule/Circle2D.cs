@@ -122,7 +122,7 @@ public class Circle2D : Object2D
         }
     }
 
-    public override bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default") // line이 relativeTo 좌표계에 이미 있다고 가정
+    public override bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default", float bound = 0.01f) // line이 relativeTo 좌표계에 이미 있다고 가정
     {
         Vector2 origin = Vector2.zero;
         if (relativeTo == Space.Self)
@@ -133,11 +133,11 @@ public class Circle2D : Object2D
         float originToP1Distance = Vector2.Distance(origin, targetLine.p1);
         float originToP2Distance = Vector2.Distance(origin, targetLine.p2);
 
-        if (originToP1Distance - this.radius <= 0.01f && originToP2Distance - this.radius > 0.01f) // p1이 원 안에 있고 p2가 원 밖에 있는 경우
+        if (originToP1Distance - this.radius <= bound && originToP2Distance - this.radius > bound) // p1이 원 안에 있고 p2가 원 밖에 있는 경우
             return true;
-        else if (originToP2Distance - this.radius <= 0.01f && originToP1Distance - this.radius > 0.01f) // p2가 원 안에 있고 p1이 원 밖에 있는 경우
+        else if (originToP2Distance - this.radius <= bound && originToP1Distance - this.radius > bound) // p2가 원 안에 있고 p1이 원 밖에 있는 경우
             return true;
-        else if (originToP2Distance - this.radius <= 0.01f && originToP1Distance - this.radius <= 0.01f) // p2, p1 모두 원 안에 있는 경우
+        else if (originToP2Distance - this.radius <= bound && originToP1Distance - this.radius <= bound) // p2, p1 모두 원 안에 있는 경우
             return false;
         else // p2, p1 모두 원 밖에 있는 경우
         {

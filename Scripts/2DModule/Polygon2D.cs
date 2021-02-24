@@ -1,13 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using UnityEngine;
 
 public class Polygon2D : Object2D
 {
     private List<Vector2> vertices; // local 좌표계 기준
+    //private List<Vector2> flippedVertices; // local 좌표계 기준
     private Vector2 squareCenter; // local 좌표계 기준
+    private Vector2 crossingAxisIntersection; // local 좌표계 기준
     private List<Vector2> crossBoundaryPoints; // local 좌표계 기준
+    private List<Vector2> crossXFromTo; // local 좌표계 기준
+    private List<Vector2> crossYFromTo; // local 좌표계 기준
+    private List<float> crossingAxisRotationInfo = new List<float>(new float[] {0, 0});
+    private Vector2 crossingPointMovementInfo;
+    private int tileType;
 
     public Polygon2D() : base() // 기본 생성자
     {
@@ -17,25 +24,38 @@ public class Polygon2D : Object2D
         vertices.Add(new Vector2(-0.5f, -0.5f));
         vertices.Add(new Vector2(0.5f, -0.5f));
 
-        crossBoundaryPoints = new List<Vector2>();
-        squareCenter = GetSquareCenter();
-        crossBoundaryPoints = GetCrossBoundaryPoints();
+        SetSquareProperties();
+        this.crossBoundaryPoints = CalculateCrossBoundaryPoints();
     }
 
     public Polygon2D(Polygon2D otherObject, string name = null) : base(otherObject, name) // 복사 생성자
     {
         this.vertices = new List<Vector2>(otherObject.vertices);
-        this.squareCenter = GetSquareCenter();
-        this.crossBoundaryPoints = GetCrossBoundaryPoints();
+        SetSquareProperties();
+        this.crossBoundaryPoints = CalculateCrossBoundaryPoints();
     }
 
-    public Polygon2D(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, Object2D parentObject = null, List<Vector2> vertices = null) : base(prefab, name, localPosition, localRotation, localScale, parentObject) // vertex 위치를 직접 지정 하여 polygon을 생성하는 생성자
+    public Polygon2D(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, Object2D parentObject = null, List<Vector2> vertices = null, int tileType = 0, List<float> rotationInfo = null, List<float> movementInfo = null) : base(prefab, name, localPosition, localRotation, localScale, parentObject) // vertex 위치를 직접 지정 하여 polygon을 생성하는 생성자
     {
         if(prefab == null)
             this.vertices = new List<Vector2>(vertices);
 
-        this.squareCenter = GetSquareCenter();
-        this.crossBoundaryPoints = GetCrossBoundaryPoints();
+        if(rotationInfo != null && movementInfo != null && tileType != null)
+        {
+            this.crossingAxisRotationInfo = rotationInfo;
+            this.tileType = tileType;
+            if(tileType == 0 || tileType == 3)
+            {
+                this.crossingPointMovementInfo = new Vector2(movementInfo[0], movementInfo[1]);
+            }
+            else if(tileType == 1 || tileType == 2)
+            {
+                this.crossingPointMovementInfo = new Vector2(-movementInfo[0], -movementInfo[1]);
+            }
+        }
+
+        SetSquareProperties();
+        this.crossBoundaryPoints = CalculateCrossBoundaryPoints();
     }
 
     public Polygon2D(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, int count, float size, Object2D parentObject = null) : base(prefab, name, localPosition, localRotation, localScale, parentObject) // n각형과 size를 지정하여 polygon을 생성하는 방식 생성자
@@ -48,8 +68,8 @@ public class Polygon2D : Object2D
             vertices.Add(new Vector2(-size / 2, -size / 2));
             vertices.Add(new Vector2(size / 2, -size / 2));
         }
-        this.squareCenter = GetSquareCenter();
-        this.crossBoundaryPoints = GetCrossBoundaryPoints();
+        SetSquareProperties();
+        this.crossBoundaryPoints = CalculateCrossBoundaryPoints();
     }
 
     public Polygon2D(GameObject prefab) : base(prefab) // 참조 생성자
@@ -60,8 +80,8 @@ public class Polygon2D : Object2D
 
         this.vertices = new List<Vector2>();
         this.vertices = connectionGraph.FindOutline(true);
-        this.squareCenter = GetSquareCenter();
-        this.crossBoundaryPoints = GetCrossBoundaryPoints();
+        SetSquareProperties();
+        this.crossBoundaryPoints = CalculateCrossBoundaryPoints();
     }
 
     public override Object2D Clone(string name = null)
@@ -126,17 +146,7 @@ public class Polygon2D : Object2D
         }
     }
 
-    public Vector2 GetCrossBoundaryVertex(int index, Space relativeTo)
-    {
-        // int realIndex = Utility.mod(index, vertices.Count);
-
-        if (relativeTo == Space.Self)
-            return crossBoundaryPoints[index];
-        else
-            return this.transform2D.TransformPointToGlobal(crossBoundaryPoints[index]);
-    }
-
-    public Vector2 GetSquareCenter()
+    public void SetSquareProperties()
     {
         Vector2 v_max = Vector2.zero;
         Vector2 v_min = Vector2.zero;
@@ -165,27 +175,65 @@ public class Polygon2D : Object2D
         }
 
         c = 0.5f*(v_max + v_min);
+        this.squareCenter = c;
+        // Debug.Log("squareCenter: "+ squareCenter);
+        this.crossingAxisIntersection = c + this.crossingPointMovementInfo;
 
-        return c;
+        Vector2 diagonal = 3*(v_max - v_min);
+        // Debug.Log("diagonal: "+ diagonal);
+
+        Vector2 fromX = c + new Vector2(-(diagonal.magnitude/2),0);
+        Vector2 toX = c + new Vector2((diagonal.magnitude/2),0);
+
+        Vector2 fromY = c + new Vector2(0,-(diagonal.magnitude/2));
+        Vector2 toY = c + new Vector2(0,(diagonal.magnitude/2));
+
+        List<Vector2> crossXFromTo = new List<Vector2>();
+        crossXFromTo.Add(this.crossingAxisIntersection + Utility.RotateVector2(fromX - c, this.crossingAxisRotationInfo[0]));
+        crossXFromTo.Add(this.crossingAxisIntersection + Utility.RotateVector2(toX - c, this.crossingAxisRotationInfo[0]));
+
+        List<Vector2> crossYFromTo = new List<Vector2>();
+        crossYFromTo.Add(this.crossingAxisIntersection + Utility.RotateVector2(fromY - c, this.crossingAxisRotationInfo[1]));
+        crossYFromTo.Add(this.crossingAxisIntersection + Utility.RotateVector2(toY - c, this.crossingAxisRotationInfo[1]));
+
+        this.crossXFromTo = crossXFromTo;
+        this.crossYFromTo = crossYFromTo;
+
+        // for(int i = 0 ; i < vertices.Count; i++)
+        // {
+        //     this.flippedVertices.Add(-1f*vertices[i]);
+        // }
     }
 
-    public List<Vector2> GetCrossBoundaryPoints()
+    public List<Vector2> CalculateCrossBoundaryPoints()
     {
-        List<Vector2> possibleCrossPoints = new List<Vector2>();
-        List<Vector2> crossPoints = new List<Vector2>(); // 순서: 상 하 좌 우
-        Vector2 c = this.squareCenter;
-        List<float> temp1 = new List<float>();
-        List<float> temp2 = new List<float>();
-        List<float> temp3 = new List<float>();
-        List<float> temp4 = new List<float>();
-        int p=0;
+        Vector2 cxp = this.crossingAxisIntersection;
+        Vector2 fromX = this.crossXFromTo[0];
+        Vector2 toX = this.crossXFromTo[1];
+        Vector2 fromY = this.crossYFromTo[0];
+        Vector2 toY = this.crossYFromTo[1];
+        // Debug.Log("cxp: "+ cxp);
+        // Debug.Log("fromX: "+ fromX);
+        // Debug.Log("toX: "+ toX);
+        // Debug.Log("fromY: "+ fromY);
+        // Debug.Log("toY: "+ toY);
 
-        for (int i = 0; i < vertices.Count; i++)
+        List<Vector2> possibleCrossPoints1 = new List<Vector2>();
+        List<Vector2> possibleCrossPoints2 = new List<Vector2>();
+        List<Vector2> possibleCrossPoints3 = new List<Vector2>();
+        List<Vector2> possibleCrossPoints4 = new List<Vector2>();
+
+        List<Vector2> crossPoints = new List<Vector2>();
+        Vector2 crossPoint1 = new Vector2();
+        Vector2 crossPoint2 = new Vector2();
+        Vector2 crossPoint3 = new Vector2();
+        Vector2 crossPoint4 = new Vector2();
+
+        int p=0;
+        float eps = Mathf.Pow(10f, -10f);
+
+        for (int i=0; i < vertices.Count; i++)
         {
-            // Debug.Log(vertices[0].x+ vertices[0].y);
-            // Debug.Log(vertices[1].x + vertices[1].y);
-            // Debug.Log(vertices[2].x + vertices[2].y);
-            // Debug.Log(vertices[3].x + vertices[3].y);
             if (i-1 < 0)
             {
                 p = vertices.Count - 1;
@@ -195,79 +243,150 @@ public class Polygon2D : Object2D
                 p = i-1;
             }
 
-            if( c.x == vertices[p].x )
+            Vector2 lineCrossPoint1 = GetIntersectionPointCoordinates(vertices[p], vertices[i], cxp, toX);
+            if( (vertices[p].x - lineCrossPoint1.x)*(vertices[i].x - lineCrossPoint1.x) <= eps
+             && (vertices[p].y - lineCrossPoint1.y)*(vertices[i].y - lineCrossPoint1.y) <= eps
+             && (cxp.x - lineCrossPoint1.x)*(toX.x - lineCrossPoint1.x) <= eps
+             && (cxp.y - lineCrossPoint1.y)*(toX.y - lineCrossPoint1.y) <= eps )
             {
-                possibleCrossPoints.Add(vertices[p]);
-            }
-            else if(c.x == vertices[i].x)
-            {
-                possibleCrossPoints.Add(vertices[i]);
-            }
-            else if( (c.x - vertices[p].x)*(c.x - vertices[i].x) < 0 )
-            {
-                if(vertices[i].x == vertices[p].x)
-                {
-                    Debug.Log("Cannot Devide by Zero!");
-                }
-                else
-                {
-                    possibleCrossPoints.Add(new Vector2(c.x, vertices[p].y + (c.x-vertices[p].x)*(vertices[i].y - vertices[p].y)/(vertices[i].x - vertices[p].x)));
-                    // Vector2 a = new Vector2(c.x, vertices[p].y + (c.x - vertices[p].x) * (vertices[i].y - vertices[p].y) / (vertices[i].x - vertices[p].x));
-                    // Debug.Log(a.x + a.y);
-                }
+                possibleCrossPoints1.Add(lineCrossPoint1);
+                //Debug.Log(lineCrossPoint1);
             }
 
-            if( c.y == vertices[p].y )
+            Vector2 lineCrossPoint2 = GetIntersectionPointCoordinates(vertices[p], vertices[i], cxp, toY);
+            if( (vertices[p].x - lineCrossPoint2.x)*(vertices[i].x - lineCrossPoint2.x) <= eps
+             && (vertices[p].y - lineCrossPoint2.y)*(vertices[i].y - lineCrossPoint2.y) <= eps
+             && (cxp.x - lineCrossPoint2.x)*(toY.x - lineCrossPoint2.x) <= eps
+             && (cxp.y - lineCrossPoint2.y)*(toY.y - lineCrossPoint2.y) <= eps )
             {
-                possibleCrossPoints.Add(vertices[p]);
+                possibleCrossPoints2.Add(lineCrossPoint2);
+                //Debug.Log(lineCrossPoint2);
             }
-            else if(c.y == vertices[i].y)
+
+            Vector2 lineCrossPoint3 = GetIntersectionPointCoordinates(vertices[p], vertices[i], cxp, fromX);
+            if( (vertices[p].x - lineCrossPoint3.x)*(vertices[i].x - lineCrossPoint3.x) <= eps
+             && (vertices[p].y - lineCrossPoint3.y)*(vertices[i].y - lineCrossPoint3.y) <= eps
+             && (fromX.x - lineCrossPoint3.x)*(cxp.x - lineCrossPoint3.x) <= eps
+             && (fromX.y - lineCrossPoint3.y)*(cxp.y - lineCrossPoint3.y) <= eps )
             {
-                possibleCrossPoints.Add(vertices[i]);
+                possibleCrossPoints3.Add(lineCrossPoint3);
+                //Debug.Log(lineCrossPoint3);
             }
-            else if( (c.y - vertices[p].y)*(c.y - vertices[i].y) < 0 )
+
+            Vector2 lineCrossPoint4 = GetIntersectionPointCoordinates(vertices[p], vertices[i], cxp, fromY);
+            if( (vertices[p].x - lineCrossPoint4.x)*(vertices[i].x - lineCrossPoint4.x) <= eps
+             && (vertices[p].y - lineCrossPoint4.y)*(vertices[i].y - lineCrossPoint4.y) <= eps
+             && (fromY.x - lineCrossPoint4.x)*(cxp.x - lineCrossPoint4.x) <= eps
+             && (fromY.y - lineCrossPoint4.y)*(cxp.y - lineCrossPoint4.y) <= eps )
             {
-                if(vertices[i].y == vertices[p].y)
-                {
-                    Debug.Log("Cannot Devide by Zero!");
-                }
-                else
-                {
-                    possibleCrossPoints.Add(new Vector2(vertices[p].x + (c.y-vertices[p].y)*(vertices[i].x - vertices[p].x)/(vertices[i].y - vertices[p].y), c.y));
-                    //Debug.Log(new Vector2(vertices[p].x + (c.y-vertices[p].y)*(vertices[i].x - vertices[p].x)/(vertices[i].y - vertices[p].y), c.y));
-                    // Debug.Log(vertices[i]);
-                }
+                possibleCrossPoints4.Add(lineCrossPoint4);
+                //Debug.Log(lineCrossPoint4);
             }
         }
 
-        for (int i = 0; i < possibleCrossPoints.Count; i++)
+        crossPoint1 = possibleCrossPoints1[0];
+        for (int i = 0; i < possibleCrossPoints1.Count; i++)
         {
-            //Debug.Log(possibleCrossPoints[i]);
-            if(possibleCrossPoints[i].x == c.x && possibleCrossPoints[i].y > c.y)
+            if(possibleCrossPoints1[i].magnitude > crossPoint1.magnitude)
             {
-                temp1.Add(possibleCrossPoints[i].y);
+                crossPoint1 = possibleCrossPoints1[i];
             }
-            else if(possibleCrossPoints[i].x == c.x && possibleCrossPoints[i].y < c.y)
-            {
-                temp2.Add(possibleCrossPoints[i].y);
-            }
-            else if(possibleCrossPoints[i].y == c.y && possibleCrossPoints[i].x < c.x)
-            {
-                temp3.Add(possibleCrossPoints[i].x);
-            }
-            else if(possibleCrossPoints[i].y == c.y && possibleCrossPoints[i].x > c.x)
-            {
-                temp4.Add(possibleCrossPoints[i].x);
-            }
-            
         }
 
-        crossPoints.Add(new Vector2(c.x, temp1.Min()));
-        crossPoints.Add(new Vector2(c.x, temp2.Max()));
-        crossPoints.Add(new Vector2(temp3.Min(), c.y));
-        crossPoints.Add(new Vector2(temp4.Max(), c.y));
+        crossPoint2 = possibleCrossPoints2[0];
+        for (int i = 0; i < possibleCrossPoints2.Count; i++)
+        {
+            if(possibleCrossPoints2[i].magnitude > crossPoint2.magnitude)
+            {
+                crossPoint2 = possibleCrossPoints2[i];
+            }
+        }
 
+        crossPoint3 = possibleCrossPoints3[0];
+        for (int i = 0; i < possibleCrossPoints3.Count; i++)
+        {
+            if(possibleCrossPoints3[i].magnitude > crossPoint3.magnitude)
+            {
+                crossPoint3 = possibleCrossPoints3[i];
+            }
+        }
+
+        crossPoint4 = possibleCrossPoints4[0];
+        for (int i = 0; i < possibleCrossPoints4.Count; i++)
+        {
+            if(possibleCrossPoints4[i].magnitude > crossPoint4.magnitude)
+            {
+                crossPoint4 = possibleCrossPoints4[i];
+            }
+        }
+
+        crossPoints.Add(crossPoint1);
+        crossPoints.Add(crossPoint2);
+        crossPoints.Add(crossPoint3);
+        crossPoints.Add(crossPoint4);
+        
         return crossPoints;
+    }
+
+    public Vector2 GetCrossBoundaryVertex(int index, Space relativeTo)
+    {
+        // int realIndex = Utility.mod(index, vertices.Count);
+
+        if (relativeTo == Space.Self)
+            return crossBoundaryPoints[index];
+        else
+            return this.transform2D.TransformPointToGlobal(crossBoundaryPoints[index]);
+    }
+
+    public List<Vector2> GetCrossBoundaryPoints()
+    {
+        return this.crossBoundaryPoints;
+    }
+
+    public List<Vector2> GetCrossXFromTo()
+    {
+        return this.crossXFromTo;
+    }
+
+    public List<Vector2> GetCrossYFromTo()
+    {
+        return this.crossYFromTo;
+    }
+
+    public Vector2 GetIntersectionPointCoordinates(Vector2 A1, Vector2 A2, Vector2 B1, Vector2 B2)//, out bool found)
+    {
+        float tmp = (B2.x - B1.x) * (A2.y - A1.y) - (B2.y - B1.y) * (A2.x - A1.x);
+    
+        if (tmp == 0)
+        {
+            // No solution!
+            //found = false;
+            return Vector2.zero;
+        }
+    
+        float mu = ((A1.x - B1.x) * (A2.y - A1.y) - (A1.y - B1.y) * (A2.x - A1.x)) / tmp;
+    
+        //found = true;
+    
+        return new Vector2(
+            B1.x + (B2.x - B1.x) * mu,
+            B1.y + (B2.y - B1.y) * mu
+        );
+    }
+
+    public Vector2 GetSquareCenter()
+    {
+        return this.squareCenter;
+    }
+
+    public Vector2 GetCrossingAxisIntersection()
+    {
+        return this.crossingAxisIntersection;
+    }
+
+    public int GetTileType()
+    {
+        return this.tileType;
     }
 
     public override void Initialize(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, Transform parent)
@@ -346,7 +465,7 @@ public class Polygon2D : Object2D
         }
     }
 
-    public override bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default") // targetLine 은 relativeTo 좌표계에 있다고 가정
+    public override bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default", float bound = 0.01f) // targetLine 은 relativeTo 좌표계에 있다고 가정
     {
         int numOfIntersect = 0;
 
@@ -354,7 +473,7 @@ public class Polygon2D : Object2D
         {
             Edge2D boundary = GetEdge(i, relativeTo);
 
-            if (boundary.CheckIntersect(targetLine, 0.01f, option) == Intersect.EXIST)
+            if (boundary.CheckIntersect(targetLine, bound, option) == Intersect.EXIST)
                 numOfIntersect += 1;
         }
 
@@ -362,6 +481,22 @@ public class Polygon2D : Object2D
             return false;
         else
             return true;
+    }
+
+    public override int NumOfIntersect(Vector2 sourcePosition, Vector2 targetPosition, Space relativeTo, string option = "default", float bound = 0.01f) // targetLine 은 relativeTo 좌표계에 있다고 가정
+    {
+        Edge2D targetLine = new Edge2D(sourcePosition, targetPosition);
+        int numOfIntersect = 0;
+
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            Edge2D boundary = GetEdge(i, relativeTo);
+
+            if (boundary.CheckIntersect(targetLine, bound, option) == Intersect.EXIST)
+                numOfIntersect += 1;
+        }
+       
+        return numOfIntersect;
     }
 
     public override bool IsInside(Object2D targetObject, float bound = 0) // global 좌표계로 변환시킨 후 비교
@@ -406,6 +541,36 @@ public class Polygon2D : Object2D
             return false;
         else
             return true;
+    }
+
+    public override bool IsInsideTile(Vector2 targetPoint, Vector2 tileLocation, Space relativeTo, float bound = 0) // targetLine 은 relativeTo 좌표계에 있다고 가정
+    {
+
+        Ray2D ray = new Ray2D(targetPoint, Vector2.right);
+        int numOfIntersect = 0;
+
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            Vector2 p1 = GetInnerVertex(i, bound, relativeTo) + tileLocation;
+            Vector2 p2 = GetInnerVertex(i + 1, bound, relativeTo) + tileLocation;
+
+            //if (relativeTo == Space.World)
+            //{
+            //    p1 = this.transform2D.TransformPointToGlobal(p1);
+            //    p2 = this.transform2D.TransformPointToGlobal(p2);
+            //}
+
+            Edge2D boundary = new Edge2D(p1, p2);
+
+            if (boundary.CheckIntersect(ray, 0.001f) == Intersect.EXIST)
+                numOfIntersect += 1;
+        }
+
+
+        if (numOfIntersect % 2 == 0)
+            return false;
+        else
+            return true;
     }    
 
     public override void DebugDraw(Color color)
@@ -423,12 +588,24 @@ public class Polygon2D : Object2D
         // Debug.Log(crossBoundaryPoints[1]);
         // Debug.Log(crossBoundaryPoints[2]);
         // Debug.Log(crossBoundaryPoints[3]);
+        if(this.tileType != null)
+        {
+            Vector3 cp1 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(0, Space.World)); // 오
+            Vector3 cp2 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(2, Space.World)); // 왼
+            Vector3 cp3 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(1, Space.World)); // 위
+            Vector3 cp4 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(3, Space.World)); // 아래
+            if(this.tileType == 0 || this.tileType == 1)
+            {
+                Debug.DrawLine(cp1, cp2, color); // 오 - 왼
+                Debug.DrawLine(cp3, cp4, color); // 위 - 아래
+            }
+            else if(this.tileType == 2 || this.tileType == 3)
+            {
+                Debug.DrawLine(cp3, cp4, color); // 위 - 아래
+            }
 
-        Vector3 cp1 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(0, Space.World));
-        Vector3 cp2 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(1, Space.World));
-        Vector3 cp3 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(2, Space.World));
-        Vector3 cp4 = Utility.CastVector2Dto3D(GetCrossBoundaryVertex(3, Space.World));
-        Debug.DrawLine(cp1, cp2, color);
-        Debug.DrawLine(cp3, cp4, color);
+        }
+
+
     }
 }
