@@ -3,7 +3,7 @@ using UnityEngine;
 
 public enum RedirectType { Null, Default, S2C, Space, Arrangement };
 public enum ResetType { Default, TwoOneTurn , FreezeTurn, CenterTurn };
-public enum EpisodeType { LongWalk, Random, PreDefined, Wandering };
+public enum EpisodeType { LongWalk, Random, PreDefined, WanderingEpisodeForFixedReset, WanderingEpisodeForAnyReset };
 
 [System.Serializable]
 public class UnitSetting
@@ -154,8 +154,11 @@ public class UnitSetting
             case EpisodeType.PreDefined:
                 episode = new PreDefinedEpisode(episodeFileName);
                 break;
-            case EpisodeType.Wandering:
-                episode = new WanderingEpisode(episodeLength);
+            case EpisodeType.WanderingEpisodeForFixedReset:
+                episode = new WanderingEpisodeForFixedReset(episodeLength);
+                break;
+            case EpisodeType.WanderingEpisodeForAnyReset:
+                episode = new WanderingEpisodeForAnyReset(episodeLength);
                 break;
             default:
                 episode = new Episode(episodeLength);

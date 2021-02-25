@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-public class WanderingEpisode : Episode
+public class WanderingEpisodeForFixedReset : Episode
 {
     private int count;
     private int emergencyExitCount;
@@ -46,11 +46,24 @@ public class WanderingEpisode : Episode
     private Vector2 globalSamplingPosition;
     private Vector2 globalVirtualSpacePosition;
 
-    public WanderingEpisode() : base() { }
+    public WanderingEpisodeForFixedReset() : base() { }
 
-    public WanderingEpisode(int episodeLength) : base(episodeLength) { }
+    public WanderingEpisodeForFixedReset(int episodeLength) : base(episodeLength) { }
 
+    public override Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace)
+    {
+        if (!currentTargetPosition.HasValue)
+        {
+            GenerateEpisode(virtualUserTransform, virtualSpace);
+            if(targetPrefab != null && showTarget && !resetMode && !pathRestoreMode) InstaniateTarget();
+            else if(targetPrefab != null && showTarget && (resetMode || pathRestoreMode || syncMode) )
+            {
+                InstaniateTarget(restoreVector);
+            }
+        }
 
+        return currentTargetPosition.Value;
+    }
     protected override void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace)
     {
         Vector2 samplingPosition = Vector2.zero;
@@ -93,7 +106,7 @@ public class WanderingEpisode : Episode
                 // float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
                 // float distance = 0.6f;
 
-                float angle = Utility.sampleUniform(-20.0f, 20.0f);
+                float angle = Utility.sampleUniform(-135.0f, 135.0f);
                 //float distance = Utility.sampleUniform(2f, 2f); // 0.5 3
                 float distance = 1f; // 0.5 3
 
@@ -182,8 +195,10 @@ public class WanderingEpisode : Episode
 
                     resetMode = false;
                     pathRestoreMode = true;
+                    currentEpisodeIndex = currentEpisodeIndex - 1;
                     // Debug.Log("Position during reset: "+ userPosition);
                     // Debug.Log("Reset Point: "+ resetPoint);
+                    
                     break;
                 }
                 if(pathRestoreMode)
@@ -192,8 +207,9 @@ public class WanderingEpisode : Episode
                     currentTargetPosition = restoreVector;
                     pathRestoreMode = false;
                     syncMode = true;
+                    currentEpisodeIndex = currentEpisodeIndex - 1;
                     // Debug.Log("Current Tile Location Vector: "+ currentTileLocationVector);
-                    Debug.Log("Position during path restore: "+ userPosition);
+                    // Debug.Log("Position during path restore: "+ userPosition);
                     break;
                 }
 
@@ -202,7 +218,7 @@ public class WanderingEpisode : Episode
 
                 if(currentTileNumber % 4 == 0 ) // Type 1
                 {
-                    Debug.Log("Now Type 1");
+                    // Debug.Log("Now Type 1");
                     Polygon2D rightTile1 = (Polygon2D) virtualSpace.spaceObjects[currentTileNumber+1];
                     Polygon2D topTile1 = null;
                     Polygon2D bottomTile1 = (Polygon2D) virtualSpace.spaceObjects[currentTileNumber+2];
@@ -245,7 +261,7 @@ public class WanderingEpisode : Episode
                         samplingPosition = resetPoint - new Vector2(resetLength, 0);
                         resetMode = true;
                         resetType = "1R";
-                        Debug.Log("Move from Type 1 to Right");
+                        // Debug.Log("Move from Type 1 to Right");
                         break;
                     }
                     if(!firstRow) // 위쪽 전환인 경우 X
@@ -266,7 +282,7 @@ public class WanderingEpisode : Episode
                             samplingPosition = resetPoint - new Vector2(0, resetLength);
                             resetMode = true;
                             resetType = "1T";
-                            Debug.Log("Move from Type 1 to Top");
+                            // Debug.Log("Move from Type 1 to Top");
                             break;
                         }
                     }
@@ -288,7 +304,7 @@ public class WanderingEpisode : Episode
                             samplingPosition = resetPoint + new Vector2(resetLength, 0);
                             resetMode = true;
                             resetType = "1L";
-                            Debug.Log("Move from Type 1 to Left");
+                            // Debug.Log("Move from Type 1 to Left");
                             break;
                         }
                     }
@@ -308,16 +324,16 @@ public class WanderingEpisode : Episode
                         samplingPosition = resetPoint + new Vector2(0, resetLength);
                         resetMode = true;
                         resetType = "1B";
-                        Debug.Log("Move from Type 1 to Bottom");
+                        // Debug.Log("Move from Type 1 to Bottom");
                         break;
                     }
 
-                    Debug.Log("Type 1 Check Done");
+                    // Debug.Log("Type 1 Check Done");
 
                 }
                 else if(currentTileNumber % 4 == 1) // Type 2
                 {
-                    Debug.Log("Now Type 2");
+                    // Debug.Log("Now Type 2");
                     Polygon2D rightTile2 = null;
                     Polygon2D topTile2 = null;
                     Polygon2D leftTile2 = (Polygon2D) virtualSpace.spaceObjects[currentTileNumber - 1];
@@ -360,7 +376,7 @@ public class WanderingEpisode : Episode
                             samplingPosition = resetPoint - new Vector2(resetLength, 0);
                             resetMode = true;
                             resetType = "2R";
-                            Debug.Log("Move from Type 2 to Right");
+                            // Debug.Log("Move from Type 2 to Right");
                             break;
                         }
 
@@ -383,7 +399,7 @@ public class WanderingEpisode : Episode
                             samplingPosition = resetPoint - new Vector2(0, resetLength);
                             resetMode = true;
                             resetType = "2T";
-                            Debug.Log("Move from Type 2 to Top");
+                            // Debug.Log("Move from Type 2 to Top");
                             break;
                         }
                     }
@@ -404,7 +420,7 @@ public class WanderingEpisode : Episode
                         samplingPosition = resetPoint + new Vector2(resetLength, 0);
                         resetMode = true;
                         resetType = "2L";
-                        Debug.Log("Move from Type 2 to Left");
+                        // Debug.Log("Move from Type 2 to Left");
                         break;
                     }
 
@@ -424,15 +440,15 @@ public class WanderingEpisode : Episode
                         samplingPosition = resetPoint + new Vector2(0, resetLength);
                         resetMode = true;
                         resetType = "2B";
-                        Debug.Log("Move from Type 2 to Bottom");
+                        // Debug.Log("Move from Type 2 to Bottom");
                         break;
                     }
-                    Debug.Log("Type 2 Check Done");
+                    // Debug.Log("Type 2 Check Done");
 
                 }
                 else if(currentTileNumber % 4 == 2) // Type 3
                 {
-                    Debug.Log("Now Type 3");
+                    // Debug.Log("Now Type 3");
                     Polygon2D topTile3 = (Polygon2D) virtualSpace.spaceObjects[currentTileNumber - 2];
                     Polygon2D bottomTile3 = null;
 
@@ -462,13 +478,13 @@ public class WanderingEpisode : Episode
                         samplingPosition = resetPoint - new Vector2(0, resetLength);
                         resetMode = true;
                         resetType = "3T";
-                        Debug.Log("Move from Type 3 to Top");
+                        // Debug.Log("Move from Type 3 to Top");
                         break;
                     }
                     if(!lastRow)
                     //if(bottomPoint2.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 아랫쪽인 경우 X
                     {
-                        Debug.Log("Type3 lastRow In !");
+                        // Debug.Log("Type3 lastRow In !");
                         // Debug.Log("Type3 B Intersect: "+virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", 0f));
                         if(virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].IsInsideTile(samplingPosition, bottomTile3.transform2D.localPosition, Space.Self, this.virtualSpaceBound)
                         && virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalVirtualSpacePosition + bottomPoint2 + new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0
@@ -483,15 +499,15 @@ public class WanderingEpisode : Episode
                             samplingPosition = resetPoint + new Vector2(0, resetLength);
                             resetMode = true;
                             resetType = "3B";
-                            Debug.Log("Move from Type 3 to Bottom");
+                            // Debug.Log("Move from Type 3 to Bottom");
                             break;
                         }
                     }
-                    Debug.Log("Type 3 Check Done");
+                    // Debug.Log("Type 3 Check Done");
                 }
                 else if(currentTileNumber % 4 == 3) // Type 4
                 {
-                    Debug.Log("Now Type 4");
+                    // Debug.Log("Now Type 4");
                     Polygon2D topTile4 = (Polygon2D) virtualSpace.spaceObjects[currentTileNumber-2];
                     Polygon2D bottomTile4 = null;
 
@@ -521,7 +537,7 @@ public class WanderingEpisode : Episode
                         samplingPosition = resetPoint - new Vector2(0, resetLength);
                         resetMode = true;
                         resetType = "4T";
-                        Debug.Log("Move from Type 4 to Top");
+                        // Debug.Log("Move from Type 4 to Top");
                         break;
                     }
                     if(!lastRow)
@@ -543,11 +559,11 @@ public class WanderingEpisode : Episode
                             // currentTargetPosition = resetPoint + new Vector2(0, resetLength);
                             resetMode = true;
                             resetType = "4B";
-                            Debug.Log("Move from Type 4 to Bottom");
+                            // Debug.Log("Move from Type 4 to Bottom");
                             break;
                         }
                     }
-                    Debug.Log("Type 4 Check Done");
+                    // Debug.Log("Type 4 Check Done");
                 }
                 
                 if (count >= 10)
@@ -647,7 +663,7 @@ public class WanderingEpisode : Episode
             count = 1;
             previousUserPosition = userPosition;
             currentTargetPosition = samplingPosition;
-            Debug.Log("Move to target: " + samplingPosition);
+            // Debug.Log("Move to target: " + samplingPosition);
         }
 
         // Vector2 initialToTarget = previousUserPosition - virtualUserTransform.localPosition;
@@ -665,7 +681,7 @@ public class WanderingEpisode : Episode
 
         // if (maxTransTime - remainTransTime > 0.06f)
         // {
-        //     Debug.Log(maxTransTime - remainTransTime);
+        //     // Debug.Log(maxTransTime - remainTransTime);
         // }
     }
 }

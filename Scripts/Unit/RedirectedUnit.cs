@@ -151,6 +151,7 @@ public class RedirectedUnit
             if (previousStatus == "WALL_RESET_DONE")
             {
                 status = "IDLE";
+                resetter.wallResetCount += 1;
             }
 
         }

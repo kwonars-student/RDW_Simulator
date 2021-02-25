@@ -100,6 +100,12 @@ public class Episode
         targetObject.transform.localPosition = Utility.CastVector2Dto3D(currentTargetPosition.Value) + new Vector3(0, 1.35f, 0);
     }
 
+    protected void InstaniateTarget(Vector2 manualTargetPosition)
+    {
+        targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
+        targetObject.transform.localPosition = Utility.CastVector2Dto3D(manualTargetPosition) + new Vector3(0, 1.35f, 0);
+    }
+
     public bool IsNotEnd()
     {
         if (currentEpisodeIndex < episodeLength)
@@ -121,7 +127,7 @@ public class Episode
         currentTargetPosition = null;
     }
 
-    public Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace)
+    public virtual Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace)
     {
         if (!currentTargetPosition.HasValue)
         {

@@ -7,6 +7,7 @@ public class Resetter
     protected float translationSpeed;
     protected float rotationSpeed;
     public bool isFirst;
+    public int wallResetCount;
     //protected float epsilonRotation, epsilonTranslation;
 
     float initialAngle;

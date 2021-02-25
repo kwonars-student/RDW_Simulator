@@ -9,6 +9,7 @@ public class SimulationSetting
     public bool useVisualization;
     public bool useDebugMode;
     public bool useContinousSimulation;
+    public bool arrangementRLMode;
     public PrefabSetting prefabSetting;
     public SpaceSetting realSpaceSetting;
     public SpaceSetting virtualSpaceSetting; // 기존 세팅과 동일하고자 할 때 적용.
