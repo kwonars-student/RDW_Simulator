@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System;
 using UnityEngine;
 
@@ -46,6 +47,11 @@ public class WanderingEpisodeForAnyReset : Episode
     private Vector2 globalSamplingPosition;
     private Vector2 globalVirtualSpacePosition;
 
+    private bool predefinedMode = false;
+    private string filePath;
+    private TextReader reader;
+    private List<Vector2> targetPositionList;
+
     public WanderingEpisodeForAnyReset() : base() { }
 
     public WanderingEpisodeForAnyReset(int episodeLength) : base(episodeLength) { }
@@ -64,6 +70,26 @@ public class WanderingEpisodeForAnyReset : Episode
 
         return currentTargetPosition.Value;
     }
+
+    public void GetPreDefinedTargetFile(string fileName)
+    {
+        targetPositionList = new List<Vector2>();
+        filePath = "Assets/Resources/" + fileName +".txt";
+        reader = File.OpenText(filePath);
+
+        string line = null;
+        while ((line = reader.ReadLine()) != null) {
+            string[] num = line.Split(',');
+            float x = float.Parse(num[0]);
+            float y = float.Parse(num[1]);
+            targetPositionList.Add(new Vector2(x, y));
+        }
+        reader.Close();
+
+        if (this.episodeLength != targetPositionList.Count)
+            this.episodeLength = targetPositionList.Count;
+    }
+
     protected override void GenerateEpisode(Transform2D virtualUserTransform, Space2D virtualSpace)
     {
         Vector2 samplingPosition = Vector2.zero;
@@ -83,9 +109,22 @@ public class WanderingEpisodeForAnyReset : Episode
             previousUserPosition = virtualAgentInitialPosition;
         }
 
+        GetPreDefinedTargetFile("Test1000");
+
         do
         {
             count++;
+            
+            if(true || predefinedMode)
+            {
+                samplingPosition = targetPositionList[currentEpisodeIndex];
+                if (currentEpisodeIndex == 287)
+                {
+                    Debug.Log("episodeLength: "+episodeLength);
+                }
+
+                break;
+            }
 
             currentTileNumber = Convert.ToInt32(virtualSpace.spaceObject.gameObject.name.Replace("tile_",""));
             Polygon2D currentTile = (Polygon2D) virtualSpace.spaceObjects[currentTileNumber];
@@ -101,7 +140,7 @@ public class WanderingEpisodeForAnyReset : Episode
         
 
             float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
-            float distance = 1f;
+            float distance = 0.1f;
 
 
             sampleForward = Utility.RotateVector2(virtualUserTransform.forward, angle);

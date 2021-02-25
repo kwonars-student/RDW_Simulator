@@ -84,27 +84,61 @@ public class SpaceTilingSetting
         {
             for(int j = 0; j < Horizontal; j++)
             {
+                float lightHeight = 5f; // 아래 다 켜면 너무 밝음
 
-                // List<Vector2> type1TileVertices = new List<Vector2>();
-                // for(int k = 0 ; k < vertices.Count; k++)
-                // {
-                //     type1TileVertices.Add(vertices[k] + 2f*(a - c)*j - 2f*(b - d)*i);
-                // }
-                // List<Vector2> type2TileVertices = new List<Vector2>();
-                // for(int k = 0 ; k < vertices.Count; k++)
-                // {
-                //     type2TileVertices.Add(-1f*vertices[k] + 2f*a + 2f*(a - c)*j - 2f*(b - d)*i);
-                // }
-                // List<Vector2> type3TileVertices = new List<Vector2>();
-                // for(int k = 0 ; k < vertices.Count; k++)
-                // {
-                //     type3TileVertices.Add(-1f*vertices[k] + 2f*d + 2f*(a - c)*j - 2f*(b - d)*i);
-                // }
-                // List<Vector2> type4TileVertices = new List<Vector2>();
-                // for(int k = 0 ; k < vertices.Count; k++)
-                // {
-                //     type4TileVertices.Add(vertices[k] + 2f*(a - b) + 2f*(a - c)*j - 2f*(b - d)*i);
-                // }
+                GameObject lightGameObject1 = new GameObject("The Light " +"("+j+", "+i+") Type 1");
+                Light lightComp1 = lightGameObject1.AddComponent<Light>();
+                lightGameObject1.transform.position = Utility.CastVector2Dto3D(position + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lightHeight,0);
+                // lightGameObject2.transform.position = Utility.CastVector2Dto3D(position + 2f*a + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lightHeight,0);
+                // lightGameObject3.transform.position = Utility.CastVector2Dto3D(position + 2f*d + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lightHeight,0);
+                // lightGameObject4.transform.position = Utility.CastVector2Dto3D(position + 2f*(a - b) + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lightHeight,0);
+
+                float lineHeight = 0.0f;
+                float lineSize = 0.05f;
+
+                GameObject lineObject1 = new GameObject("The Line " +"("+j+", "+i+") Type 1");
+                GameObject lineObject2 = new GameObject("The Line " +"("+j+", "+i+") Type 2");
+                GameObject lineObject3 = new GameObject("The Line " +"("+j+", "+i+") Type 3");
+                GameObject lineObject4 = new GameObject("The Line " +"("+j+", "+i+") Type 4");
+
+                LineRenderer lineRenderer1 = lineObject1.AddComponent<LineRenderer>();
+                LineRenderer lineRenderer2 = lineObject2.AddComponent<LineRenderer>();
+                LineRenderer lineRenderer3 = lineObject3.AddComponent<LineRenderer>();
+                LineRenderer lineRenderer4 = lineObject4.AddComponent<LineRenderer>();
+
+                lineRenderer1.SetVertexCount(vertices.Count+1);
+                lineRenderer2.SetVertexCount(vertices.Count+1);
+                lineRenderer3.SetVertexCount(vertices.Count+1);
+                lineRenderer4.SetVertexCount(vertices.Count+1);
+
+                Material particleMat = new Material(Shader.Find("Legacy Shaders/Particles/Additive"));
+                lineRenderer1.material = particleMat;
+                lineRenderer2.material = particleMat;
+                lineRenderer3.material = particleMat;
+                lineRenderer4.material = particleMat;
+                lineRenderer1.SetColors(Color.blue, Color.blue);
+                lineRenderer2.SetColors(Color.blue, Color.blue);
+                lineRenderer3.SetColors(Color.blue, Color.blue);
+                lineRenderer4.SetColors(Color.blue, Color.blue);
+
+
+                for(int k = 0 ; k < vertices.Count; k++)
+                {
+                    lineRenderer1.SetPosition(k, Utility.CastVector2Dto3D(vertices[k] + position + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lineHeight,0));
+                    lineRenderer2.SetPosition(k, Utility.CastVector2Dto3D(-vertices[k] + position + 2f*a + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lineHeight,0));
+                    lineRenderer3.SetPosition(k, Utility.CastVector2Dto3D(-vertices[k] + position + 2f*d + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lineHeight,0));
+                    lineRenderer4.SetPosition(k, Utility.CastVector2Dto3D(vertices[k] + position + 2f*(a - b) + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lineHeight,0));
+                }
+
+                lineRenderer1.SetPosition(vertices.Count, Utility.CastVector2Dto3D(vertices[0] + position + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lineHeight,0));
+                lineRenderer2.SetPosition(vertices.Count, Utility.CastVector2Dto3D(-vertices[0] + position + 2f*a + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lineHeight,0));
+                lineRenderer3.SetPosition(vertices.Count, Utility.CastVector2Dto3D(-vertices[0] + position + 2f*d + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lineHeight,0));
+                lineRenderer4.SetPosition(vertices.Count, Utility.CastVector2Dto3D(vertices[0] + position + 2f*(a - b) + 2f*(a - c)*j - 2f*(b - d)*i) + new Vector3(0,lineHeight,0));
+
+                lineRenderer1.SetWidth(lineSize, lineSize);
+                lineRenderer2.SetWidth(lineSize, lineSize);
+                lineRenderer3.SetWidth(lineSize, lineSize);
+                lineRenderer4.SetWidth(lineSize, lineSize);
 
                 Object2D tileType1 = new Polygon2DBuilder().SetName("Tile Type1 at ("+i+","+j+")").SetTileType(tileTypeIndex[0]).SetMode(!useRegularPolygon).SetTileMode(tileMode).SetLocalPosition(position + 2f*(a - c)*j - 2f*(b - d)*i).SetCrossingInfo(crossingAxisRotationInfo, CrossingPointMovementInfo).SetVertices(vertices).Build();
                 Object2D tileType2 = new Polygon2DBuilder().SetName("Tile Type2 at ("+i+","+j+")").SetTileType(tileTypeIndex[1]).SetMode(!useRegularPolygon).SetTileMode(tileMode).SetLocalPosition(position + 2f*a + 2f*(a - c)*j - 2f*(b - d)*i).SetCrossingInfo(crossingAxisRotationInfo, CrossingPointMovementInfo).SetVertices(flippedVertices).Build();

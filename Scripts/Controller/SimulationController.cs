@@ -208,14 +208,16 @@ public class SimulationController
             //        isFirst3 = true;
             //    }
             //}
-            WanderingEpisodeForFixedReset wEpisode = null;
+            bool jumpRelocation = false;
+            WanderingEpisodeForFixedReset wEpisode1 = null;
+            WanderingEpisodeForAnyReset wEpisode2 = null;
             if(episode is WanderingEpisodeForFixedReset)
             {
-                wEpisode = (WanderingEpisodeForFixedReset) episode;
+                wEpisode1 = (WanderingEpisodeForFixedReset) episode;
 
-                if(wEpisode.syncMode)
+                if(wEpisode1.syncMode)
                 {
-                    wEpisode.syncMode = false;
+                    wEpisode1.syncMode = false;
                     // Debug.Log("realUser localPosition in SyncMode: " + realUser.transform2D.localPosition);
                     // Debug.Log("virtualUser localPosition in SyncMode: " + virtualUser.transform2D.localPosition);
                     Polygon2D realSpaceObject = (Polygon2D) realSpace.spaceObject;
@@ -223,45 +225,51 @@ public class SimulationController
 
                     List<Vector2> realSpaceCrossBoundaryPoints = realSpaceObject.GetCrossBoundaryPoints();
 
-                    if(wEpisode.resetType == "1R")
+                    if(wEpisode1.resetType == "1R")
                     {
-                        virtualUser.transform2D.localPosition = wEpisode.resetPoint + realSpaceCrossBoundaryPoints[0] - realUser.transform2D.localPosition;
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint + realSpaceCrossBoundaryPoints[0] - realUser.transform2D.localPosition;
                     }
-                    else if(wEpisode.resetType == "1T" || wEpisode.resetType == "4T")
+                    else if(wEpisode1.resetType == "1T" || wEpisode1.resetType == "4T")
                     {
-                        virtualUser.transform2D.localPosition = wEpisode.resetPoint + realSpaceCrossBoundaryPoints[1] - realUser.transform2D.localPosition;
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint + realSpaceCrossBoundaryPoints[1] - realUser.transform2D.localPosition;
                     }
-                    else if(wEpisode.resetType == "1L")
+                    else if(wEpisode1.resetType == "1L")
                     {
-                        virtualUser.transform2D.localPosition = wEpisode.resetPoint + realSpaceCrossBoundaryPoints[2] - realUser.transform2D.localPosition;
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint + realSpaceCrossBoundaryPoints[2] - realUser.transform2D.localPosition;
                     }
-                    else if(wEpisode.resetType == "1B" || wEpisode.resetType == "4B")
+                    else if(wEpisode1.resetType == "1B" || wEpisode1.resetType == "4B")
                     {
-                        virtualUser.transform2D.localPosition = wEpisode.resetPoint + realSpaceCrossBoundaryPoints[3] - realUser.transform2D.localPosition;
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint + realSpaceCrossBoundaryPoints[3] - realUser.transform2D.localPosition;
                     }
-                    else if(wEpisode.resetType == "2R")
+                    else if(wEpisode1.resetType == "2R")
                     {
-                        virtualUser.transform2D.localPosition = wEpisode.resetPoint - realSpaceCrossBoundaryPoints[2] + realUser.transform2D.localPosition;
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[2] + realUser.transform2D.localPosition;
                     }
-                    else if(wEpisode.resetType == "2T" || wEpisode.resetType == "3T")
+                    else if(wEpisode1.resetType == "2T" || wEpisode1.resetType == "3T")
                     {
-                        virtualUser.transform2D.localPosition = wEpisode.resetPoint - realSpaceCrossBoundaryPoints[3] + realUser.transform2D.localPosition;
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[3] + realUser.transform2D.localPosition;
                     }
-                    else if(wEpisode.resetType == "2L")
+                    else if(wEpisode1.resetType == "2L")
                     {
-                        virtualUser.transform2D.localPosition = wEpisode.resetPoint - realSpaceCrossBoundaryPoints[0] + realUser.transform2D.localPosition;
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[0] + realUser.transform2D.localPosition;
                     }
-                    else if(wEpisode.resetType == "2B" || wEpisode.resetType == "3B")
+                    else if(wEpisode1.resetType == "2B" || wEpisode1.resetType == "3B")
                     {
-                        virtualUser.transform2D.localPosition = wEpisode.resetPoint - realSpaceCrossBoundaryPoints[1] + realUser.transform2D.localPosition;
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[1] + realUser.transform2D.localPosition;
                     }
 
                     UpdateCurrentState(virtualUserTransform);
                     return GetDelta(virtualUserTransform.forward);
+                    jumpRelocation = true;
                 }
             }
+            else if(episode is WanderingEpisodeForAnyReset)
+            {
+                wEpisode2 = (WanderingEpisodeForAnyReset) episode;
+                jumpRelocation = true;
+            }
 
-            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
+            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self) && !jumpRelocation)
             //if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
             {
                 //Debug.Log("Re-Located");
@@ -269,23 +277,13 @@ public class SimulationController
 
                 //WanderingEpisodeForFixedReset wEpisode = (WanderingEpisodeForFixedReset) episode;
                 //if(!wEpisode.skipBit)
-                if(wEpisode != null)
-                {
-                    if(!wEpisode.resetMode && !wEpisode.pathRestoreMode)
-                    {
-                        ;//Do Nothing
-                    }
 
-                }
-                else
-                {
-                    episode.ReLocateTarget();
+                episode.ReLocateTarget();
 
-                    isFirst = true;
-                    isFirst2 = true;
-                    isFirst3 = true;
+                isFirst = true;
+                isFirst2 = true;
+                isFirst3 = true;
 
-                }
             }
             else
             {
@@ -296,10 +294,14 @@ public class SimulationController
                 }
                 else if (remainTransTime < maxTransTime)
                 {
+                    if(remainTransTime > 0.64)
+                    {
+                        ;
+                    }
                     if (isFirst2) // 방향을 동기화
                     {
                         isFirst2 = false;
-                        if(!(this.episode is WanderingEpisodeForFixedReset))
+                        if(!(this.episode is WanderingEpisodeForFixedReset) && !(this.episode is WanderingEpisodeForAnyReset))
                             SyncDirection(virtualUser, virtualTargetDirection);
                     }
                     else
@@ -313,7 +315,7 @@ public class SimulationController
                     if (isFirst3) // 위치를 동기화
                     {
                         isFirst3 = false;
-                        if(!(this.episode is WanderingEpisodeForFixedReset))
+                        if(!(this.episode is WanderingEpisodeForFixedReset) && !(this.episode is WanderingEpisodeForAnyReset))
                             SyncPosition(virtualUser, virtualTargetPosition);
                     }
                     else

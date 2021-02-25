@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System;
 using UnityEngine;
 
@@ -46,6 +47,9 @@ public class WanderingEpisodeForFixedReset : Episode
     private Vector2 globalSamplingPosition;
     private Vector2 globalVirtualSpacePosition;
 
+    private string filePath;
+    private List<Vector2> targetPositionList = new List<Vector2>();
+
     public WanderingEpisodeForFixedReset() : base() { }
 
     public WanderingEpisodeForFixedReset(int episodeLength) : base(episodeLength) { }
@@ -75,8 +79,8 @@ public class WanderingEpisodeForFixedReset : Episode
         //Debug.Log("globalVirtualSpacePosition: " + globalVirtualSpacePosition);
         
         count = 0;
-        virtualSpaceBound = 0.1f;
-        intersectionBound = 0.1f;
+        virtualSpaceBound = 0.2f;
+        intersectionBound = 0.2f;
 
         if (GetCurrentEpisodeIndex() <= 1)
         {
@@ -96,7 +100,7 @@ public class WanderingEpisodeForFixedReset : Episode
             currentVertical = (int) (currentTileNumber/(4*Horizontal));
             currentHorizontal = currentTileNumber % (4*Horizontal);
 
-            float resetLength = 0.2f;
+            float resetLength = 0.3f;
 
 
             do
@@ -195,7 +199,7 @@ public class WanderingEpisodeForFixedReset : Episode
 
                     resetMode = false;
                     pathRestoreMode = true;
-                    currentEpisodeIndex = currentEpisodeIndex - 1;
+                    currentEpisodeIndex = currentEpisodeIndex - 2;
                     // Debug.Log("Position during reset: "+ userPosition);
                     // Debug.Log("Reset Point: "+ resetPoint);
                     
@@ -207,7 +211,7 @@ public class WanderingEpisodeForFixedReset : Episode
                     currentTargetPosition = restoreVector;
                     pathRestoreMode = false;
                     syncMode = true;
-                    currentEpisodeIndex = currentEpisodeIndex - 1;
+                    // currentEpisodeIndex = currentEpisodeIndex - 1;
                     // Debug.Log("Current Tile Location Vector: "+ currentTileLocationVector);
                     // Debug.Log("Position during path restore: "+ userPosition);
                     break;
@@ -566,7 +570,7 @@ public class WanderingEpisodeForFixedReset : Episode
                     // Debug.Log("Type 4 Check Done");
                 }
                 
-                if (count >= 10)
+                if (count >= 20)
                 {
                     angle = Utility.sampleUniform(90f, 270f);
                     count = 1;
@@ -651,10 +655,14 @@ public class WanderingEpisodeForFixedReset : Episode
             if(GetWrongEpisode())
             {
                 currentTargetPosition = userPosition;
+                targetPositionList.Add(userPosition);
+                //Debug.Log("1");
             }
             else
             {
                 currentTargetPosition = previousUserPosition;
+                targetPositionList.Add(previousUserPosition);
+                //Debug.Log("2");
             }
             
         }
@@ -663,7 +671,46 @@ public class WanderingEpisodeForFixedReset : Episode
             count = 1;
             previousUserPosition = userPosition;
             currentTargetPosition = samplingPosition;
-            // Debug.Log("Move to target: " + samplingPosition);
+            //Debug.Log("3");
+
+            if(!resetMode && !pathRestoreMode)
+            {
+                targetPositionList.Add(samplingPosition);
+                ;//Debug.Log("S");
+            }
+            else
+            {
+                if(resetMode && !pathRestoreMode)
+                {
+                    ;//Debug.Log("W1");
+                }
+                else if(!resetMode && pathRestoreMode)
+                {
+                    ;//Debug.Log("W2");
+                }
+                else if(resetMode && pathRestoreMode)
+                {
+                    ;//Debug.Log("W3");
+                }
+            }
+        }
+        //Debug.Log("4");
+        
+        if(episodeLength == currentEpisodeIndex + 1)
+        {
+            filePath = "Assets/Resources/" + "Test1000" +".txt";
+            if(!File.Exists(filePath))
+            {
+                var file = File.CreateText(filePath);
+                file.Close();
+                StreamWriter sw = new StreamWriter(filePath);
+                for (int i = 0; i < targetPositionList.Count; i++)
+                {
+                    sw.WriteLine(targetPositionList[i].x + "," + targetPositionList[i].y);
+                }
+                sw.Flush();
+                sw.Close();
+            }
         }
 
         // Vector2 initialToTarget = previousUserPosition - virtualUserTransform.localPosition;
