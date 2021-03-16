@@ -1,8 +1,8 @@
 ﻿using System;
 using UnityEngine;
 
-public enum RedirectType { Null, Default, S2C, Space, Arrangement };
-public enum ResetType { Default, TwoOneTurn , FreezeTurn, CenterTurn };
+public enum RedirectType { Null, Default, S2C, APF, Space, Arrangement };
+public enum ResetType { Default, TwoOneTurn, APF_R_Turn, FreezeTurn, CenterTurn };
 public enum EpisodeType { LongWalk, Random, PreDefined, WanderingEpisodeForFixedReset, WanderingEpisodeForAnyReset };
 
 [System.Serializable]
@@ -99,6 +99,9 @@ public class UnitSetting
             case RedirectType.S2C:
                 redirector = new S2CRedirector();
                 break;
+            case RedirectType.APF:
+                redirector = new APFRedirector();
+                break;
             case RedirectType.Space:
                 redirector = new SpaceRedirector();
                 break;
@@ -127,6 +130,9 @@ public class UnitSetting
                 break;
             case ResetType.FreezeTurn:
                 resetter = new FreezeTurnResetter(translationSpeed, rotationSpeed);
+                break;
+            case ResetType.APF_R_Turn:
+                resetter = new APF_R_Resetter(translationSpeed, rotationSpeed);
                 break;
             case ResetType.CenterTurn:
                 resetter = new CenterTurnResetter(translationSpeed, rotationSpeed);

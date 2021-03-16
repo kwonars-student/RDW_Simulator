@@ -415,7 +415,7 @@ public class RDWSimulationManager : MonoBehaviour
 
     public IEnumerator SlowSimulationRoutine()
     {
-        Time.timeScale = 2f;//2f;
+        Time.timeScale = 4f;//2f;
         do
         {
             DestroyAll();

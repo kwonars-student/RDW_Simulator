@@ -14,6 +14,11 @@ public class Polygon2D : Object2D
     private List<Vector2> crossYFromTo; // local 좌표계 기준
     private List<float> crossingAxisRotationInfo = new List<float>(new float[] {0, 0});
     private Vector2 crossingPointMovementInfo;
+    private List<Vector2> segmentedVertices; // APF용. // local 좌표계 기준
+    private List<Vector2> segmentNormalVectors; // APF용. // local 좌표계 기준
+    private List<float> segmentedEdgeLengths; // APF용.
+    private List<Vector2> middleVertices; // APF용. // local 좌표계 기준
+    private List<Vector2> edgeNormalVectors; // APF용. // local 좌표계 기준
     private int tileType;
 
     public Polygon2D() : base() // 기본 생성자
@@ -199,10 +204,100 @@ public class Polygon2D : Object2D
         this.crossXFromTo = crossXFromTo;
         this.crossYFromTo = crossYFromTo;
 
-        // for(int i = 0 ; i < vertices.Count; i++)
-        // {
-        //     this.flippedVertices.Add(-1f*vertices[i]);
-        // }
+        float segNo = 1000f;
+
+        List<float> segmentedEdgeLengths = new List<float>();
+        for(int i = 0 ; i < vertices.Count; i++)
+        {
+
+            if(vertices.Count <= i+1)
+            {
+                for(int j = 1; j <= segNo; j++ )
+                {
+                    segmentedEdgeLengths.Add( ((vertices[0] - vertices[vertices.Count-1])/segNo).magnitude);
+                }
+            }
+            else
+            {
+                for(int j = 1; j <= segNo; j++ )
+                {
+                    segmentedEdgeLengths.Add( ((vertices[i+1] - vertices[i])/segNo).magnitude);
+                }
+            }
+
+        }
+
+        List<Vector2> segmentedVertices = new List<Vector2>();
+        for(int i = 0 ; i < vertices.Count; i++)
+        {
+            if(vertices.Count <= i+1)
+            {
+                for(int j = 1; j <= segNo; j++ )
+                {
+                    float jFloat = (float) j;
+                    segmentedVertices.Add((vertices[0] - vertices[vertices.Count-1])*jFloat/segNo + vertices[vertices.Count-1] - (vertices[0] - vertices[vertices.Count-1])/(2*segNo));
+                }
+            }
+            else
+            {
+                for(int j = 1; j <= segNo; j++ )
+                {
+                    float jFloat = (float) j;
+                    segmentedVertices.Add((vertices[i+1] - vertices[i])*jFloat/segNo + vertices[i] - (vertices[i+1] - vertices[i])/(2*segNo));
+                }
+            }
+        }
+
+        List<Vector2> segmentNormalVectors = new List<Vector2>();
+        for(int i = 0 ; i < vertices.Count; i++)
+        {
+            if(vertices.Count <= i+1)
+            {
+                for(int j = 1; j <= segNo; j++ )
+                {
+                    segmentNormalVectors.Add(  Utility.RotateVector2( ( (vertices[0] - vertices[vertices.Count-1])/segNo ).normalized, -90)   );
+                }
+            }
+            else
+            {
+                for(int j = 1; j <= segNo; j++ )
+                {
+                    segmentNormalVectors.Add(  Utility.RotateVector2( ( (vertices[i+1] - vertices[i])/segNo ).normalized, -90)   );
+                }
+            }
+        }
+
+        List<Vector2> middleVertices = new List<Vector2>();
+        for(int i = 0 ; i < vertices.Count; i++)
+        {
+            if(vertices.Count <= i+1)
+            {
+                middleVertices.Add((vertices[0] - vertices[vertices.Count-1])/2f + vertices[vertices.Count-1]);
+            }
+            else
+            {
+                middleVertices.Add((vertices[i+1] - vertices[i])/2f + vertices[i]);
+            }
+        }
+
+        List<Vector2> edgeNormalVectors = new List<Vector2>();
+        for(int i = 0 ; i < vertices.Count; i++)
+        {
+            if(vertices.Count <= i+1)
+            {
+                edgeNormalVectors.Add(  Utility.RotateVector2( ( (vertices[0] - vertices[vertices.Count-1]) ).normalized, -90)   );
+            }
+            else
+            {
+                edgeNormalVectors.Add(  Utility.RotateVector2( ( (vertices[i+1] - vertices[i]) ).normalized, -90)   );
+            }
+        }
+
+        this.segmentedEdgeLengths = segmentedEdgeLengths;
+        this.segmentedVertices = segmentedVertices;
+        this.segmentNormalVectors = segmentNormalVectors;
+        this.middleVertices = middleVertices;
+        this.edgeNormalVectors = edgeNormalVectors;
     }
 
     public List<Vector2> CalculateCrossBoundaryPoints()
@@ -392,6 +487,31 @@ public class Polygon2D : Object2D
     public int GetTileType()
     {
         return this.tileType;
+    }
+
+    public List<float> GetSegmentedEdgeLengths()
+    {
+        return this.segmentedEdgeLengths;
+    }
+
+    public List<Vector2> GetSegmentedVertices()
+    {
+        return this.segmentedVertices;
+    }
+
+    public List<Vector2> GetSegmentNormalVectors()
+    {
+        return this.segmentNormalVectors;
+    }
+
+    public List<Vector2> GetMiddleVertices()
+    {
+        return this.middleVertices;
+    }
+
+    public List<Vector2> GetEdgeNormalVectors()
+    {
+        return this.edgeNormalVectors;
     }
 
     public override void Initialize(GameObject prefab, string name, Vector2 localPosition, float localRotation, Vector2 localScale, Transform parent)

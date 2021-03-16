@@ -39,7 +39,7 @@ public class Utility
         return -rotation.eulerAngles.y;
     }
 
-    public static Vector2 RotateVector2(Vector2 vec, float degree)
+    public static Vector2 RotateVector2(Vector2 vec, float degree)  // 시계 반대방향으로 회전함.
     {
         Vector2 rotated = CastVector3Dto2D(CastRotation2Dto3D(degree) * CastVector2Dto3D(vec));
         return rotated;

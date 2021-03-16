@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class SteerToTargetRedirector : GainRedirector
+public class APFRedirector : GainRedirector
 {
-    
     private const float MOVEMENT_THRESHOLD = 0.2f; // meters per second. For 2. A linear movement rotation
     private const float MAXIMUM_LINEAR_MOVEMENT_ROTATION_RATE = 15f;
     private const float ROTATION_THRESHOLD = 1.5f; // degrees per second. For 3. An angular rotation
@@ -33,8 +33,25 @@ public class SteerToTargetRedirector : GainRedirector
         userPosition = realUserTransform.localPosition;
         userDirection = realUserTransform.forward;
 
-        // pick a target to where user steer
-        //PickSteeringTarget();
+        Space2D realSpace = unit.GetRealSpace();
+        Polygon2D realPolygonObject = (Polygon2D) realSpace.spaceObject;
+        List<Vector2> segmentedVertices = realPolygonObject.GetSegmentedVertices();
+        List<Vector2> segmentNormalVectors = realPolygonObject.GetSegmentNormalVectors();
+        List<float> segmentedEdgeLengths = realPolygonObject.GetSegmentedEdgeLengths();
+        List<Vector2> dList = new List<Vector2>();
+        List<float> dListMagnitude = new List<float>();
+        List<Vector2> dNormalizedList = new List<Vector2>();
+        List<float> inverseDList = new List<float>();
+
+        for(int i=0; i < segmentedVertices.Count; i++)
+        {
+            dList.Add(userPosition - segmentedVertices[i]);
+        }
+
+        for(int i=0; i < dList.Count; i++)
+        {
+            dListMagnitude.Add(dList[i].magnitude);
+        }
 
         Vector2 userToTarget = targetPosition - userPosition;
         float angleToTarget = Vector2.Angle(userDirection, userToTarget);
@@ -60,6 +77,17 @@ public class SteerToTargetRedirector : GainRedirector
         if (deltaPosition.magnitude > MOVEMENT_THRESHOLD)
         {
             curvatureMagnitude = Mathf.Rad2Deg * curvatureGain * deltaPosition.magnitude; // 2. A linear movement rotation rate. 여기에 delta T를 곱해야 Rotation이 됨.
+
+            float t = 1 - dListMagnitude.Min()*Mathf.Abs(HODGSON_MAX_CURVATURE_GAIN);
+            if(curvatureMagnitude > 0)
+            {
+                curvatureMagnitude = (1-t)*curvatureMagnitude + t*MAXIMUM_LINEAR_MOVEMENT_ROTATION_RATE;
+            }
+            else
+            {
+                curvatureMagnitude = (1-t)*curvatureMagnitude + t*(-MAXIMUM_LINEAR_MOVEMENT_ROTATION_RATE);
+            }
+
             if(curvatureMagnitude > 0)
             {
                 curvatureMagnitude = Mathf.Clamp(curvatureMagnitude, 0, MAXIMUM_LINEAR_MOVEMENT_ROTATION_RATE);
@@ -68,6 +96,8 @@ public class SteerToTargetRedirector : GainRedirector
             {
                 curvatureMagnitude = Mathf.Clamp(curvatureMagnitude, -MAXIMUM_LINEAR_MOVEMENT_ROTATION_RATE, 0);
             }
+
+            //Debug.Log("curvatureMagnitude: "+curvatureMagnitude);
         }
         if (Mathf.Abs(deltaRotation) >= ROTATION_THRESHOLD)
         {
@@ -81,7 +111,10 @@ public class SteerToTargetRedirector : GainRedirector
                 rotationMagnitude = Mathf.Clamp(rotationMagnitude, -MAXIMUM_ANGULAR_ROTATION_RATE, 0);
             }
         }
-            
+
+
+
+
         float selectedMagnitude = Mathf.Max(Mathf.Abs(rotationMagnitude), Mathf.Abs(curvatureMagnitude)); // selectedMagnitude is ABS(절대값)
         bool isCurvatureSelected = Mathf.Abs(curvatureMagnitude) > Mathf.Abs(rotationMagnitude);
 
@@ -109,6 +142,11 @@ public class SteerToTargetRedirector : GainRedirector
             float direction = -Mathf.Sign(curvatureGain);
             return (GainType.Curvature, finalRotation * direction);
         }
+
+        
+        dList = null;
+        dListMagnitude = null;
+
     }
 
 }

@@ -52,9 +52,15 @@ public class WanderingEpisodeForAnyReset : Episode
     private TextReader reader;
     private List<Vector2> targetPositionList;
 
-    public WanderingEpisodeForAnyReset() : base() { }
+    public WanderingEpisodeForAnyReset() : base()
+    {
+        GetPreDefinedTargetFile("Test1000");
+    }
 
-    public WanderingEpisodeForAnyReset(int episodeLength) : base(episodeLength) { }
+    public WanderingEpisodeForAnyReset(int episodeLength) : base(episodeLength)
+    {
+        GetPreDefinedTargetFile("Test1000");
+    }
 
     public override Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace)
     {
@@ -101,15 +107,13 @@ public class WanderingEpisodeForAnyReset : Episode
         //Debug.Log("globalVirtualSpacePosition: " + globalVirtualSpacePosition);
         
         count = 0;
-        virtualSpaceBound = 0.1f;
-        intersectionBound = 0.1f;
+        virtualSpaceBound = 0.2f;
+        intersectionBound = 0.2f;
 
         if (GetCurrentEpisodeIndex() <= 1)
         {
             previousUserPosition = virtualAgentInitialPosition;
         }
-
-        GetPreDefinedTargetFile("Test1000");
 
         do
         {
@@ -118,10 +122,10 @@ public class WanderingEpisodeForAnyReset : Episode
             if(true || predefinedMode)
             {
                 samplingPosition = targetPositionList[currentEpisodeIndex];
-                if (currentEpisodeIndex == 287)
-                {
-                    Debug.Log("episodeLength: "+episodeLength);
-                }
+                // if (currentEpisodeIndex == 287)
+                // {
+                //     Debug.Log("episodeLength: "+episodeLength);
+                // }
 
                 break;
             }
@@ -136,12 +140,12 @@ public class WanderingEpisodeForAnyReset : Episode
             currentVertical = (int) (currentTileNumber/(4*Horizontal));
             currentHorizontal = currentTileNumber % (4*Horizontal);
 
-            float resetLength = 0.2f;
-        
+            float resetLength = 0.3f;
 
-            float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
-            float distance = 0.1f;
-
+            // float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
+            float angle = Utility.sampleUniform(-180.0f, 180.0f);
+            float distance = 0.5f; // 
+            //float distance = 1.5f; // 0.3f: Small Exploration,  1.5f: Large Exploration
 
             sampleForward = Utility.RotateVector2(virtualUserTransform.forward, angle);
             samplingPosition = userPosition + sampleForward * distance; // local 좌표계에서 절대 위치 기준
@@ -372,6 +376,7 @@ public class WanderingEpisodeForAnyReset : Episode
 
             if (count >= 50)
             {
+                //angle = Utility.sampleUniform(90f, 270f);
                 angle = Utility.sampleUniform(90f, 270f);
                 count = 1;
                 emergencyExitCount++;
@@ -399,9 +404,9 @@ public class WanderingEpisodeForAnyReset : Episode
 
             bool insideNextTile = virtualSpace.IsInsideTile(samplingPosition, nextTileLocationVector, Space.Self, this.virtualSpaceBound);
             int numOfIntersect = virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", this.intersectionBound);
-            Debug.Log("samplingPosition: "+samplingPosition);
-            Debug.Log("insideNextTile: "+insideNextTile);
-            Debug.Log("numOfIntersect: "+numOfIntersect);
+            // Debug.Log("samplingPosition: "+samplingPosition);
+            // Debug.Log("insideNextTile: "+insideNextTile);
+            // Debug.Log("numOfIntersect: "+numOfIntersect);
         //} while (!virtualSpace.IsInside(samplingPosition, Space.Self, 0.5f)); // !virtualSpace.IsPossiblePath(samplingPosition, userPosition, Space.Self, 0.2f)
         } while (  !(  virtualSpace.IsInsideTile(samplingPosition, nextTileLocationVector, Space.Self, this.virtualSpaceBound) && (virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", this.intersectionBound) == 1)  )
                 && !(  virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) && (virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", this.intersectionBound) == 0) )

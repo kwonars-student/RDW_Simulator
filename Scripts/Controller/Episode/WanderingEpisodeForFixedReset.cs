@@ -106,13 +106,11 @@ public class WanderingEpisodeForFixedReset : Episode
             do
             {
                 count++;
-            
-                // float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
-                // float distance = 0.6f;
 
-                float angle = Utility.sampleUniform(-135.0f, 135.0f);
-                //float distance = Utility.sampleUniform(2f, 2f); // 0.5 3
-                float distance = 1f; // 0.5 3
+                // float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
+                float angle = Utility.sampleUniform(-180.0f, 180.0f);
+                float distance = 2f; // 0.5f
+                //float distance = 1.5f; // 0.3f: Small Exploration,  1.5f: Large Exploration
 
                 sampleForward = Utility.RotateVector2(virtualUserTransform.forward, angle);
                 samplingPosition = userPosition + sampleForward * distance; // local 좌표계에서 절대 위치 기준

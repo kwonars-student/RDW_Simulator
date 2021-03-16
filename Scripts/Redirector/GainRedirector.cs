@@ -7,17 +7,17 @@ using UnityEngine;
 public class GainRedirector : Redirector
 {
     [HideInInspector]
-    public const float MIN_ROTATION_GAIN = -0.2f;
+    public const float MIN_ROTATION_GAIN = 0.67f; // 90 degree + 49% = 134.1 degree. 90/134.1 = 0.67. Slow Gain x Rreal = Rvirtual.;
     [HideInInspector]
-    public const float MAX_ROTATION_GAIN = 0.49f;
+    public const float MAX_ROTATION_GAIN = 1.25f; // 90 degree - 20% = 72 degree. 90/72 = 1.25. Fast Gain x Rreal = Rvirtual.;
     [HideInInspector]
-    public const float MIN_CURVATURE_GAIN = -0.045f; // turn radius : 22m
+    public const float MIN_CURVATURE_GAIN = -1/22f; // turn radius : 22m
     [HideInInspector]
-    public const float MAX_CURVATURE_GAIN = 0.045f;
+    public const float MAX_CURVATURE_GAIN = 1/22f;
     [HideInInspector]
-    public const float HODGSON_MIN_CURVATURE_GAIN = -0.133f; // turn radius : 7.5m
+    public const float HODGSON_MIN_CURVATURE_GAIN = -1/7.5f; // turn radius : 7.5m
     [HideInInspector]
-    public const float HODGSON_MAX_CURVATURE_GAIN = 0.133f;
+    public const float HODGSON_MAX_CURVATURE_GAIN = 1/7.5f;
     [HideInInspector]
     public const float MIN_TRANSLATION_GAIN = -0.14f;
     [HideInInspector]
