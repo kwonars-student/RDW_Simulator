@@ -61,42 +61,6 @@ public class Bounds2D
         }
     }
 
-    public Vector2 GetVertex(int index)
-    {
-        int realIndex = Utility.mod(index, 4);
-
-        switch (realIndex)
-        {
-            case 0:
-                return this.max;
-            case 1:
-                return new Vector2(center.x - extents.x, center.y + extents.y);
-            case 2:
-                return this.min;
-            case 3:
-                return new Vector2(center.x + extents.x, center.y - extents.y);
-            default:
-                throw new System.NotImplementedException();
-        }
-    }
-
-    public Edge2D GetEdge(int index)
-    {
-        return new Edge2D(GetVertex(index), GetVertex(index + 1));
-    }
-
-    public Edge2D[] GetEdges()
-    {
-        Edge2D[] result = new Edge2D[4];
-        
-        for(int i=0; i<4; i++)
-        {
-            result[i] = GetEdge(i);
-        }
-
-        return result;
-    }
-
     public bool Contains(Vector2 point)
     {
         return bounds.Contains(Utility.CastVector2Dto3D(point));

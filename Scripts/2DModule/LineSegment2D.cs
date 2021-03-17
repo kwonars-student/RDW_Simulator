@@ -102,11 +102,11 @@ public class LineSegment2D : Object2D
         }
     }
 
-    public override bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default") // targetLine 은 relativeTo 좌표계에 있다고 가정
+    public override bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default", float bound = 0.01f) // targetLine 은 relativeTo 좌표계에 있다고 가정
     {
         Edge2D thisLine = this.ChangeToEdge(relativeTo);
 
-        Intersect intersect = thisLine.CheckIntersect(targetLine, 0.01f);
+        Intersect intersect = thisLine.CheckIntersect(targetLine, bound);
 
         if (intersect == Intersect.NONE)
             return false;

@@ -43,6 +43,7 @@ public class RollerAgent : Agent
         sensor.AddObservation(rBody.velocity.z);
     }
 
+    [System.Obsolete]
     public override void OnActionReceived(float[] vectorAction)
     {
         // Actions, size = 2
@@ -69,6 +70,7 @@ public class RollerAgent : Agent
         }
     }
 
+    [System.Obsolete]
     public override void Heuristic(float[] actionsOut)
     {
         actionsOut[0] = Random.Range(-1f, 1f);

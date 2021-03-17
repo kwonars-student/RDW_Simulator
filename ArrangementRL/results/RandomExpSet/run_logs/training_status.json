@@ -1,0 +1,23 @@
+{
+    "ArrangementRL": {
+        "checkpoints": [
+            {
+                "steps": 34153,
+                "file_path": "results\\RandomExpSet\\ArrangementRL\\ArrangementRL-34153.onnx",
+                "reward": 0.06063293878590533,
+                "creation_time": 1610639460.4979973
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 34153,
+            "file_path": "results\\RandomExpSet\\ArrangementRL.onnx",
+            "reward": 0.06063293878590533,
+            "creation_time": 1610639460.4979973
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.2.0",
+        "mlagents_version": "0.24.0.dev0",
+        "torch_version": "1.6.0"
+    }
+}

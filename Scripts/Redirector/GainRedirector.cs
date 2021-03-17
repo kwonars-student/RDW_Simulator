@@ -7,17 +7,17 @@ using UnityEngine;
 public class GainRedirector : Redirector
 {
     [HideInInspector]
-    public const float MIN_ROTATION_GAIN = -0.2f;
+    public const float MIN_ROTATION_GAIN = 0.67f; // 90 degree + 49% = 134.1 degree. 90/134.1 = 0.67. Slow Gain x Rreal = Rvirtual.;
     [HideInInspector]
-    public const float MAX_ROTATION_GAIN = 0.49f;
+    public const float MAX_ROTATION_GAIN = 1.25f; // 90 degree - 20% = 72 degree. 90/72 = 1.25. Fast Gain x Rreal = Rvirtual.;
     [HideInInspector]
-    public const float MIN_CURVATURE_GAIN = -0.045f; // turn radius : 22m
+    public const float MIN_CURVATURE_GAIN = -1/22f; // turn radius : 22m
     [HideInInspector]
-    public const float MAX_CURVATURE_GAIN = 0.045f;
+    public const float MAX_CURVATURE_GAIN = 1/22f;
     [HideInInspector]
-    public const float HODGSON_MIN_CURVATURE_GAIN = -0.133f; // turn radius : 7.5m
+    public const float HODGSON_MIN_CURVATURE_GAIN = -1/7.5f; // turn radius : 7.5m
     [HideInInspector]
-    public const float HODGSON_MAX_CURVATURE_GAIN = 0.133f;
+    public const float HODGSON_MAX_CURVATURE_GAIN = 1/7.5f;
     [HideInInspector]
     public const float MIN_TRANSLATION_GAIN = -0.14f;
     [HideInInspector]
@@ -27,44 +27,33 @@ public class GainRedirector : Redirector
     protected float rotationGain;
     protected float curvatureGain;
 
-    public override Dictionary<string, float> GetResult()
+    public float GetApplidedGain(GainType type) // TODO: 얘를 추상화 할순 없나?
     {
-        Dictionary<string, float> result = new Dictionary<string, float>();
-
-        result.Add("translationGain", Mathf.Abs(translationGain));
-        result.Add("rotationGain", Mathf.Abs(rotationGain));
-        result.Add("curvatureGain", Mathf.Abs(curvatureGain));
-
-        return result;
+        switch (type)
+        {
+            case GainType.Translation:
+                return Mathf.Abs(GetTranslationGain());
+            case GainType.Rotation:
+                return Mathf.Abs(GetRotationGain());
+            case GainType.Curvature:
+                return Mathf.Abs(GetCurvatureGain());
+            default:
+                return 0;
+        }
     }
 
-    //public float GetApplidedGain(GainType type) // TODO: 얘를 추상화 할순 없나?
-    //{
-    //    switch (type)
-    //    {
-    //        case GainType.Translation:
-    //            return Mathf.Abs(GetTranslationGain());
-    //        case GainType.Rotation:
-    //            return Mathf.Abs(GetRotationGain());
-    //        case GainType.Curvature:
-    //            return Mathf.Abs(GetCurvatureGain());
-    //        default:
-    //            return 0;
-    //    }
-    //}
+    public float GetTranslationGain()
+    {
+        return translationGain;
+    }
 
-    //public float GetTranslationGain()
-    //{
-    //    return translationGain;
-    //}
+    public float GetRotationGain()
+    {
+        return rotationGain;
+    }
 
-    //public float GetRotationGain()
-    //{
-    //    return rotationGain;
-    //}
-
-    //public float GetCurvatureGain()
-    //{
-    //    return curvatureGain;
-    //}
+    public float GetCurvatureGain()
+    {
+        return curvatureGain;
+    }
 }

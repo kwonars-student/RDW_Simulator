@@ -155,44 +155,6 @@ public class Edge2D
         return Intersect.EXIST;
     }
 
-    public Vector2? GetIntersect(Ray2D ray, float bound = 0, string option = "default")
-    {
-        // Line2D과 Ray는 같은 좌표계를 가지고 있다고 가정
-        Vector2 p3 = ray.origin, p4 = ray.origin + ray.direction;
-
-        float under = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
-
-        if (under == 0) // 일치하거나 평행하는 경우
-        {
-            return null;
-        }
-
-        float t = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / under; // this line
-        float s = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / under; // other ray
-
-        // line의 시작과 끝점은 t = 0, 1
-        // ray의 시작점은 s = 0
-
-        if (option == "exclude") // ray의 시작점과 line의 끝점에서 만나면 교차하지 않는 것으로 판단하는 경우
-        {
-            if ((t < 0.0 || t >= 1.0 || s <= 0.0))
-            {
-                return null;
-            }
-        }
-        else
-        {
-            if (t < 0.0 || t > 1.0 || s < 0.0)
-            {
-                return null;
-            }
-        }
-
-        return new Vector2(p1.x + t * (p2.x - p1.x), p1.y + t * (p2.y - p1.y)); 
-    }
-
-
-
     public void DebugDraw(Color color)
     {
         Debug.DrawLine(Utility.CastVector2Dto3D(p1), Utility.CastVector2Dto3D(p2), color);

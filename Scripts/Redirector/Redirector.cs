@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using Unity.MLAgents;
 
 public enum GainType { Translation = 0, Rotation = 1, Curvature = 2, Undefined = -1 };
 
@@ -31,8 +32,9 @@ public class Redirector
         return (type, degree);
     }
 
-    public virtual Dictionary<string, float> GetResult() // Redirector로 인해 일어난 여러 결과들을 반환하는 함수
+    public virtual Dictionary<string, float> GetResult()
     {
         return new Dictionary<string, float>();
     }
+    
 }

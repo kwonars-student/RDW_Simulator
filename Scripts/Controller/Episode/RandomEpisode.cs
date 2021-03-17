@@ -13,6 +13,7 @@ public class RandomEpisode : Episode
         Vector2 samplingPosition = Vector2.zero;
         Vector2 userPosition = virtualUserTransform.localPosition;
 
+
         do
         {
             float angle = Utility.sampleUniform(-180.0f, 180.0f);

@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEngine;
 
-public enum RedirectType { Null, Default, S2C, Space };
-public enum ResetType { Default, TwoOneTurn , FreezeTurn, CenterTurn };
-public enum EpisodeType { LongWalk, Random, PreDefined };
+public enum RedirectType { Null, Default, S2C, APF, Space, Arrangement };
+public enum ResetType { Default, TwoOneTurn, APF_R_Turn, FreezeTurn, CenterTurn };
+public enum EpisodeType { LongWalk, Random, PreDefined, WanderingEpisodeForFixedReset, WanderingEpisodeForAnyReset };
 
 [System.Serializable]
 public class UnitSetting
@@ -14,9 +14,12 @@ public class UnitSetting
     public int episodeLength;
     public string episodeFileName;
 
-    public bool useRandomStart;
+    public bool useRandomStartReal;
+    public bool useRandomStartVirtual;
     public GameObject userPrefab;
     public float userStartRotation;
+    public float realStartRotation;
+    public float virtualStartRotation;
     public Vector2 realStartPosition;
     public Vector2 virtualStartPosition;
     public float translationSpeed;
@@ -26,10 +29,16 @@ public class UnitSetting
     {
         Object2D realUser, virtualUser;
 
-        if (useRandomStart)
+        if (useRandomStartReal)
         {
             realStartPosition = realSpace.GetRandomPoint(0.2f);
+            realStartRotation = Utility.sampleUniform(0f, 360f);
+        }
+
+        if (useRandomStartVirtual)
+        {
             virtualStartPosition = virtualSpace.GetRandomPoint(0.2f);
+            virtualStartRotation = Utility.sampleUniform(0f, 360f);
         }
 
         if (userPrefab != null)
@@ -37,24 +46,37 @@ public class UnitSetting
             switch (userPrefab.tag) // 좀더 깔끔한 코드 있을 꺼 같은데 (추상화 가능성)
             {
                 default:
-                    realUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetParent(realSpace.spaceObject).Build();
-                    virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetParent(virtualSpace.spaceObject).Build();
+                    realUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetParent(realSpace.spaceObject).Build();
+                    
+                    if(virtualSpace.tileMode)
+                        virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.parentSpaceObject).Build();
+                    else
+                        virtualUser = new Polygon2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
+
                     break;
                 case "Circle":
-                    realUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetParent(realSpace.spaceObject).Build();
-                    virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetParent(virtualSpace.spaceObject).Build();
+                    realUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetParent(realSpace.spaceObject).Build();
+
+                    if(virtualSpace.tileMode)
+                        virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.parentSpaceObject).Build();
+                    else
+                        virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
                     break;
             }
         }
         else
         {
-            realUser = new Circle2DBuilder().SetLocalPosition(realStartPosition).SetLocalRotation(userStartRotation).SetRadius(0.5f).SetParent(realSpace.spaceObject).Build();
-            virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(userStartRotation).SetRadius(0.5f).SetParent(virtualSpace.spaceObject).Build();
+            realUser = new Circle2DBuilder().SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetRadius(0.5f).SetParent(realSpace.spaceObject).Build();
+
+            if(virtualSpace.tileMode)
+                virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetRadius(0.5f).SetParent(virtualSpace.parentSpaceObject).Build();
+            else
+                virtualUser = new Circle2DBuilder().SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetRadius(0.5f).SetParent(virtualSpace.spaceObject).Build();
         }
 
         return new RedirectedUnitBuilder()
             .SetController(GetController())
-            .SetRedirector(GetRedirector(virtualSpace))
+            .SetRedirector(GetRedirector())
             .SetResetter(GetRestter())
             .SetRealSpace(realSpace)
             .SetVirtualSpace(virtualSpace)
@@ -68,7 +90,7 @@ public class UnitSetting
         return new SimulationController(GetEpisode(), translationSpeed, rotationSpeed);
     }
 
-    public Redirector GetRedirector(Space2D virtualSpace)
+    public Redirector GetRedirector()
     {
         Redirector redirector;
 
@@ -77,8 +99,14 @@ public class UnitSetting
             case RedirectType.S2C:
                 redirector = new S2CRedirector();
                 break;
+            case RedirectType.APF:
+                redirector = new APFRedirector();
+                break;
             case RedirectType.Space:
-                redirector = new SpaceRedirector(virtualSpace);
+                redirector = new SpaceRedirector();
+                break;
+            case RedirectType.Arrangement:
+                redirector = new ArrangementRedirector();
                 break;
             case RedirectType.Null:
                 redirector = new NullRedirector();
@@ -102,6 +130,9 @@ public class UnitSetting
                 break;
             case ResetType.FreezeTurn:
                 resetter = new FreezeTurnResetter(translationSpeed, rotationSpeed);
+                break;
+            case ResetType.APF_R_Turn:
+                resetter = new APF_R_Resetter(translationSpeed, rotationSpeed);
                 break;
             case ResetType.CenterTurn:
                 resetter = new CenterTurnResetter(translationSpeed, rotationSpeed);
@@ -128,6 +159,12 @@ public class UnitSetting
                 break;
             case EpisodeType.PreDefined:
                 episode = new PreDefinedEpisode(episodeFileName);
+                break;
+            case EpisodeType.WanderingEpisodeForFixedReset:
+                episode = new WanderingEpisodeForFixedReset(episodeLength);
+                break;
+            case EpisodeType.WanderingEpisodeForAnyReset:
+                episode = new WanderingEpisodeForAnyReset(episodeLength);
                 break;
             default:
                 episode = new Episode(episodeLength);

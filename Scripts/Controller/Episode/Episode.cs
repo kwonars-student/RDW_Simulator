@@ -11,6 +11,46 @@ public class Episode
     protected int episodeLength;
     public GameObject targetPrefab = null;
     protected GameObject targetObject = null;
+    public bool showTarget = false;
+    private bool wrongEpisode = false;
+
+    protected Vector2 realAgentInitialPosition;
+    protected Vector2 virtualAgentInitialPosition;
+
+    public Vector2 GetRealAgentInitialPosition()
+    {
+        return realAgentInitialPosition;
+    }
+    
+    public void SetRealAgentInitialPosition(Vector2 realAgentInitialPosition)
+    {
+        this.realAgentInitialPosition = realAgentInitialPosition;
+    }
+
+    public Vector2 GetVirtualAgentInitialPosition()
+    {
+        return virtualAgentInitialPosition;
+    }
+
+    public void SetVirtualAgentInitialPosition(Vector2 virtualAgentInitialPosition)
+    {
+        this.virtualAgentInitialPosition = virtualAgentInitialPosition;
+    }
+
+    public void setShowTarget(bool showTarget)
+    {
+        this.showTarget = showTarget;
+    }
+
+    public bool GetWrongEpisode()
+    {
+        return wrongEpisode;
+    }
+
+    public void SetWrongEpisode(bool wrongEpisode)
+    {
+        this.wrongEpisode = wrongEpisode;
+    }
 
     public Episode() { // 기본 생성자
         id = totalID++;
@@ -39,6 +79,11 @@ public class Episode
         return currentEpisodeIndex;
     }
 
+    public void SetCurrentEpisodeIndex(int currentEpisodeIndex)
+    {
+        this.currentEpisodeIndex = currentEpisodeIndex;
+    }
+
     public int GetEpisodeLength()
     {
         return episodeLength;
@@ -51,8 +96,14 @@ public class Episode
 
     protected void InstaniateTarget()
     {
-        targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform); // TODO: Continous simulation을 할 때 삭제하는 기존 Virtual Space Object를 parent로 삼아서 target도 render 되지 않는 문제 발생
-        targetObject.transform.localPosition = Utility.CastVector2Dto3D(currentTargetPosition.Value) + new Vector3(0, 1, 0);
+        targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
+        targetObject.transform.localPosition = Utility.CastVector2Dto3D(currentTargetPosition.Value) + new Vector3(0, 1.35f, 0);
+    }
+
+    protected void InstaniateTarget(Vector2 manualTargetPosition)
+    {
+        targetObject = GameObject.Instantiate(targetPrefab, Vector3.zero, Quaternion.identity, GameObject.Find("Virtual Space").transform);
+        targetObject.transform.localPosition = Utility.CastVector2Dto3D(manualTargetPosition) + new Vector3(0, 1.35f, 0);
     }
 
     public bool IsNotEnd()
@@ -76,12 +127,12 @@ public class Episode
         currentTargetPosition = null;
     }
 
-    public Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace)
+    public virtual Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace)
     {
         if (!currentTargetPosition.HasValue)
         {
             GenerateEpisode(virtualUserTransform, virtualSpace);
-            if(targetPrefab != null) InstaniateTarget();
+            if(targetPrefab != null && showTarget) InstaniateTarget();
         }
 
         return currentTargetPosition.Value;

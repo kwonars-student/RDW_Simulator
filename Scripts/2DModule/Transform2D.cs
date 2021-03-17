@@ -23,18 +23,6 @@ public class Transform2D // transform 위에서 돌아가는 transform 2D
         }
     }
 
-    public Vector2 right
-    {
-        get { return Utility.CastVector3Dto2D(transform.right); }
-        set
-        {
-            if (value.magnitude > 1)
-                value = value.normalized;
-
-            transform.right = Utility.CastVector2Dto3D(value);
-        }
-    }
-
     public Vector2 position
     {
         get { return Utility.CastVector3Dto2D(transform.position); }

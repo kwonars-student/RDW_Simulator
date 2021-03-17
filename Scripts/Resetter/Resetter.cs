@@ -7,6 +7,7 @@ public class Resetter
     protected float translationSpeed;
     protected float rotationSpeed;
     public bool isFirst;
+    public int wallResetCount;
     //protected float epsilonRotation, epsilonTranslation;
 
     float initialAngle;
@@ -70,7 +71,7 @@ public class Resetter
     public bool NeedWallReset(Object2D realUser, Space2D realSpace)
     {
         Vector2 realUserPosition = realUser.transform2D.localPosition;
-        return !realSpace.IsInside(realUserPosition, Space.Self, 0.2f);
+        return !realSpace.IsInside(realUserPosition, Space.Self, 0.00001f); // 0.2f
         //return !realSpace.IsInside(realUser, 0);
     }
 

@@ -15,6 +15,7 @@ public class SimulationController
     Vector2 targetPosition;
     Vector2 virtualTargetDirection = Vector2.zero;
     Vector2 virtualTargetPosition;
+    bool RLActionReady = false; // Action을 위해 한번 이상의 Fixed Update 필요하기 때문
 
     [HideInInspector]
     public float deltaRotation;
@@ -70,6 +71,7 @@ public class SimulationController
         deltaPosition = (virtualUserTransform.localPosition - previousPosition) / Time.fixedDeltaTime;
         //deltaRotation = (virtualUserTransform.localRotation - previousRotation) / Time.fixedDeltaTime;
         deltaRotation = Vector2.SignedAngle(previousForward, virtualUserTransform.forward) / Time.fixedDeltaTime;
+ 
         previousPosition = virtualUserTransform.localPosition;
         //previousRotation = virtualUserTransform.localRotation;
         previousForward = virtualUserTransform.forward;
@@ -99,7 +101,26 @@ public class SimulationController
         if (virtualUser.gameObject != null) virtualUser.gameObject.transform.localPosition = Utility.CastVector2Dto3D(virtualTargetPosition);
     }
 
-    public (Vector2, float) VirtualMove(Object2D virtualUser, Space2D virtualSpace)
+    public void SetRLActionReady(bool RLActionReady)
+    {
+        this.RLActionReady = RLActionReady;
+    }
+
+    public void SetControllerFirstTrue()
+    {
+        this.isFirst = false;
+        this.isFirst2 = false;
+        this.isFirst3 = false;
+    }
+
+    public void SetControllerFirstFalse()
+    {
+        this.isFirst = false;
+        this.isFirst2 = false;
+        this.isFirst3 = false;
+    }
+
+    public (Vector2, float) VirtualMove(Object2D virtualUser, Space2D virtualSpace, Object2D realUser = null, Space2D realSpace = null)
     {
         Transform2D virtualUserTransform = virtualUser.transform2D;
 
@@ -111,10 +132,22 @@ public class SimulationController
 
         if (episode.IsNotEnd())
         {
-            if (isFirst)
-            {
+
+            if (isFirst && RLActionReady) // 배치 적용 없이 한번 초기화 되면 안바뀌는 문제 해결. 다음 FixedUpdate에서 First를 시키는 방식.
+            {   
+                // Debug.Log("VirtualMove Initial");
                 isFirst = false;
                 targetPosition = episode.GetTarget(virtualUserTransform, virtualSpace);
+                if(episode.GetWrongEpisode())
+                {
+                    //episode.SetWrongEpisode(false);
+                    //episode.DeleteTarget();
+                    SetControllerFirstTrue();
+                    //remainRotTime = maxRotTime;
+                    //remainTransTime = maxTransTime;
+                    return GetDelta(virtualUserTransform.forward);
+                }
+
                 initialToTarget = targetPosition - virtualUserTransform.localPosition;
                 float InitialAngle = Vector2.SignedAngle(virtualUserTransform.forward, initialToTarget);
                 float initialDistance = Vector2.Distance(virtualUserTransform.localPosition, targetPosition);
@@ -127,6 +160,17 @@ public class SimulationController
                 maxTransTime = initialDistance / translationSpeed;
                 remainRotTime = 0;
                 remainTransTime = 0;
+
+                //if (maxTransTime - remainTransTime > 0.06f)
+                //{
+                //    Debug.Log(maxTransTime - remainTransTime);
+                //}
+
+            }
+            else if(!RLActionReady)
+            {
+                RLActionReady = true;
+                return GetDelta(virtualUserTransform.forward);
             }
 
             //if (remainRotTime < maxRotTime)
@@ -156,6 +200,7 @@ public class SimulationController
             //    }
             //    else
             //    {
+            //        //Debug.Log("Completed!");
             //        episode.DeleteTarget();
 
             //        isFirst = true;
@@ -163,29 +208,101 @@ public class SimulationController
             //        isFirst3 = true;
             //    }
             //}
-            //UpdateCurrentState(virtualUserTransform);
+            bool jumpRelocation = false;
+            WanderingEpisodeForFixedReset wEpisode1 = null;
+            WanderingEpisodeForAnyReset wEpisode2 = null;
+            if(episode is WanderingEpisodeForFixedReset)
+            {
+                wEpisode1 = (WanderingEpisodeForFixedReset) episode;
 
-            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
+                if(wEpisode1.syncMode)
+                {
+                    wEpisode1.syncMode = false;
+                    // Debug.Log("realUser localPosition in SyncMode: " + realUser.transform2D.localPosition);
+                    // Debug.Log("virtualUser localPosition in SyncMode: " + virtualUser.transform2D.localPosition);
+                    Polygon2D realSpaceObject = (Polygon2D) realSpace.spaceObject;
+                    Polygon2D virtualSpaceObject = (Polygon2D) virtualSpace.spaceObject;
+
+                    List<Vector2> realSpaceCrossBoundaryPoints = realSpaceObject.GetCrossBoundaryPoints();
+
+                    if(wEpisode1.resetType == "1R")
+                    {
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint + realSpaceCrossBoundaryPoints[0] - realUser.transform2D.localPosition;
+                    }
+                    else if(wEpisode1.resetType == "1T" || wEpisode1.resetType == "4T")
+                    {
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint + realSpaceCrossBoundaryPoints[1] - realUser.transform2D.localPosition;
+                    }
+                    else if(wEpisode1.resetType == "1L")
+                    {
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint + realSpaceCrossBoundaryPoints[2] - realUser.transform2D.localPosition;
+                    }
+                    else if(wEpisode1.resetType == "1B" || wEpisode1.resetType == "4B")
+                    {
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint + realSpaceCrossBoundaryPoints[3] - realUser.transform2D.localPosition;
+                    }
+                    else if(wEpisode1.resetType == "2R")
+                    {
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[2] + realUser.transform2D.localPosition;
+                    }
+                    else if(wEpisode1.resetType == "2T" || wEpisode1.resetType == "3T")
+                    {
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[3] + realUser.transform2D.localPosition;
+                    }
+                    else if(wEpisode1.resetType == "2L")
+                    {
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[0] + realUser.transform2D.localPosition;
+                    }
+                    else if(wEpisode1.resetType == "2B" || wEpisode1.resetType == "3B")
+                    {
+                        virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[1] + realUser.transform2D.localPosition;
+                    }
+
+                    UpdateCurrentState(virtualUserTransform);
+                    return GetDelta(virtualUserTransform.forward);
+                    jumpRelocation = true;
+                }
+            }
+            else if(episode is WanderingEpisodeForAnyReset)
+            {
+                wEpisode2 = (WanderingEpisodeForAnyReset) episode;
+                jumpRelocation = true;
+            }
+
+            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self) && !jumpRelocation)
+            //if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
             {
                 //Debug.Log("Re-Located");
+                //episode.DeleteTarget();
+
+                //WanderingEpisodeForFixedReset wEpisode = (WanderingEpisodeForFixedReset) episode;
+                //if(!wEpisode.skipBit)
+
                 episode.ReLocateTarget();
+
                 isFirst = true;
                 isFirst2 = true;
                 isFirst3 = true;
+
             }
             else
             {
                 if (remainRotTime < maxRotTime)
-                {
+                {                    
                     virtualUser.transform2D.Rotate(initialAngleDirection * rotationSpeed * Time.fixedDeltaTime);
                     remainRotTime += Time.fixedDeltaTime;
                 }
                 else if (remainTransTime < maxTransTime)
                 {
+                    if(remainTransTime > 0.64)
+                    {
+                        ;
+                    }
                     if (isFirst2) // 방향을 동기화
                     {
                         isFirst2 = false;
-                        SyncDirection(virtualUser, virtualTargetDirection);
+                        if(!(this.episode is WanderingEpisodeForFixedReset) && !(this.episode is WanderingEpisodeForAnyReset))
+                            SyncDirection(virtualUser, virtualTargetDirection);
                     }
                     else
                     {
@@ -198,7 +315,8 @@ public class SimulationController
                     if (isFirst3) // 위치를 동기화
                     {
                         isFirst3 = false;
-                        SyncPosition(virtualUser, virtualTargetPosition);
+                        if(!(this.episode is WanderingEpisodeForFixedReset) && !(this.episode is WanderingEpisodeForAnyReset))
+                            SyncPosition(virtualUser, virtualTargetPosition);
                     }
                     else
                     {
@@ -214,6 +332,7 @@ public class SimulationController
 
             UpdateCurrentState(virtualUserTransform);
         }
+
 
         return GetDelta(virtualUserTransform.forward);
     }

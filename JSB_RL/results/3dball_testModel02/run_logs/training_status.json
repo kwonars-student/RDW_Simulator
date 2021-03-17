@@ -1,0 +1,23 @@
+{
+    "3DBall": {
+        "checkpoints": [
+            {
+                "steps": 5003,
+                "file_path": "results\\3dball_testModel02\\3DBall\\3DBall-5003.onnx",
+                "reward": 1.1434977300498517,
+                "creation_time": 1615970227.3824174
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 5003,
+            "file_path": "results\\3dball_testModel02\\3DBall.onnx",
+            "reward": 1.1434977300498517,
+            "creation_time": 1615970227.3824174
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.2.0",
+        "mlagents_version": "0.24.0",
+        "torch_version": "1.6.0"
+    }
+}

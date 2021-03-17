@@ -117,7 +117,12 @@ public class Object2D
         throw new System.NotImplementedException();
     }
 
-    public virtual bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default") // targetLine 은 relativeTo 좌표계에 있다고 가정
+    public virtual bool IsIntersect(Edge2D targetLine, Space relativeTo, string option = "default", float bound = 0.01f) // targetLine 은 relativeTo 좌표계에 있다고 가정
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public virtual int NumOfIntersect(Vector2 sourcePosition, Vector2 targetPosition, Space relativeTo, string option = "default", float bound = 0.01f) // targetLine 은 relativeTo 좌표계에 있다고 가정
     {
         throw new System.NotImplementedException();
     }
@@ -130,7 +135,12 @@ public class Object2D
     public virtual bool IsInside(Vector2 targetPoint, Space relativeTo, float bound = 0) // targetLine 은 relativeTo 좌표계에 있다고 가정
     {
         throw new System.NotImplementedException();
-    }       
+    }
+
+    public virtual bool IsInsideTile(Vector2 targetPoint, Vector2 tileLocation, Space relativeTo, float bound = 0) // targetLine 은 relativeTo 좌표계에 있다고 가정
+    {
+        throw new System.NotImplementedException();
+    }
 
     public virtual void DebugDraw(Color color)
     {

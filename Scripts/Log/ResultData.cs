@@ -24,14 +24,11 @@ public class ResultData
         };
     }
 
-    public void setData(Dictionary<string, float> dict, bool useAddition = false)
+    public void setData(Dictionary<string, float> dict)
     {
         foreach(KeyValuePair<string, float> pair in dict)
         {
-            if(useAddition)
-                AddData(pair.Key, pair.Value);
-            else
-                setData(pair.Key, pair.Value);
+            data.Add(pair.Key, pair.Value);
         }
     }
 
@@ -112,5 +109,10 @@ public class ResultData
         //result += string.Format("elapsedTime: {0}\n", elapsedTime);
 
         return result;
+    }
+
+    public float getTotalReset()
+    {
+        return data["totalReset"];
     }
 }
