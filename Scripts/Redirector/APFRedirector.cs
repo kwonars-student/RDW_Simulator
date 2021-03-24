@@ -19,6 +19,7 @@ public class APFRedirector : GainRedirector
     protected Vector2 userDirection; // user local direction (localforward)
     protected Vector2 targetPosition; // steerting target localPosition
 
+    public virtual void PickSteeringTarget(List<Vector2> vertices) {}
     public virtual void PickSteeringTarget() {}
 
     public override (GainType, float) ApplyRedirection(RedirectedUnit unit, Vector2 deltaPosition, float deltaRotation)
@@ -51,6 +52,19 @@ public class APFRedirector : GainRedirector
         for(int i=0; i < dList.Count; i++)
         {
             dListMagnitude.Add(dList[i].magnitude);
+        }
+
+        // pick a target to where user steer
+        List<Vector2> polygonVertices = new List<Vector2>();
+        if(unit.GetRealSpace().spaceObject is Polygon2D)
+        {
+            Polygon2D polygonSpaceObject = (Polygon2D) unit.GetRealSpace().spaceObject;
+            polygonVertices = polygonSpaceObject.GetVertices();
+            PickSteeringTarget(polygonVertices);
+        }
+        else
+        {
+            PickSteeringTarget();
         }
 
         Vector2 userToTarget = targetPosition - userPosition;
@@ -112,9 +126,6 @@ public class APFRedirector : GainRedirector
             }
         }
 
-
-
-
         float selectedMagnitude = Mathf.Max(Mathf.Abs(rotationMagnitude), Mathf.Abs(curvatureMagnitude)); // selectedMagnitude is ABS(절대값)
         bool isCurvatureSelected = Mathf.Abs(curvatureMagnitude) > Mathf.Abs(rotationMagnitude);
 
@@ -131,6 +142,10 @@ public class APFRedirector : GainRedirector
         float finalRotation = (1.0f - SMOOTHING_FACTOR) * previousMagnitude + SMOOTHING_FACTOR * selectedMagnitude;
         previousMagnitude = finalRotation;
 
+
+        dList = null;
+        dListMagnitude = null;
+
         // apply final redirection
         if (!isCurvatureSelected)
         {
@@ -143,9 +158,7 @@ public class APFRedirector : GainRedirector
             return (GainType.Curvature, finalRotation * direction);
         }
 
-        
-        dList = null;
-        dListMagnitude = null;
+
 
     }
 

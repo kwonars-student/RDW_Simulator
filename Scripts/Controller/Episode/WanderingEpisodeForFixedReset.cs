@@ -21,12 +21,13 @@ public class WanderingEpisodeForFixedReset : Episode
     private int Vertical;
     private int currentHorizontal;
     private int currentVertical;
-    public bool skipBit = false;
     public bool resetMode = false;
     public bool pathRestoreMode = false;
     public bool syncMode = false;
+    public bool pathConditionPass = false;
     private float virtualSpaceBound;
     private float intersectionBound;
+    private Vector2 recoverReadyPosition;
 
     private Vector2 a;
     private Vector2 b;
@@ -79,8 +80,8 @@ public class WanderingEpisodeForFixedReset : Episode
         //Debug.Log("globalVirtualSpacePosition: " + globalVirtualSpacePosition);
         
         count = 0;
-        virtualSpaceBound = 0.2f;
-        intersectionBound = 0.2f;
+        virtualSpaceBound = 0.2f; // 0.2f
+        intersectionBound = 0.2f; // 0.2f
 
         if (GetCurrentEpisodeIndex() <= 1)
         {
@@ -89,7 +90,6 @@ public class WanderingEpisodeForFixedReset : Episode
 
         if(virtualSpace.tileMode)
         {
-            skipBit = false;
             currentTileNumber = Convert.ToInt32(virtualSpace.spaceObject.gameObject.name.Replace("tile_",""));
             Polygon2D currentTile = (Polygon2D) virtualSpace.spaceObjects[currentTileNumber];
             currentTileLocationVector = currentTile.transform2D.localPosition;
@@ -105,11 +105,12 @@ public class WanderingEpisodeForFixedReset : Episode
 
             do
             {
+                pathConditionPass = false; // 같은 타일에서 path 조건이 충족되었을 때 true
                 count++;
 
                 // float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
                 float angle = Utility.sampleUniform(-180.0f, 180.0f);
-                float distance = 2f; // 0.5f
+                float distance = 1.5f; // 0.5f
                 //float distance = 1.5f; // 0.3f: Small Exploration,  1.5f: Large Exploration
 
                 sampleForward = Utility.RotateVector2(virtualUserTransform.forward, angle);
@@ -195,6 +196,7 @@ public class WanderingEpisodeForFixedReset : Episode
                         virtualSpace.spaceObject = virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2];
                     }
 
+                    recoverReadyPosition = samplingPosition;
                     resetMode = false;
                     pathRestoreMode = true;
                     currentEpisodeIndex = currentEpisodeIndex - 2;
@@ -213,6 +215,7 @@ public class WanderingEpisodeForFixedReset : Episode
                     // Debug.Log("Current Tile Location Vector: "+ currentTileLocationVector);
                     // Debug.Log("Position during path restore: "+ userPosition);
                     break;
+
                 }
 
                 // Debug.Log("Sampling Position: " + samplingPosition);
@@ -266,14 +269,14 @@ public class WanderingEpisodeForFixedReset : Episode
                         // Debug.Log("Move from Type 1 to Right");
                         break;
                     }
-                    if(!firstRow) // 위쪽 전환인 경우 X
+                    if(!firstRow) // 위쪽 전환인 경우
                     {
                         // Debug.Log("Type1 T Inside: "+virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].IsInsideTile(samplingPosition, topTile1.transform2D.localPosition, Space.Self, this.virtualSpaceBound));
                         // Debug.Log("Type1 T Intersect: "+virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", 0f));
                         if(virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].IsInsideTile(samplingPosition, topTile1.transform2D.localPosition, Space.Self, this.virtualSpaceBound)
                         && virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalVirtualSpacePosition + topPoint1 - new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0
-                        && virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + topPoint1 + new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0 ) // 위쪽 전환인 경우 X
-                        //if(topPoint1.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 위쪽 전환인 경우 X
+                        && virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + topPoint1 + new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0 ) // 위쪽 전환인 경우
+                        //if(topPoint1.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 위쪽 전환인 경우
                         {
                             Polygon2D nextTile = topTile1;//(Polygon2D) virtualSpace.spaceObjects[currentTileNumber-4*Horizontal+2];
                             nextTileLocationVector = nextTile.transform2D.localPosition;
@@ -288,14 +291,14 @@ public class WanderingEpisodeForFixedReset : Episode
                             break;
                         }
                     }
-                    if(!firstColumn) // 왼쪽인 경우 X
+                    if(!firstColumn) // 왼쪽인 경우
                     {
                         // Debug.Log("Type1 L Inside: "+virtualSpace.spaceObjects[currentTileNumber - 3].IsInsideTile(samplingPosition, leftTile1.transform2D.localPosition, Space.Self, this.virtualSpaceBound));
                         // Debug.Log("Type1 L Intersect: "+virtualSpace.spaceObjects[currentTileNumber - 3].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", 0f));
                         if(virtualSpace.spaceObjects[currentTileNumber - 3].IsInsideTile(samplingPosition, leftTile1.transform2D.localPosition, Space.Self, this.virtualSpaceBound)
                         && virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalVirtualSpacePosition + leftPoint1 + new Vector2(resetLength, 0), Space.World, "default", this.intersectionBound) == 0
-                        && virtualSpace.spaceObjects[currentTileNumber - 3].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + leftPoint1 - new Vector2(resetLength, 0), Space.World, "default", this.intersectionBound) == 0 ) // 왼쪽인 경우 X
-                        //if(leftPoint1.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 왼쪽인 경우 X
+                        && virtualSpace.spaceObjects[currentTileNumber - 3].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + leftPoint1 - new Vector2(resetLength, 0), Space.World, "default", this.intersectionBound) == 0 ) // 왼쪽인 경우
+                        //if(leftPoint1.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 왼쪽인 경우
                         { 
                             Polygon2D nextTile = leftTile1;//(Polygon2D) virtualSpace.spaceObjects[currentTileNumber-3];
                             nextTileLocationVector = nextTile.transform2D.localPosition;
@@ -360,7 +363,7 @@ public class WanderingEpisodeForFixedReset : Episode
                         rightTile2 = (Polygon2D) virtualSpace.spaceObjects[currentTileNumber+3];
                     }
 
-                    if(!lastColumn) //오른쪽 전환인 경우 X
+                    if(!lastColumn) //오른쪽 전환인 경우
                     {
                         // Debug.Log("Type2 R Inside: "+virtualSpace.spaceObjects[currentTileNumber + 3].IsInsideTile(samplingPosition, rightTile2.transform2D.localPosition, Space.Self, this.virtualSpaceBound));
                         // Debug.Log("Type2 R Intersect: "+virtualSpace.spaceObjects[currentTileNumber + 3].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", 0f));
@@ -383,14 +386,14 @@ public class WanderingEpisodeForFixedReset : Episode
                         }
 
                     }
-                    if(!firstRow) // 위쪽 전환인 경우 X
+                    if(!firstRow) // 위쪽 전환인 경우
                     {
                         // Debug.Log("Type2 T Inside: "+virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].IsInsideTile(samplingPosition, topTile2.transform2D.localPosition, Space.Self, this.virtualSpaceBound));
                         // Debug.Log("Type2 T Intersect: "+virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", 0f));
                         if(virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].IsInsideTile(samplingPosition, topTile2.transform2D.localPosition, Space.Self, this.virtualSpaceBound)
                         && virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalVirtualSpacePosition + topPoint2 - new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0
                         && virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + topPoint2 + new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0 )
-                        //if(topPoint2.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound)) // 위쪽 전환인 경우 X
+                        //if(topPoint2.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound)) // 위쪽 전환인 경우
                         {
                             Polygon2D nextTile = topTile2;//(Polygon2D) virtualSpace.spaceObjects[currentTileNumber - 4*Horizontal + 2];
                             nextTileLocationVector = nextTile.transform2D.localPosition;
@@ -484,13 +487,13 @@ public class WanderingEpisodeForFixedReset : Episode
                         break;
                     }
                     if(!lastRow)
-                    //if(bottomPoint2.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 아랫쪽인 경우 X
+                    //if(bottomPoint2.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 아랫쪽인 경우
                     {
                         // Debug.Log("Type3 lastRow In !");
                         // Debug.Log("Type3 B Intersect: "+virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", 0f));
                         if(virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].IsInsideTile(samplingPosition, bottomTile3.transform2D.localPosition, Space.Self, this.virtualSpaceBound)
                         && virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalVirtualSpacePosition + bottomPoint2 + new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0
-                        && virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + bottomPoint2 - new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0 ) // 아랫쪽인 경우 X
+                        && virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + bottomPoint2 - new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0 ) // 아랫쪽인 경우
                         {
                             Polygon2D nextTile = bottomTile3;// (Polygon2D) virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2];
                             nextTileLocationVector = nextTile.transform2D.localPosition;
@@ -543,13 +546,13 @@ public class WanderingEpisodeForFixedReset : Episode
                         break;
                     }
                     if(!lastRow)
-                    //if(bottomPoint1.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 아랫쪽인 경우 X
+                    //if(bottomPoint1.magnitude < resetLength && virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) ) // 아랫쪽인 경우
                     {
                         // Debug.Log("Type4 B Inside: "+virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].IsInsideTile(samplingPosition, bottomTile4.transform2D.localPosition, Space.Self, this.virtualSpaceBound));
                         // Debug.Log("Type4 B Intersect: "+virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", 0f));
                         if(virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].IsInsideTile(samplingPosition, bottomTile4.transform2D.localPosition, Space.Self, this.virtualSpaceBound)
                         && virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalVirtualSpacePosition + bottomPoint1 + new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0
-                        && virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + bottomPoint1 - new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0 ) // 아랫쪽인 경우 X
+                        && virtualSpace.spaceObjects[currentTileNumber + 4*Horizontal - 2].NumOfIntersect(globalSamplingPosition, globalVirtualSpacePosition + bottomPoint1 - new Vector2(0, resetLength), Space.World, "default", this.intersectionBound) == 0 ) // 아랫쪽인 경우
                         {
                             Polygon2D nextTile = bottomTile4;//(Polygon2D) virtualSpace.spaceObjects[currentTileNumber+4*Horizontal-2];
                             nextTileLocationVector = nextTile.transform2D.localPosition;
@@ -567,7 +570,8 @@ public class WanderingEpisodeForFixedReset : Episode
                     }
                     // Debug.Log("Type 4 Check Done");
                 }
-                
+
+                pathConditionPass = true;
                 if (count >= 20)
                 {
                     angle = Utility.sampleUniform(90f, 270f);
@@ -596,8 +600,7 @@ public class WanderingEpisodeForFixedReset : Episode
                 }
             //} while ( (!virtualSpace.IsInsideTile(samplingPosition, nextTileLocationVector, Space.Self, this.virtualSpaceBound) || !virtualSpace.IsPossiblePath(samplingPosition, userPosition, Space.Self) ) && !skipBit); // !virtualSpace.IsPossiblePath(samplingPosition, userPosition, Space.Self, 0.2f)
             //} while ( (!virtualSpace.IsInsideTile(samplingPosition, nextTileLocationVector, Space.Self, this.virtualSpaceBound)) && !skipBit); // !virtualSpace.IsPossiblePath(samplingPosition, userPosition, Space.Self, 0.2f)
-            } while ( !virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) || !(virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", this.intersectionBound) == 0));
-
+            } while ( !virtualSpace.IsInsideTile(samplingPosition, currentTileLocationVector, Space.Self, this.virtualSpaceBound) || !(virtualSpace.spaceObjects[currentTileNumber].NumOfIntersect(globalUserPosition, globalSamplingPosition, Space.World, "default", this.intersectionBound) == 0));   
         }
         else if(!virtualSpace.tileMode)
         {
@@ -654,13 +657,13 @@ public class WanderingEpisodeForFixedReset : Episode
             {
                 currentTargetPosition = userPosition;
                 targetPositionList.Add(userPosition);
-                //Debug.Log("1");
+                // Debug.Log("1"); // 타일에서 (거의) 안나옴
             }
             else
             {
                 currentTargetPosition = previousUserPosition;
                 targetPositionList.Add(previousUserPosition);
-                //Debug.Log("2");
+                // Debug.Log("2"); // 타일에서 (거의) 안나옴
             }
             
         }
@@ -669,30 +672,34 @@ public class WanderingEpisodeForFixedReset : Episode
             count = 1;
             previousUserPosition = userPosition;
             currentTargetPosition = samplingPosition;
-            //Debug.Log("3");
+            // Debug.Log("3"); // 타일에서 4와 (거의) 같음
 
             if(!resetMode && !pathRestoreMode)
             {
                 targetPositionList.Add(samplingPosition);
-                ;//Debug.Log("S");
+                // Debug.Log("S1234");
             }
             else
             {
                 if(resetMode && !pathRestoreMode)
                 {
-                    ;//Debug.Log("W1");
+                    // Debug.Log("W1"); // 
                 }
                 else if(!resetMode && pathRestoreMode)
                 {
-                    ;//Debug.Log("W2");
+                    // Debug.Log("W2"); // 
                 }
                 else if(resetMode && pathRestoreMode)
                 {
-                    ;//Debug.Log("W3");
+                    // Debug.Log("W3"); // 
+                }
+                else
+                {
+                    // Debug.Log("W4"); //
                 }
             }
         }
-        //Debug.Log("4");
+        // Debug.Log("4"); //
         
         if(episodeLength == currentEpisodeIndex + 1)
         {

@@ -204,7 +204,7 @@ public class Polygon2D : Object2D
         this.crossXFromTo = crossXFromTo;
         this.crossYFromTo = crossYFromTo;
 
-        float segNo = 1000f;
+        float segNo = 50f;
 
         List<float> segmentedEdgeLengths = new List<float>();
         for(int i = 0 ; i < vertices.Count; i++)

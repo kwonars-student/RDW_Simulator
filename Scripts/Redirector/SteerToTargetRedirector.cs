@@ -19,6 +19,7 @@ public class SteerToTargetRedirector : GainRedirector
     protected Vector2 userDirection; // user local direction (localforward)
     protected Vector2 targetPosition; // steerting target localPosition
 
+    public virtual void PickSteeringTarget(List<Vector2> vertices) {}
     public virtual void PickSteeringTarget() {}
 
     public override (GainType, float) ApplyRedirection(RedirectedUnit unit, Vector2 deltaPosition, float deltaRotation)
@@ -34,7 +35,17 @@ public class SteerToTargetRedirector : GainRedirector
         userDirection = realUserTransform.forward;
 
         // pick a target to where user steer
-        //PickSteeringTarget();
+        List<Vector2> polygonVertices = new List<Vector2>();
+        if(unit.GetRealSpace().spaceObject is Polygon2D)
+        {
+            Polygon2D polygonSpaceObject = (Polygon2D) unit.GetRealSpace().spaceObject;
+            polygonVertices = polygonSpaceObject.GetVertices();
+            PickSteeringTarget(polygonVertices);
+        }
+        else
+        {
+            PickSteeringTarget();
+        }
 
         Vector2 userToTarget = targetPosition - userPosition;
         float angleToTarget = Vector2.Angle(userDirection, userToTarget);

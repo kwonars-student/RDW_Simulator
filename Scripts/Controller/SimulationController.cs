@@ -16,6 +16,8 @@ public class SimulationController
     Vector2 virtualTargetDirection = Vector2.zero;
     Vector2 virtualTargetPosition;
     bool RLActionReady = false; // Action을 위해 한번 이상의 Fixed Update 필요하기 때문
+    bool jumpRelocation = false;
+    bool passBit = false;
 
     [HideInInspector]
     public float deltaRotation;
@@ -208,14 +210,14 @@ public class SimulationController
             //        isFirst3 = true;
             //    }
             //}
-            bool jumpRelocation = false;
             WanderingEpisodeForFixedReset wEpisode1 = null;
             WanderingEpisodeForAnyReset wEpisode2 = null;
             if(episode is WanderingEpisodeForFixedReset)
             {
                 wEpisode1 = (WanderingEpisodeForFixedReset) episode;
+                passBit = wEpisode1.pathConditionPass;
 
-                if(wEpisode1.syncMode)
+                if (!wEpisode1.resetMode && !wEpisode1.pathRestoreMode && wEpisode1.syncMode)
                 {
                     wEpisode1.syncMode = false;
                     // Debug.Log("realUser localPosition in SyncMode: " + realUser.transform2D.localPosition);
@@ -257,19 +259,24 @@ public class SimulationController
                     {
                         virtualUser.transform2D.localPosition = wEpisode1.resetPoint - realSpaceCrossBoundaryPoints[1] + realUser.transform2D.localPosition;
                     }
-
+                    jumpRelocation = true;
                     UpdateCurrentState(virtualUserTransform);
                     return GetDelta(virtualUserTransform.forward);
+                    
+                }
+                else if((wEpisode1.resetMode || wEpisode1.pathRestoreMode) && !wEpisode1.syncMode)
+                {
                     jumpRelocation = true;
                 }
             }
             else if(episode is WanderingEpisodeForAnyReset)
             {
                 wEpisode2 = (WanderingEpisodeForAnyReset) episode;
-                jumpRelocation = true;
+                // jumpRelocation = true;
             }
 
-            if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self) && !jumpRelocation)
+            
+            if ( virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self) && !jumpRelocation && !passBit) // IsPossiblePath의 Bound는 동작하지 않음.
             //if (virtualSpace.IsInside(virtualUser, 0.0f) && !virtualSpace.IsPossiblePath(virtualUser.transform2D.localPosition, targetPosition, Space.Self))
             {
                 //Debug.Log("Re-Located");
@@ -277,6 +284,13 @@ public class SimulationController
 
                 //WanderingEpisodeForFixedReset wEpisode = (WanderingEpisodeForFixedReset) episode;
                 //if(!wEpisode.skipBit)
+                
+                //if(wEpisode1 != null)
+                //{
+                //    wEpisode1.relocatedLoop = true;
+
+                //    Debug.Log("Relocated"); // resetMode, pathRestoreMode, syncMode 모두 false에서 진입.
+                //}
 
                 episode.ReLocateTarget();
 
@@ -294,10 +308,6 @@ public class SimulationController
                 }
                 else if (remainTransTime < maxTransTime)
                 {
-                    if(remainTransTime > 0.64)
-                    {
-                        ;
-                    }
                     if (isFirst2) // 방향을 동기화
                     {
                         isFirst2 = false;
@@ -321,6 +331,7 @@ public class SimulationController
                     else
                     {
                         //Debug.Log("Completed!");
+                        jumpRelocation = false;
                         episode.DeleteTarget();
 
                         isFirst = true;
