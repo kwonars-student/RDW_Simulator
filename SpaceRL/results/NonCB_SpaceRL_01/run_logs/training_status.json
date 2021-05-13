@@ -1,0 +1,30 @@
+{
+    "SpaceRL": {
+        "checkpoints": [
+            {
+                "steps": 199992,
+                "file_path": "results\\NonCB_SpaceRL_01\\SpaceRL\\SpaceRL-199992.onnx",
+                "reward": -38.48496473828951,
+                "creation_time": 1610359547.7599988
+            },
+            {
+                "steps": 360384,
+                "file_path": "results\\NonCB_SpaceRL_01\\SpaceRL\\SpaceRL-360384.onnx",
+                "reward": -32.62829734881719,
+                "creation_time": 1610362191.6488209
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 360384,
+            "file_path": "results\\NonCB_SpaceRL_01\\SpaceRL.onnx",
+            "reward": -32.62829734881719,
+            "creation_time": 1610362191.6488209
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.2.0",
+        "mlagents_version": "0.22.0",
+        "torch_version": "1.7.1",
+        "tensorflow_version": -1
+    }
+}

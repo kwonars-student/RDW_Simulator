@@ -2,17 +2,41 @@
     "SpaceRL": {
         "checkpoints": [
             {
-                "steps": 2,
-                "file_path": "results\\SpaceRL_06\\SpaceRL\\SpaceRL-2.onnx",
+                "steps": 199992,
+                "file_path": "results\\SpaceRL_06\\SpaceRL\\SpaceRL-199992.onnx",
+                "reward": -54.33496584494909,
+                "creation_time": 1610345249.3378687
+            },
+            {
+                "steps": 399992,
+                "file_path": "results\\SpaceRL_06\\SpaceRL\\SpaceRL-399992.onnx",
+                "reward": -60.72496657073498,
+                "creation_time": 1610348274.5063124
+            },
+            {
+                "steps": 599992,
+                "file_path": "results\\SpaceRL_06\\SpaceRL\\SpaceRL-599992.onnx",
+                "reward": -58.82996782660484,
+                "creation_time": 1610351327.61022
+            },
+            {
+                "steps": 799992,
+                "file_path": "results\\SpaceRL_06\\SpaceRL\\SpaceRL-799992.onnx",
                 "reward": null,
-                "creation_time": 1610012669.2913606
+                "creation_time": 1610354429.7547002
+            },
+            {
+                "steps": 868328,
+                "file_path": "results\\SpaceRL_06\\SpaceRL\\SpaceRL-868328.onnx",
+                "reward": -43.43496477603912,
+                "creation_time": 1610355498.7891002
             }
         ],
         "final_checkpoint": {
-            "steps": 2,
+            "steps": 868328,
             "file_path": "results\\SpaceRL_06\\SpaceRL.onnx",
-            "reward": null,
-            "creation_time": 1610012669.2913606
+            "reward": -43.43496477603912,
+            "creation_time": 1610355498.7891002
         }
     },
     "metadata": {

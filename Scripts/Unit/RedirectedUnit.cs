@@ -104,7 +104,7 @@ public class RedirectedUnit
                 resultData.AddWallReset();
                 status = "WALL_RESET";
                 flag = FLAG.RESET_OCCUR;
-                if (spaceAgent != null) spaceAgent.SetReward(-1.0f);
+                //if (spaceAgent != null) spaceAgent.SetReward(-1.0f);
             }
             else if (resetter.NeedUserReset(realUser, otherUsers, out intersectedUser))
             {
@@ -115,13 +115,13 @@ public class RedirectedUnit
             {
                 status = "END";
                 flag = FLAG.END;
-                if (spaceAgent != null) spaceAgent.EndEpisode();
+                //if (spaceAgent != null) spaceAgent.EndEpisode();
             }
             else
             {
                 status = "IDLE";
                 flag = FLAG.IDLE;
-                if (spaceAgent != null) spaceAgent.AddReward(+0.005f);
+                //if (spaceAgent != null) spaceAgent.AddReward(+0.005f);
             }
         }
 
@@ -133,7 +133,7 @@ public class RedirectedUnit
     public void Simulation(RedirectedUnit[] otherUnits)
     {
         currentTimeStep += 1;
-        Debug.Log("frame: "+i++);
+        //Debug.Log("frame: " + i++);
         string currentStatus = CheckCurrentStatus(otherUnits, previousStatus);
         switch (currentStatus)
         {

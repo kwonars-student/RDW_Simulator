@@ -16,7 +16,7 @@ public class SpaceAgent : Agent
         unit.SetRLAgent(this);
     }
 
-    public override void CollectObservations(VectorSensor sensor) // sensor should be normalized in [-1, 1] or [0, 1], state space : 4 + 4 + 4 * 2 + 4 + 4 = 24
+    public override void CollectObservations(VectorSensor sensor) // sensor should be normalized in [-1, 1] or [0, 1], state space : 4 + 4 * 2 + 4 + 4 = 20
     {
         // real user local position
         Bounds2D realSpaceBound = unit.GetRealSpace().spaceObject.bound;
@@ -40,8 +40,8 @@ public class SpaceAgent : Agent
         for(int i=0; i< obstacles.Count; i++)
             n_ObstacleLocalPositions[i] = new Vector2(obstacles[i].transform2D.localPosition.x / virtualSpaceBound.extents.x, obstacles[i].transform2D.localPosition.y / virtualSpaceBound.extents.y); // [-1, 1]
 
-        sensor.AddObservation(n_realUserLocalPosition);
-        sensor.AddObservation(realUserForward);
+        //sensor.AddObservation(n_realUserLocalPosition);
+        //sensor.AddObservation(realUserForward);
         sensor.AddObservation(n_virtualUserLocalPosition);
         sensor.AddObservation(n_virtualUserForward);
 
@@ -51,7 +51,7 @@ public class SpaceAgent : Agent
         Vector2 realUserRight = unit.GetRealUser().transform2D.right; // [-1, 1], already normalized
         Edge2D[] realBoundEdges = unit.GetRealSpace().spaceObject.bound.GetEdges();
         Ray2D[] realRay = new Ray2D[4];
-        Edge2D[] temp = new Edge2D[4];
+
         realRay[0] = new Ray2D(realUserLocalPosition, realUserForward); // +z 방향 ray
         realRay[1] = new Ray2D(realUserLocalPosition, -realUserRight); // -x 방향 ray
         realRay[2] = new Ray2D(realUserLocalPosition, -realUserForward); // -z 방향 ray
@@ -70,13 +70,9 @@ public class SpaceAgent : Agent
                 {
                     realDistance[j] = Vector2.Distance(intersect.Value, realUserLocalPosition) / realSpaceSize;
                     sensor.AddObservation(realDistance[j]);
-                    temp[j] = new Edge2D(unit.GetRealUser().transform2D.localPosition, intersect.Value);
                 }
             }
         }
-
-        for (int i = 0; i < 4; i++)
-            temp[i].DebugDraw(Color.red);
 
         // distances from virtual user to virtual obstacles
         float[] virtualDistance = new float[obstacles.Count];
@@ -88,39 +84,38 @@ public class SpaceAgent : Agent
         }
     }
 
-    public int i = 1;
-
     public override void OnActionReceived(float[] vectorAction) // vectorAction is normalized in [-1, 1], action space : 4 * 3 = 12
     {
         SpaceRedirector spaceRedirector = (SpaceRedirector) unit.GetRedirector();
         float maxTranslation = 4;
+        //float maxTranslation = unit.GetVirtualSpace().spaceObject.bound.extents.x;
 
         for (int i =0; i<vectorAction.Length; i += eachActionSpace)
         {
             Vector2 selectedTranslation = new Vector2(vectorAction[i] * maxTranslation, vectorAction[i + 1] * maxTranslation); // denormalized [-1, 1]
             float selectedRotation = vectorAction[i + 2] * 180; // denormalized [-180, 180]
-            Vector2 selectedScale = Vector2.zero;
+            Vector2 selectedScale = Vector2.zero; // scale value does not use
 
             int j = i / eachActionSpace;
             spaceRedirector.obstacleActions[j].setObstacleAction(selectedTranslation, selectedRotation, selectedScale);
         }
 
-        Debug.Log("OnActionReceived: " + i++);
-        //if (unit.flag == FLAG.IDLE)
-        //{
-        //    AddReward(+0.005f);
-        //}
-        //else if (unit.flag == FLAG.RESET_OCCUR)
-        //{
-        //    SetReward(-1.0f);
-        //}
-        //else if (unit.flag == FLAG.END)
-        //{
-        //    EndEpisode();
-        //}
+        //Debug.Log("OnActionReceived: " + i++);
+        if (unit.flag == FLAG.IDLE)
+        {
+            AddReward(+0.005f);
+        }
+        else if (unit.flag == FLAG.RESET_OCCUR)
+        {
+            SetReward(-1.0f);
+        }
+        else if (unit.flag == FLAG.END)
+        {
+            EndEpisode();
+        }
 
         //Debug.Log(unit.flag);
-        //Debug.Log(GetCumulativeReward());       
+        //Debug.Log(GetCumulativeReward());
 
         //// 실제 사용자로 부터 4 방향으로 여유 거리를 계산
         //Object2D realUser = unit.GetRealUser();
@@ -204,7 +199,7 @@ public class SpaceAgent : Agent
         {
             if(i % eachActionSpace == 0 || i % eachActionSpace == 1) // translation 
                 actionsOut[i] = UnityEngine.Random.Range(-1.0f, 1.0f);
-            else if (i % 5 == 2) // rotation 
+            else if (i % eachActionSpace == 2) // rotation 
                 actionsOut[i] = UnityEngine.Random.Range(-1.0f, 1.0f);
             else // 나머지는 선택 x
                 actionsOut[i] = 0;

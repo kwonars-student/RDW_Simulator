@@ -6,7 +6,6 @@ using Unity.MLAgents.Sensors;
 
 public class RollerAgent : Agent
 {
-    public GameObject opponent;
     public Transform Target;
     public float forceMultiplier = 10.0f;
 

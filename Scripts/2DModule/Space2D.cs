@@ -91,6 +91,58 @@ public class Space2D
         }
     }
 
+    public void ReplaceObstaclePositionByIndex(int index, Vector2 newPosition, Space relativeTo = Space.Self)
+    {
+        if (index >= 0 && index < this.obstacles.Count)
+        {
+            if (relativeTo == Space.Self)
+                this.obstacles[index].transform2D.localPosition = newPosition;
+            else if (relativeTo == Space.World)
+                this.obstacles[index].transform2D.position = newPosition;
+        }
+    }
+
+    public void ReplaceObstaclePositionByName(string name, Vector2 newPosition, Space relativeTo = Space.Self)
+    {
+        foreach (var obstacle in this.obstacles)
+        {
+            if (obstacle.gameObject.name == name)
+            {
+                if (relativeTo == Space.Self)
+                    obstacle.transform2D.localPosition = newPosition;
+                else if (relativeTo == Space.World)
+                    obstacle.transform2D.position = newPosition;
+                break;
+            }
+        }
+    }
+
+    public void ReplaceObstacleRotationByIndex(int index, float newRotation, Space relativeTo = Space.Self)
+    {
+        if(index >= 0 && index < this.obstacles.Count)
+        {
+            if (relativeTo == Space.Self)
+                this.obstacles[index].transform2D.localRotation = newRotation;
+            else if (relativeTo == Space.World)
+                this.obstacles[index].transform2D.rotation = newRotation;
+        }
+    }
+
+    public void ReplaceObstacleRotationByName(string name, float newRotation, Space relativeTo = Space.Self)
+    {
+        foreach (var obstacle in this.obstacles)
+        {
+            if (obstacle.gameObject.name == name)
+            {
+                if (relativeTo == Space.Self)
+                    obstacle.transform2D.localRotation = newRotation;
+                else if (relativeTo == Space.World)
+                    obstacle.transform2D.localRotation = newRotation;
+                break;
+            }
+        }
+    }
+
     public void TranslateObstacleByIndex(int index, Vector2 translation, Space relativeTo = Space.Self)
     {
         if(index >= 0 && index < this.obstacles.Count)

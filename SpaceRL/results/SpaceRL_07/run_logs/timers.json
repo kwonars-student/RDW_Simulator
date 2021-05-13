@@ -1,0 +1,47 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1610695828",
+        "python_version": "3.6.12 |Anaconda, Inc.| (default, Sep  9 2020, 00:29:25) [MSC v.1916 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\anaconda3\\envs\\SpaceRL\\Scripts\\mlagents-learn config/spaceRL_config.yaml --run-id=SpaceRL_07",
+        "mlagents_version": "0.22.0",
+        "mlagents_envs_version": "0.22.0",
+        "communication_protocol_version": "1.2.0",
+        "pytorch_version": "1.7.1",
+        "numpy_version": "1.19.2",
+        "end_time_seconds": "1610695845"
+    },
+    "total": 16.1278884,
+    "count": 1,
+    "self": 0.10596070000000068,
+    "children": {
+        "run_training.setup": {
+            "total": 0.07156549999999999,
+            "count": 1,
+            "self": 0.07156549999999999
+        },
+        "TrainerController.start_learning": {
+            "total": 15.950362199999999,
+            "count": 1,
+            "self": 0.0011913000000003393,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 15.948679599999998,
+                    "count": 1,
+                    "self": 15.948679599999998
+                },
+                "trainer_threads": {
+                    "total": 1.4999999997655777e-06,
+                    "count": 1,
+                    "self": 1.4999999997655777e-06
+                },
+                "TrainerController._save_models": {
+                    "total": 0.0004898000000004288,
+                    "count": 1,
+                    "self": 0.0004898000000004288
+                }
+            }
+        }
+    }
+}
