@@ -3,7 +3,7 @@ using UnityEngine;
 
 public enum RedirectType { Null, Default, S2C, APF, Space, Arrangement };
 public enum ResetType { Default, TwoOneTurn, APF_R_Turn, FreezeTurn, CenterTurn };
-public enum EpisodeType { LongWalk, Random, PreDefined, WanderingEpisodeForFixedReset, WanderingEpisodeForAnyReset };
+public enum EpisodeType { LongWalk, Random, PreDefined, Wandering, WanderingEpisodeForTiling_Fixed, WanderingEpisodeForTiling_Any };
 
 [System.Serializable]
 public class UnitSetting
@@ -55,10 +55,10 @@ public class UnitSetting
 
                     break;
                 case "Circle":
-                    realUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(realStartPosition).SetLocalRotation(realStartRotation).SetParent(realSpace.spaceObject).Build();
+                    realUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(new Vector2(0.0f,1f)).SetLocalRotation(realStartRotation).SetParent(realSpace.spaceObject).Build();
 
                     if(virtualSpace.tileMode)
-                        virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.parentSpaceObject).Build();
+                        virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(new Vector2(0.0f,1f)).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.parentSpaceObject).Build();
                     else
                         virtualUser = new Circle2DBuilder().SetPrefab(userPrefab).SetLocalPosition(virtualStartPosition).SetLocalRotation(virtualStartRotation).SetParent(virtualSpace.spaceObject).Build();
                     break;
@@ -160,11 +160,14 @@ public class UnitSetting
             case EpisodeType.PreDefined:
                 episode = new PreDefinedEpisode(episodeFileName);
                 break;
-            case EpisodeType.WanderingEpisodeForFixedReset:
-                episode = new WanderingEpisodeForFixedReset(episodeLength);
+            case EpisodeType.Wandering:
+                episode = new WanderingEpisode(episodeLength);
                 break;
-            case EpisodeType.WanderingEpisodeForAnyReset:
-                episode = new WanderingEpisodeForAnyReset(episodeLength);
+            case EpisodeType.WanderingEpisodeForTiling_Fixed:
+                episode = new WanderingEpisodeForTiling_Fixed(episodeLength);
+                break;
+            case EpisodeType.WanderingEpisodeForTiling_Any:
+                episode = new WanderingEpisodeForTiling_Any(episodeLength);
                 break;
             default:
                 episode = new Episode(episodeLength);

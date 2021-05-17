@@ -4,7 +4,7 @@ using System.IO;
 using System;
 using UnityEngine;
 
-public class WanderingEpisodeForAnyReset : Episode
+public class WanderingEpisodeForTiling_Any : Episode
 {
     private int count;
     private int emergencyExitCount;
@@ -52,14 +52,14 @@ public class WanderingEpisodeForAnyReset : Episode
     private TextReader reader;
     private List<Vector2> targetPositionList;
 
-    public WanderingEpisodeForAnyReset() : base()
+    public WanderingEpisodeForTiling_Any() : base()
     {
-        GetPreDefinedTargetFile("Test1000");
+        //GetPreDefinedTargetFile("Test1000");
     }
 
-    public WanderingEpisodeForAnyReset(int episodeLength) : base(episodeLength)
+    public WanderingEpisodeForTiling_Any(int episodeLength) : base(episodeLength)
     {
-        GetPreDefinedTargetFile("Test1000");
+        //GetPreDefinedTargetFile("Test1000");
     }
 
     public override Vector2 GetTarget(Transform2D virtualUserTransform, Space2D virtualSpace)
@@ -119,7 +119,7 @@ public class WanderingEpisodeForAnyReset : Episode
         {
             count++;
             
-            if(true || predefinedMode)
+            if(predefinedMode)
             {
                 samplingPosition = targetPositionList[currentEpisodeIndex];
                 // if (currentEpisodeIndex == 287)
@@ -144,7 +144,7 @@ public class WanderingEpisodeForAnyReset : Episode
 
             // float angle = Utility.sampleNormal(0f, 18f, -180f, 180f);
             float angle = Utility.sampleUniform(-180.0f, 180.0f);
-            float distance = 0.5f; // 
+            float distance = 6f;//1.5f;
             //float distance = 1.5f; // 0.3f: Small Exploration,  1.5f: Large Exploration
 
             sampleForward = Utility.RotateVector2(virtualUserTransform.forward, angle);

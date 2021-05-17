@@ -210,11 +210,11 @@ public class SimulationController
             //        isFirst3 = true;
             //    }
             //}
-            WanderingEpisodeForFixedReset wEpisode1 = null;
-            WanderingEpisodeForAnyReset wEpisode2 = null;
-            if(episode is WanderingEpisodeForFixedReset)
+            WanderingEpisodeForTiling_Fixed wEpisode1 = null;
+            WanderingEpisodeForTiling_Any wEpisode2 = null;
+            if(episode is WanderingEpisodeForTiling_Fixed)
             {
-                wEpisode1 = (WanderingEpisodeForFixedReset) episode;
+                wEpisode1 = (WanderingEpisodeForTiling_Fixed) episode;
                 passBit = wEpisode1.pathConditionPass;
 
                 if (!wEpisode1.resetMode && !wEpisode1.pathRestoreMode && wEpisode1.syncMode)
@@ -269,9 +269,9 @@ public class SimulationController
                     jumpRelocation = true;
                 }
             }
-            else if(episode is WanderingEpisodeForAnyReset)
+            else if(episode is WanderingEpisodeForTiling_Any)
             {
-                wEpisode2 = (WanderingEpisodeForAnyReset) episode;
+                wEpisode2 = (WanderingEpisodeForTiling_Any) episode;
                 // jumpRelocation = true;
             }
 
@@ -282,7 +282,7 @@ public class SimulationController
                 //Debug.Log("Re-Located");
                 //episode.DeleteTarget();
 
-                //WanderingEpisodeForFixedReset wEpisode = (WanderingEpisodeForFixedReset) episode;
+                //WanderingEpisodeForTiling_Fixed wEpisode = (WanderingEpisodeForTiling_Fixed) episode;
                 //if(!wEpisode.skipBit)
                 
                 //if(wEpisode1 != null)
@@ -311,7 +311,7 @@ public class SimulationController
                     if (isFirst2) // 방향을 동기화
                     {
                         isFirst2 = false;
-                        if(!(this.episode is WanderingEpisodeForFixedReset) && !(this.episode is WanderingEpisodeForAnyReset))
+                        if(!(this.episode is WanderingEpisodeForTiling_Fixed) && !(this.episode is WanderingEpisodeForTiling_Any))
                             SyncDirection(virtualUser, virtualTargetDirection);
                     }
                     else
@@ -325,7 +325,7 @@ public class SimulationController
                     if (isFirst3) // 위치를 동기화
                     {
                         isFirst3 = false;
-                        if(!(this.episode is WanderingEpisodeForFixedReset) && !(this.episode is WanderingEpisodeForAnyReset))
+                        if(!(this.episode is WanderingEpisodeForTiling_Fixed) && !(this.episode is WanderingEpisodeForTiling_Any))
                             SyncPosition(virtualUser, virtualTargetPosition);
                     }
                     else

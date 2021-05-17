@@ -19,9 +19,6 @@ public class APFRedirector : GainRedirector
     protected Vector2 userDirection; // user local direction (localforward)
     protected Vector2 targetPosition; // steerting target localPosition
 
-    public virtual void PickSteeringTarget(List<Vector2> vertices) {}
-    public virtual void PickSteeringTarget() {}
-
     public override (GainType, float) ApplyRedirection(RedirectedUnit unit, Vector2 deltaPosition, float deltaRotation)
     {
         if (deltaPosition == Vector2.zero && deltaRotation == 0.0f)
@@ -54,20 +51,11 @@ public class APFRedirector : GainRedirector
             dListMagnitude.Add(dList[i].magnitude);
         }
 
-        // pick a target to where user steer
-        List<Vector2> polygonVertices = new List<Vector2>();
-        if(unit.GetRealSpace().spaceObject is Polygon2D)
-        {
-            Polygon2D polygonSpaceObject = (Polygon2D) unit.GetRealSpace().spaceObject;
-            polygonVertices = polygonSpaceObject.GetVertices();
-            PickSteeringTarget(polygonVertices);
-        }
-        else
-        {
-            PickSteeringTarget();
-        }
+        //PickSteeringTargetForAPF(userPosition, GetW(unit.GetRealUser(), realSpace));
 
-        Vector2 userToTarget = targetPosition - userPosition;
+        (Vector2 w, float t) = GetWandT(unit.GetRealUser(), realSpace);
+        Vector2 userToTarget = 10000*w;//targetPosition - userPosition;
+        //Debug.Log(userToTarget);
         float angleToTarget = Vector2.Angle(userDirection, userToTarget);
         float distanceToTarget = userToTarget.magnitude;
 
@@ -92,7 +80,6 @@ public class APFRedirector : GainRedirector
         {
             curvatureMagnitude = Mathf.Rad2Deg * curvatureGain * deltaPosition.magnitude; // 2. A linear movement rotation rate. 여기에 delta T를 곱해야 Rotation이 됨.
 
-            float t = 1 - dListMagnitude.Min()*Mathf.Abs(HODGSON_MAX_CURVATURE_GAIN);
             if(curvatureMagnitude > 0)
             {
                 curvatureMagnitude = (1-t)*curvatureMagnitude + t*MAXIMUM_LINEAR_MOVEMENT_ROTATION_RATE;
@@ -160,6 +147,71 @@ public class APFRedirector : GainRedirector
 
 
 
+    }
+
+    // private void PickSteeringTargetForAPF(Vector2 userPosition, Vector2 wDirection)
+    // {
+    //     this.targetPosition = userPosition + 100000*wDirection;
+    //     Debug.Log(targetPosition);
+    // }
+
+    private (Vector2, float) GetWandT(Object2D realUser, Space2D realSpace)
+    {
+        const float C = 0.00897f;
+        const float lambda = 2.656f;
+        const float r = 7.5f;
+        const float gamma = 3.091f;
+        const float M = 15f;
+
+        // define some variables for redirection
+        Transform2D realUserTransform = realUser.transform2D;
+        Vector2 userPosition = realUserTransform.localPosition - 0.02f*realUserTransform.forward.normalized;
+        Vector2 userDirection = realUserTransform.forward;
+
+        Polygon2D realPolygonObject = (Polygon2D) realSpace.spaceObject;
+
+        List<Vector2> segmentedVertices = realPolygonObject.GetSegmentedVertices();
+        List<Vector2> segmentNormalVectors = realPolygonObject.GetSegmentNormalVectors();
+        List<float> segmentedEdgeLengths = realPolygonObject.GetSegmentedEdgeLengths();
+        List<Vector2> dList = new List<Vector2>();
+        List<float> dListMagnitude = new List<float>();
+        List<Vector2> dNormalizedList = new List<Vector2>();
+        List<float> inverseDList = new List<float>();
+
+        for(int i=0; i < segmentedVertices.Count; i++)
+        {
+            dList.Add(userPosition - segmentedVertices[i]);
+        }
+
+        for(int i=0; i < dList.Count; i++)
+        {
+            dListMagnitude.Add(dList[i].magnitude);
+        }
+
+        for(int i=0; i < dList.Count; i++)
+        {
+            dNormalizedList.Add(dList[i].normalized);
+        }
+
+        for(int i=0; i < dList.Count; i++)
+        {
+            inverseDList.Add(Mathf.Pow(1/dList[i].magnitude, lambda));
+        }
+
+        Vector2 w = Vector2.zero;
+        for(int i=0; i < segmentedVertices.Count; i++)
+        {
+            if(Vector2.Dot(segmentNormalVectors[i], dNormalizedList[i]) > 0)
+            {
+                w += C*segmentedEdgeLengths[i]*dNormalizedList[i]*inverseDList[i];
+            }
+            else
+            {
+                ;// Do Nothing
+            }
+        }
+
+        return (w, 1 - dListMagnitude.Min()*Mathf.Abs(HODGSON_MAX_CURVATURE_GAIN));
     }
 
 }

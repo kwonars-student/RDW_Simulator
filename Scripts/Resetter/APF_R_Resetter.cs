@@ -15,10 +15,57 @@ public class APF_R_Resetter : RotationResetter
         // ratio = 2;
     }
 
+    private Vector2 GetOldW(Object2D realUser, Space2D realSpace)
+    {
+        // define some variables for redirection
+        Transform2D realUserTransform = realUser.transform2D;
+        Vector2 userPosition = realUserTransform.localPosition - 0.02f*realUserTransform.forward.normalized;
+        Vector2 userDirection = realUserTransform.forward;
+
+        Polygon2D realPolygonObject = (Polygon2D) realSpace.spaceObject;
+        
+        List<Vector2> middleVertices = realPolygonObject.GetMiddleVertices();
+        List<Vector2> edgeNormalVectors = realPolygonObject.GetEdgeNormalVectors();
+        List<Vector2> dList = new List<Vector2>();
+        List<float> inverseDList = new List<float>();
+        float dAbsSum = 0;
+
+        Vector2 w = Vector2.zero;
+        Vector2 middleToUser = Vector2.zero;
+
+        // dAbsSum과 dList, inverseDList를 우선 구함
+        for(int i=0; i < middleVertices.Count; i++)
+        {
+            middleToUser = userPosition - middleVertices[i];
+            inverseDList.Add(1/Vector2.Dot(edgeNormalVectors[i],middleToUser));
+            dList.Add(Vector2.Dot(edgeNormalVectors[i],middleToUser)*(edgeNormalVectors[i]));
+
+            if(Vector2.Dot(middleToUser, edgeNormalVectors[i]) > 0 )
+            {
+                dAbsSum += Vector2.Dot(edgeNormalVectors[i],middleToUser);
+            }
+        }
+
+        // w계산
+        for(int i=0; i < middleVertices.Count; i++)
+        {
+            middleToUser = userPosition - middleVertices[i];
+            if(Vector2.Dot(middleToUser, edgeNormalVectors[i]) > 0 )
+            {
+                w += dList[i]*inverseDList[i]*inverseDList[i]*dAbsSum;
+            }
+            else
+            {
+                ;// Do Nothing
+            }
+        }
+        return w;
+    }
+
     private Vector2 GetW(Object2D realUser, Space2D realSpace)
     {
         const float C = 0.00897f;
-        const float lambda = 1f;//2.656f;
+        const float lambda = 2.656f;
         const float r = 7.5f;
         const float gamma = 3.091f;
         const float M = 15f;
@@ -78,10 +125,10 @@ public class APF_R_Resetter : RotationResetter
 
         if (isFirst)
         {
-            w = GetW(realUser, realSpace);
+            w = GetOldW(realUser, realSpace);
             targetAngle = Vector2.SignedAngle(realUser.transform2D.forward, w);
-            //Debug.Log("targetAngle: "+targetAngle);
-            //Debug.Log("w: "+w.normalized);
+
+            Debug.Log("w: "+w);
 
             realTargetRotation = Utility.RotateVector2(realUser.transform2D.forward, targetAngle);
             virtualTargetRotation = Utility.RotateVector2(virtualUser.transform2D.forward, 360);
