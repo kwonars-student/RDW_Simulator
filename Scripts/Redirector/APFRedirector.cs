@@ -33,23 +33,6 @@ public class APFRedirector : GainRedirector
 
         Space2D realSpace = unit.GetRealSpace();
         Polygon2D realPolygonObject = (Polygon2D) realSpace.spaceObject;
-        List<Vector2> segmentedVertices = realPolygonObject.GetSegmentedVertices();
-        List<Vector2> segmentNormalVectors = realPolygonObject.GetSegmentNormalVectors();
-        List<float> segmentedEdgeLengths = realPolygonObject.GetSegmentedEdgeLengths();
-        List<Vector2> dList = new List<Vector2>();
-        List<float> dListMagnitude = new List<float>();
-        List<Vector2> dNormalizedList = new List<Vector2>();
-        List<float> inverseDList = new List<float>();
-
-        for(int i=0; i < segmentedVertices.Count; i++)
-        {
-            dList.Add(userPosition - segmentedVertices[i]);
-        }
-
-        for(int i=0; i < dList.Count; i++)
-        {
-            dListMagnitude.Add(dList[i].magnitude);
-        }
 
         //PickSteeringTargetForAPF(userPosition, GetW(unit.GetRealUser(), realSpace));
 
@@ -129,10 +112,6 @@ public class APFRedirector : GainRedirector
         float finalRotation = (1.0f - SMOOTHING_FACTOR) * previousMagnitude + SMOOTHING_FACTOR * selectedMagnitude;
         previousMagnitude = finalRotation;
 
-
-        dList = null;
-        dListMagnitude = null;
-
         // apply final redirection
         if (!isCurvatureSelected)
         {
@@ -166,7 +145,6 @@ public class APFRedirector : GainRedirector
         // define some variables for redirection
         Transform2D realUserTransform = realUser.transform2D;
         Vector2 userPosition = realUserTransform.localPosition - 0.02f*realUserTransform.forward.normalized;
-        Vector2 userDirection = realUserTransform.forward;
 
         Polygon2D realPolygonObject = (Polygon2D) realSpace.spaceObject;
 
