@@ -16,7 +16,7 @@ public class ResultData
         data = new Dictionary<string, float>
         {
             {"unitID", 0},
-            {"setEpisodeID", 0},
+            {"episodeID", 0},
             {"totalTime", 0},
             {"totalReset", 0},
             {"wallReset", 0},

@@ -696,7 +696,20 @@ MonoBehaviour:
         p2: {x: 0, y: 0}
       obstacleObjectSettings: []
     unitSettings:
-    - redirectType: 3
+    - redirectType: 2
+      resetType: 3
+      episodeType: 1
+      episodeLength: 10000
+      episodeFileName: 
+      useRandomStart: 0
+      userPrefab: {fileID: 3594628791589679955, guid: f133cf5eff70dbe418039e6141fe27e3,
+        type: 3}
+      userStartRotation: 0
+      realStartPosition: {x: 0, y: 0}
+      virtualStartPosition: {x: 0, y: 0}
+      translationSpeed: 4
+      rotationSpeed: 60
+    - redirectType: 2
       resetType: 3
       episodeType: 1
       episodeLength: 10000

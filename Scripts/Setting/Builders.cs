@@ -167,17 +167,12 @@ where TBuilder : AbstractBuilder<TOjbect, TBuilder>
 
     public AbstractBuilder()
     {
-        _builderInstance = (TBuilder)this;
-        prefab = null;
-        name = "Object2D";
-        localPosition = Vector2.zero;
-        localRotation = 0;
-        localScale = Vector2.one;
-        parentObject = null;
+        initialize();
     }
 
     public virtual void initialize()
     {
+        _builderInstance = (TBuilder)this;
         prefab = null;
         name = "Object2D";
         localPosition = Vector2.zero;
@@ -224,6 +219,38 @@ where TBuilder : AbstractBuilder<TOjbect, TBuilder>
 
     public abstract TOjbect Build();
 }
+
+// TODO: Space2D와 Object2D 합치기
+// public class Space2DBuilder : AbstractBuilder<Space2D, Space2DBuilder>
+// {
+//     private List<Object2D> obstacles;
+
+//     public Space2DBuilder SetObstacles(List<Object2D> obstacles)
+//     {
+//         this.obstacles = obstacles;
+//         return _builderInstance;
+//     }
+
+//     public override void initialize()
+//     {
+//         base.initialize();
+//         spaceObject = null;
+//         obstacles = null;
+//     }
+
+//     public override Space2D Build()
+//     {
+//         Space2D result = null;
+
+//         if (spaceObject != null)
+//             result = new Space2D(spaceObject, obstacles);
+//         else
+//             result = new Space2D(prefab, name, localPosition, localRotation, localScale);
+//         initialize();
+//         return result;
+//     }
+// }
+
 
 
 public class Object2DBuilder : AbstractBuilder<Object2D, Object2DBuilder>
